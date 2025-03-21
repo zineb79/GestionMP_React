@@ -9,6 +9,8 @@
   display: flex;
   justify-content: center;
   align-items: center;
+  margin: 0;
+  padding: 0;
 }
 
 .relative { position: relative; }
@@ -16,30 +18,31 @@
 .bg-center { background-position: center; }
 
 .container {
+  max-width: none;
   display: flex;
-  width: 100%;
-  max-width: 600px;
-  background-color: rgb(255, 255, 255);
   box-shadow: 0 4px 10px rgba(0, 0, 0, 0.1);
+  width: 100%;
+  background-color: rgb(255, 255, 255);
   text-align: center;
-  justify-content: space-between;
-  height: auto;
-  padding: 0;
+  background: linear-gradient(to left, #94d1e9, #004B69);
 }
 
-.left-bar {
-  flex: 1;
-  background: linear-gradient(to left, #0094CF, #004B69);
-  display: flex;
-  align-items: center;
-  justify-content: center;
+.container * {
   margin: 0;
   padding: 0;
 }
+
+
+.left-bar {
+  flex: 0.5;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
 .left-bar p{
   font-family: 'Oswald', 'Anton', 'Bebas Neue', sans-serif;
-  font-weight: 700;
-  transform: translateX(-100%);
+  font-size: 30px;
+  transform: translateY(-100%);
   animation: animate 2s ease-in-out forwards;
 }
 @keyframes animate{
@@ -50,8 +53,7 @@
 
 .right-section {
   flex: 2;
-  margin: 0;
-  padding: 0;
+  background:#ffff;
 }
 
 .logo-img{
@@ -85,8 +87,7 @@
 .inputs {
   display: flex;
   flex-direction: column;
-  gap: 1.5rem;
-  padding-left: 1rem;
+  gap: 1rem;
 }
 .input {
   display: flex;
@@ -94,6 +95,8 @@
   border: 1px solid #ccc;
   border-radius: 4px;
   padding: 0.5rem;
+  width: 50%;
+  align-self: center;
 }
 
 .input img {
@@ -104,10 +107,10 @@
   width: 70%;
   border: none;
   outline: none;
-  font-size: 1rem;
+ font-size: 1rem;
   padding: 5px;
 }
-
+ /*
 span {
   display: block;
   margin-top: 1rem;
@@ -122,8 +125,17 @@ span {
   font-size: 0.875rem;
   color: #007bff;
   cursor: pointer;
-}
+}*/
 
 .btn{
-  margin-bottom: 1rem;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  width: 100%; /* Permet au bouton de s'aligner correctement */
+  margin-bottom: 20px;
+}
+
+.btn button {
+  width: 50%; /* Ajustez selon vos besoins */
+  text-align: center;
 }
