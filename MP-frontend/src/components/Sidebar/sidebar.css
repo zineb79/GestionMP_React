@@ -1,0 +1,52 @@
+.sidebar{
+    color: #ffff;
+}
+.logo{
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    color: #ffff;
+    padding: 10px;
+}
+.logo-icon{
+    width: 40px;
+    height: 40px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 1.5rem;
+    border-radius: 50%;
+    background: rgba(28, 17, 41, 0.88);
+}
+.menubar{
+    position: relative;
+    height: 88vh;
+    margin-top: 2rem;
+    display: flex;
+    flex-direction: column;
+    gap: 15px;
+    font-size: 1rem;
+    position: relative;
+}
+.toggle-theme-btn{
+    position: absolute;
+    bottom: 30px;
+    left: 20px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 1rem;
+}
+.toggle{
+    margin-left: 15px;
+}
+.logo{
+    display: flex;
+  justify-content: center;
+  align-items: center;
+  margin-bottom: 3rem;
+}
+.logo img{
+    height: 7rem;
+    width: auto;
+}

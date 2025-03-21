@@ -1,0 +1,129 @@
+@import url('https://fonts.googleapis.com/css2?family=Oswald:wght@700&family=Anton&family=Bebas+Neue&display=swap');
+
+.login-page {
+  background-image: url('../components/images/img3.jpg');
+  background-size: cover;
+  background-position: center;
+  background-repeat: no-repeat;
+  height: 100vh;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+}
+
+.relative { position: relative; }
+.bg-cover { background-size: cover; }
+.bg-center { background-position: center; }
+
+.container {
+  display: flex;
+  width: 100%;
+  max-width: 600px;
+  background-color: rgb(255, 255, 255);
+  box-shadow: 0 4px 10px rgba(0, 0, 0, 0.1);
+  text-align: center;
+  justify-content: space-between;
+  height: auto;
+  padding: 0;
+}
+
+.left-bar {
+  flex: 1;
+  background: linear-gradient(to left, #0094CF, #004B69);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  margin: 0;
+  padding: 0;
+}
+.left-bar p{
+  font-family: 'Oswald', 'Anton', 'Bebas Neue', sans-serif;
+  font-weight: 700;
+  transform: translateX(-100%);
+  animation: animate 2s ease-in-out forwards;
+}
+@keyframes animate{
+  100%{
+    transform: translateY(0);
+  }
+}
+
+.right-section {
+  flex: 2;
+  margin: 0;
+  padding: 0;
+}
+
+.logo-img{
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  margin-bottom: 3rem;
+}
+
+.logo-img img {
+  width: 100%; /* Ajuste la taille de ton logo */
+  height: auto;
+}
+
+.header {
+  justify-content: center;
+  align-items: center;
+}
+
+.header .text {
+  font-size: 2rem;
+  font-weight: bold;
+  color: #333;
+}
+.header .underligne {
+  width: 50px;
+  height: 4px;
+  margin: 0.5rem auto;
+  background-color: #007bff;
+}
+.inputs {
+  display: flex;
+  flex-direction: column;
+  gap: 1.5rem;
+  padding-left: 1rem;
+}
+.input {
+  display: flex;
+  align-items: center;
+  border: 1px solid #ccc;
+  border-radius: 4px;
+  padding: 0.5rem;
+}
+
+.input img {
+  width: 20px;
+  margin-right: 10px;
+}
+.input input {
+  width: 70%;
+  border: none;
+  outline: none;
+  font-size: 1rem;
+  padding: 5px;
+}
+
+span {
+  display: block;
+  margin-top: 1rem;
+  font-size: 0.875rem;
+  color: #007bff;
+  cursor: pointer;
+}
+
+span {
+  display: block;
+  margin-top: 1rem;
+  font-size: 0.875rem;
+  color: #007bff;
+  cursor: pointer;
+}
+
+.btn{
+  margin-bottom: 1rem;
+}
