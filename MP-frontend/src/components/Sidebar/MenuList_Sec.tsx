@@ -5,7 +5,7 @@ import {
   FileTextOutlined,
   LogoutOutlined,
   BellOutlined,
-  TeamOutlined,
+  BankOutlined,
 } from "@ant-design/icons";
 import { useNavigate } from "react-router-dom"; // Importer useNavigate
 import "./sidebar.css";
@@ -30,7 +30,7 @@ const MenuList: React.FC<MenuListProps> = ({ darkTheme }) => {
 
   const items = [
     { key: "Home", icon: <HomeOutlined />, label: "Accueil" },
-    { key: "dashboard", icon: <FileTextOutlined />, label: "Tableau de bord" },
+    { key: "marche", icon: <BankOutlined />, label: "Marché" },
     {
       key: "Doc",
       icon: <FileTextOutlined />,
@@ -59,7 +59,6 @@ const MenuList: React.FC<MenuListProps> = ({ darkTheme }) => {
     },
     { key: "notif", icon: <BellOutlined />, label: "Notification" },
     { key: "setting", icon: <SettingOutlined />, label: "Paramètres" },
-    { key: "membre", icon: <TeamOutlined />, label: "Comptes secrétaires" },
     { key: "deconnexion", icon: <LogoutOutlined />, label: "Se déconnecter" },
   ];
 

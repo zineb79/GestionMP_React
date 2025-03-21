@@ -6,6 +6,8 @@ const API_URL = "https://localhost:8443/auth/login"; // Adjust this to match you
 interface LoginResponse {
   token: string;
   role: string;
+  nom: string;
+  prenom: string;
 }
 
 export const login = async (
@@ -24,14 +26,16 @@ export const login = async (
       }
     );
 
-    const { token, role } = response.data;
+    const { token, role, nom, prenom } = response.data;
 
-    if (!token || !role) {
+    if (!token || !role || !nom || !prenom) {
       throw new Error("Token or Role missing in response");
     }
 
     localStorage.setItem("token", token);
     localStorage.setItem("role", role);
+    localStorage.setItem("nom", nom);
+    localStorage.setItem("prenom", prenom);
 
     return token;
   } catch (error) {

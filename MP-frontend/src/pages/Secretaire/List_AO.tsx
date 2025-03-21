@@ -139,7 +139,6 @@ const List_AO = () => {
   return (
     <Sidebar>
       <div className="form">
-        <header className="App-header">
           <FloatButton
             icon={<PlusOutlined />}
             onClick={() => navigate("/add")}
@@ -196,7 +195,6 @@ const List_AO = () => {
               }
             />
           </Modal>
-        </header>
       </div>
     </Sidebar>
   );

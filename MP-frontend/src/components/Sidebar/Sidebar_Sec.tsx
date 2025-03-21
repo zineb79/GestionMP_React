@@ -22,6 +22,9 @@ const Sidebare = ({ children }: { children: ReactNode }) => {  // Ajout de { chi
         token: { colorBgContainer },
     } = theme.useToken();
 
+    const nom = localStorage.getItem("nom") || "Utilisateur";
+    const prenom = localStorage.getItem("prenom") || "";
+
     return (
         <Layout>
             {/* Sidebar à gauche */}
@@ -40,9 +43,9 @@ const Sidebare = ({ children }: { children: ReactNode }) => {  // Ajout de { chi
                         onClick={() => setCollapsed(!collapsed)}
                         icon={collapsed ? <MenuUnfoldOutlined /> : <MenuFoldOutlined />}
                     />
-                    <div style={{ marginLeft: 'auto' }}>
-                        <ToggleThemeButton darkTheme={darkTheme} toggleTheme={toggleTheme} />
-                    </div>
+                    <span style={{ fontWeight: 'bold' }}>{nom} {prenom}</span>
+                    <ToggleThemeButton darkTheme={darkTheme} toggleTheme={toggleTheme} />
+                    
                 </Header>
 
                 {/* Contenu sous le header */}

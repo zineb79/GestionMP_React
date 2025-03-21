@@ -1,9 +1,9 @@
 .sidebar{
     color: #ffff;
+    height: 100vh;
 }
 .menubar{
     position: relative;
-    height: 100%;
     overflow-y: auto;
     margin-top: 2rem;
     display: flex;
@@ -11,6 +11,7 @@
     gap: 15px;
     font-size: 1rem;
     margin-bottom: 1rem;
+    height: 100%;
 }
 .menubar .ant-menu-item {
     display: flex;
@@ -53,7 +54,11 @@
     width: auto;
 }
 
-header{
-    align-items: 'center' ;
-    display: flex;
+Header{
+    align-items: center ;
+    padding: 16px;
+    display: flex; 
+    align-items: center; 
+    justify-content: space-between;
+    gap: 16px;
 }

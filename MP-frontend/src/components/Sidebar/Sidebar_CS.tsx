@@ -21,6 +21,11 @@ const Sidebare = () => {
         token: { colorBgContainer },
     } = theme.useToken();
 
+    
+    const nom = localStorage.getItem("nom") || "Utilisateur";
+    const prenom = localStorage.getItem("prenom") || "";
+
+
     return (
         <Layout>
             <Sider collapsed={collapsed} collapsible trigger={null} theme={darkTheme ? 'dark' : 'light'} className="sidebar">
@@ -35,9 +40,9 @@ const Sidebare = () => {
                         onClick={() => setCollapsed(!collapsed)}
                         icon={collapsed ? <MenuUnfoldOutlined /> : <MenuFoldOutlined />}
                     />
-                    <div style={{ marginLeft: 'auto' }}>
+                        <span style={{ fontWeight: 'bold', fontSize:'16px'}}>Bienvenu {nom} {prenom}</span>
                         <ToggleThemeButton darkTheme={darkTheme} toggleTheme={toggleTheme} />
-                    </div>
+                    
                 </Header>
             </Layout>
         </Layout>
