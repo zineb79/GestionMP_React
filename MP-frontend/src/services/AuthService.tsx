@@ -1,5 +1,5 @@
 import axios from "axios";
-import api from '../utils/axiosInstance';
+import api from "../utils/axiosInstance";
 
 const API_URL = "https://localhost:8443/auth/login"; // Adjust this to match your backend URL
 
@@ -44,7 +44,6 @@ export const login = async (
   }
 };
 
-
 //Liste des appel d'offre
 interface AppelOffre {
   num_Ordre_AO: number;
@@ -65,3 +64,18 @@ export const getAppelsOffre = async (): Promise<AppelOffre[]> => {
   }
 };
 
+interface Marche {
+  idMarche: number;
+  nomMarche: string;
+  statutMarche: string;
+}
+
+export const getMarches = async (): Promise<Marche[]> => {
+  try {
+    const response = await api.get("/marche");
+    return response.data;
+  } catch (error) {
+    console.error("Erreur lors de la récupération des marchés :", error);
+    throw error;
+  }
+};
