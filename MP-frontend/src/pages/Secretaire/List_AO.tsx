@@ -7,12 +7,13 @@ import Sidebar from "../../components/Sidebar/Sidebar_Sec";
 import { getAppelsOffre } from "../../services/AuthService";
 
 interface AppelOffre {
-  num_Ordre_AO: number;
+  num_Ordre_AO: string;
   type_AO: string;
   date_AO: string;
   coutEstime_AO: number;
   cautionProvisoire_AO: number;
   statut_AO: string;
+  idMarche: number;
 }
 
 const List_AO = () => {
