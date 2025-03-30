@@ -45,7 +45,6 @@ const Sidebare = ({ children }: { children: ReactNode }) => {  // Ajout de { chi
                     />
                     <span style={{ fontWeight: 'bold' }}>{nom} {prenom}</span>
                     <ToggleThemeButton darkTheme={darkTheme} toggleTheme={toggleTheme} />
-                    
                 </Header>
 
                 {/* Contenu sous le header */}

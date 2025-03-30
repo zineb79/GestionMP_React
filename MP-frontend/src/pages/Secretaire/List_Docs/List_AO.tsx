@@ -2,9 +2,9 @@ import React, { useState, useEffect } from "react";
 import { Table, Modal, Input, FloatButton } from "antd";
 import { EditOutlined, DeleteOutlined, PlusOutlined } from "@ant-design/icons";
 import { useNavigate } from "react-router-dom";
-import api from "../../utils/axiosInstance";
-import Sidebar from "../../components/Sidebar/Sidebar_Sec";
-import { getAppelsOffre } from "../../services/AuthService";
+import api from "../../../utils/axiosInstance";
+import Sidebar from "../../../components/Sidebar/Sidebar_Sec";
+import { getAppelsOffre } from "../../../services/AuthService";
 
 interface AppelOffre {
   num_Ordre_AO: string;
@@ -23,6 +23,8 @@ const List_AO = () => {
   );
   const [dataSource, setDataSource] = useState<AppelOffre[]>([]);
   const [loading, setLoading] = useState(true);
+  const [statuts, setStatuts] = useState<string[]>([]);
+  const [loadingStatuts, setLoadingStatuts] = useState(true);
   const navigate = useNavigate();
 
   // Charger les appels d'offre depuis l'API
@@ -43,6 +45,7 @@ const List_AO = () => {
 
     fetchAppelsOffre();
   }, []);
+
 
   const onDeleteAppelOffre = async (record: AppelOffre) => {
     Modal.confirm({
@@ -115,26 +118,39 @@ const List_AO = () => {
       key: "2",
       title: "Type d'appel d'offre",
       dataIndex: "type_AO",
+      filters: [
+        { text: 'National', value: 'National' },
+        { text: 'International', value: 'International' },
+      ],
+      onFilter: (value: any, record: AppelOffre) => record.type_AO === value,
     },
     {
       key: "3",
       title: "Date d'appel d'offre",
       dataIndex: "date_AO",
+      sorter: (a: AppelOffre, b: AppelOffre) => new Date(a.date_AO).getTime() - new Date(b.date_AO).getTime(),
     },
     {
       key: "4",
       title: "Coût estimé",
       dataIndex: "coutEstime_AO",
+      sorter: (a: AppelOffre, b: AppelOffre) => a.coutEstime_AO - b.coutEstime_AO,
     },
     {
       key: "5",
       title: "Caution provisoire",
       dataIndex: "cautionProvisoire_AO",
+      sorter: (a: AppelOffre, b: AppelOffre) => a.cautionProvisoire_AO - b.cautionProvisoire_AO,
     },
     {
       key: "6",
       title: "Statut",
       dataIndex: "statut_AO",
+      filters: loadingStatuts ? [] : statuts.map(statut => ({
+        text: statut,
+        value: statut
+      })),
+      onFilter: (value: any, record: AppelOffre) => record.statut_AO === value,
     },
     {
       key: "7",
@@ -154,7 +170,7 @@ const List_AO = () => {
   return (
     <Sidebar>
       <div className="form">
-        <FloatButton icon={<PlusOutlined />} onClick={() => navigate("/add")} />
+        <FloatButton icon={<PlusOutlined />} onClick={() => navigate("/add-ao")} />
         <Table
           columns={columns}
           dataSource={dataSource}

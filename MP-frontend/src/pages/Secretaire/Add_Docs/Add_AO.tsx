@@ -9,10 +9,9 @@ import {
   message,
 } from "antd";
 import { useNavigate } from "react-router-dom";
-import Sidebar from "../../components/Sidebar/Sidebar_Sec";
-import api from "../../utils/axiosInstance";
-import { getMarches, createAppelOffre } from "../../services/AuthService";
-import "./PagesSec.css";
+import Sidebar from "../../../components/Sidebar/Sidebar_Sec";
+import { getMarches, createAppelOffre } from "../../../services/AuthService";
+import "../PagesSec.css";
 
 interface Marche {
   id_Marche: number;
@@ -102,7 +101,7 @@ const Add_AO = () => {
 
       await createAppelOffre(appelOffre);
       message.success("L'appel d'offre a été ajouté avec succès");
-      navigate("/list");
+      navigate("/list-ao");
     } catch (error) {
       console.error("Erreur détaillée:", error);
       message.error(
@@ -235,11 +234,11 @@ const Add_AO = () => {
           </Form.Item>
 
           <Form.Item name="statut_AO" label="Statut" initialValue="ENCOURS">
-            <Select placeholder="Selectionner le statut">
-              <Select.Option value="ENCOURS">ENCOURS</Select.Option>
-              <Select.Option value="VALIDE">VALIDE</Select.Option>
-              <Select.Option value="INFRUTUEUSE">INFRUTUEUSE</Select.Option>
-            </Select>
+          <Select placeholder="Sélectionner le statut" loading={loading}>
+            <Select.Option value="ENCOURS">ENCOURS</Select.Option>
+            <Select.Option value="VALIDE">VALIDE</Select.Option>
+            <Select.Option value="INFRUTUEUSE">INFRUTUEUSE</Select.Option>
+          </Select>
           </Form.Item>
 
           <Form.Item wrapperCol={{ span: 24 }}>

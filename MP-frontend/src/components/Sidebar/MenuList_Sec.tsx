@@ -24,7 +24,11 @@ const MenuList: React.FC<MenuListProps> = ({ darkTheme }) => {
       // Ici, tu peux aussi ajouter la logique pour supprimer le token de l'utilisateur
       navigate("/login"); // Redirection vers la page de connexion
     } else if (key === "AO") {
-      navigate("/list"); // Redirection vers la page List_AO
+      navigate("/list-ao"); // Redirection vers la page List_AO
+    } else if (key === "marche") {
+      navigate("/list-marche"); // Redirection vers la page List_Marche
+    } else if (key === "OS") {
+      navigate("/list-os"); // Redirection vers la page List_OS
     }
   };
 
@@ -38,14 +42,7 @@ const MenuList: React.FC<MenuListProps> = ({ darkTheme }) => {
       children: [
         { key: "AO", label: "Appel d'offre" },
         { key: "NA", label: "Notification d'approbation" },
-        {
-          key: "OS",
-          label: "Ordre de service",
-          children: [
-            { key: "OSC", label: "de commencement" },
-            { key: "OSA", label: "d'arrêt" },
-          ],
-        },
+        { key: "OS", label: "Ordre de service" },
         {
           key: "PV",
           label: "PV de réception",
