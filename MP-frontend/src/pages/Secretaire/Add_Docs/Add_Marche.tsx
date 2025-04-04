@@ -1,10 +1,34 @@
 import React from 'react';
-import { Form, Button, DatePicker, Input, Select, FloatButton } from "antd";
+import { Form, Button, DatePicker, Input, Select, FloatButton, message } from "antd";
 import Sidebare from '../../../components/Sidebar/Sidebar_Sec';  
 import '../PagesSec.css';
-
+import { useNavigate } from 'react-router-dom';
+import { createMarche } from '../../../services/MarcheService';
 
 const Add_Marche = () => {
+  const navigate = useNavigate();
+  const [form] = Form.useForm();
+
+  const onFinish = async (values: any) => {
+    try {
+      await createMarche({
+        id_Marche: 0,
+        numOrdre: values.numOrdre,
+        type_Marche: values.typeMarche,
+        objet_marche: values.objet_marche,
+        statut: values.statutMarche,
+        idSociete: null,
+        idNotification: null
+      });
+      message.success('Marché ajouté avec succès');
+      form.resetFields();
+      navigate('/list-marche');
+    } catch (error) {
+      console.error("Erreur lors de l'ajout du marché:", error);
+      message.error("Erreur lors de l'ajout du marché");
+    }
+  };
+
   return (
     <Sidebare> {/* Encapsule le formulaire dans Sidebare */}
       <div className="form">
@@ -13,12 +37,12 @@ const Add_Marche = () => {
           autoComplete="off"
           labelCol={{ span: 10 }}
           wrapperCol={{ span: 14 }}
-          onFinish={(values) => console.log({ values })}
+          onFinish={onFinish}
           onFinishFailed={(error) => console.log({ error })}
         >
 
         <Form.Item
-          name="numMarche"
+          name="numOrdre"
           label="Numero de Marché"
           rules={[
             {
@@ -53,10 +77,10 @@ const Add_Marche = () => {
           <Input placeholder="Taper l'objet de marché" />
         </Form.Item>
 
-        <Form.Item name="statutMarche" label="Statut" initialValue="ENCOURS">
+        <Form.Item name="statutMarche" label="Statut" initialValue="EnAttente">
         <Select placeholder="Selectionner le statut">
-          <Select.Option value="EnAttente">EnAttente</Select.Option>
-          <Select.Option value="ENCOURS">ENCOURS</Select.Option>
+          <Select.Option value="EnAttente">En Attente</Select.Option>
+          <Select.Option value="EnCours">En Cours</Select.Option>
           <Select.Option value="Valide">Valide</Select.Option>
           <Select.Option value="NonValide">NonValide</Select.Option>
           <Select.Option value="Cloture">Cloture</Select.Option>

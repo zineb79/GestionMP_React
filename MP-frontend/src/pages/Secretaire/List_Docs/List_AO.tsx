@@ -1,11 +1,11 @@
 import React, { useState, useEffect } from "react";
-import { Table, Modal, Input, FloatButton } from "antd";
+import { Table, Modal, Input, FloatButton, Form, DatePicker, Select, message } from "antd";
 import { EditOutlined, DeleteOutlined, PlusOutlined } from "@ant-design/icons";
 import { useNavigate } from "react-router-dom";
 import api from "../../../utils/axiosInstance";
 import Sidebar from "../../../components/Sidebar/Sidebar_Sec";
-import { getAppelsOffre } from "../../../services/AuthService";
-
+import { deleteAppelOffre, getAppelsOffre } from "../../../services/AOService";
+import dayjs from "dayjs";
 interface AppelOffre {
   num_Ordre_AO: string;
   type_AO: string;
@@ -26,6 +26,7 @@ const List_AO = () => {
   const [statuts, setStatuts] = useState<string[]>([]);
   const [loadingStatuts, setLoadingStatuts] = useState(true);
   const navigate = useNavigate();
+  const [form] = Form.useForm();
 
   // Charger les appels d'offre depuis l'API
   useEffect(() => {
@@ -54,10 +55,11 @@ const List_AO = () => {
       okType: "danger",
       onOk: async () => {
         try {
-          await api.delete(`/list/delete/${record.num_Ordre_AO}`);
+          await deleteAppelOffre(record.num_Ordre_AO);
           setDataSource((pre) =>
             pre.filter((ao) => ao.num_Ordre_AO !== record.num_Ordre_AO)
           );
+          message.success("L'appel d'offre a été supprimé avec succès");
         } catch (error) {
           console.error(
             "Erreur lors de la suppression de l'appel d'offre :",
@@ -177,51 +179,89 @@ const List_AO = () => {
           rowKey="num_Ordre_AO"
           loading={loading}
         />
-        <Modal open={isEditing} onCancel={resetEditing} onOk={handleSave}>
-          <Input
-            value={editingAppelOffre?.type_AO}
-            onChange={(e) =>
-              setEditingAppelOffre((pre) =>
-                pre ? { ...pre, type_AO: e.target.value } : pre
-              )
-            }
-          />
-          <Input
-            value={editingAppelOffre?.date_AO}
-            onChange={(e) =>
-              setEditingAppelOffre((pre) =>
-                pre ? { ...pre, date_AO: e.target.value } : pre
-              )
-            }
-          />
-          <Input
-            value={editingAppelOffre?.coutEstime_AO}
-            onChange={(e) =>
-              setEditingAppelOffre((pre) =>
-                pre
-                  ? { ...pre, coutEstime_AO: parseFloat(e.target.value) }
-                  : pre
-              )
-            }
-          />
-          <Input
-            value={editingAppelOffre?.cautionProvisoire_AO}
-            onChange={(e) =>
-              setEditingAppelOffre((pre) =>
-                pre
-                  ? { ...pre, cautionProvisoire_AO: parseFloat(e.target.value) }
-                  : pre
-              )
-            }
-          />
-          <Input
-            value={editingAppelOffre?.statut_AO}
-            onChange={(e) =>
-              setEditingAppelOffre((pre) =>
-                pre ? { ...pre, statut_AO: e.target.value } : pre
-              )
-            }
-          />
+         <Modal 
+          title="Modifier l'appel d'offre" 
+          open={isEditing} 
+          onCancel={resetEditing} 
+          onOk={() => form.submit()}
+          width={500}
+        >
+          <Form 
+            form={form}
+            layout="vertical"
+            onFinish={handleSave}
+          >
+            <Form.Item label="Numéro d'ordre">
+              <Input
+                value={editingAppelOffre?.num_Ordre_AO}
+                disabled
+              />
+            </Form.Item>
+
+            <Form.Item label="Type d'appel d'offre">
+              <Input
+                value={editingAppelOffre?.type_AO}
+                onChange={(e) =>
+                  setEditingAppelOffre((pre) =>
+                    pre ? { ...pre, type_AO: e.target.value } : pre
+                  )
+                }
+              />
+            </Form.Item>
+
+            <Form.Item label="Date d'appel d'offre">
+              <DatePicker
+                style={{ width: "100%" }}
+                value={editingAppelOffre?.date_AO ? dayjs(editingAppelOffre.date_AO) : null}
+                onChange={(date) =>
+                  setEditingAppelOffre((pre) =>
+                    pre ? { ...pre, date_AO: date ? date.format("YYYY-MM-DD") : "" } : pre
+                  )
+                }
+              />
+            </Form.Item>
+
+            <Form.Item label="Coût estimé">
+              <Input
+                value={editingAppelOffre?.coutEstime_AO}
+                onChange={(e) =>
+                  setEditingAppelOffre((pre) =>
+                    pre
+                      ? { ...pre, coutEstime_AO: parseFloat(e.target.value) }
+                      : pre
+                  )
+                }
+              />
+            </Form.Item>
+
+            <Form.Item label="Caution provisoire">
+              <Input
+                value={editingAppelOffre?.cautionProvisoire_AO}
+                onChange={(e) =>
+                  setEditingAppelOffre((pre) =>
+                    pre
+                      ? { ...pre, cautionProvisoire_AO: parseFloat(e.target.value) }
+                      : pre
+                  )
+                }
+              />
+            </Form.Item>
+
+            <Form.Item label="Statut">
+              <Select
+                value={editingAppelOffre?.statut_AO}
+                onChange={(value) =>
+                  setEditingAppelOffre((pre) =>
+                    pre ? { ...pre, statut_AO: value } : pre
+                  )
+                }
+              >
+                <Select.Option value="ENCOURS">ENCOURS</Select.Option>
+                <Select.Option value="VALIDE">VALIDE</Select.Option>
+                <Select.Option value="INFRUTUEUSE">INFRUTUEUSE</Select.Option>
+              </Select>
+            </Form.Item>
+          </Form>
         </Modal>
       </div>
     </Sidebar>

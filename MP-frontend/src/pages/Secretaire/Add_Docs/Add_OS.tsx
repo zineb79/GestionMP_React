@@ -2,7 +2,8 @@ import React, { useState, useEffect } from "react";
 import { Form, Button, Select, message } from "antd";
 import { useNavigate } from "react-router-dom";
 import Sidebar from "../../../components/Sidebar/Sidebar_Sec";
-import { getMarches, createOrdreDeService } from "../../../services/AuthService";
+import { getMarches } from "../../../services/MarcheService";
+import { createOrdreDeService } from "../../../services/AuthService";
 import "../PagesSec.css";
 
 interface Marche {

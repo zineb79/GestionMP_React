@@ -1,4 +1,4 @@
- @import 'antd/dist/reset.css'; 
+@import 'antd/dist/reset.css'; 
 .form {
     display: flex;
     flex-direction: column;
@@ -30,6 +30,14 @@
   color: #333;
   text-align: left !important;
   margin-top: -1vh !important;
-  margin-bottom: 4vh !important;
   margin: 1vh;
 }
+
+.ant-modal-title {
+  text-align: center !important; 
+  font-size: 20px !important;
+  font-weight: bold !important;
+  margin-bottom: 50px !important;
+}
+
+

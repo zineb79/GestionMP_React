@@ -10,7 +10,8 @@ import {
 } from "antd";
 import { useNavigate } from "react-router-dom";
 import Sidebar from "../../../components/Sidebar/Sidebar_Sec";
-import { getMarches, createAppelOffre } from "../../../services/AuthService";
+import { getMarches } from "../../../services/MarcheService";
+import { createAppelOffre } from "../../../services/AOService";
 import "../PagesSec.css";
 
 interface Marche {
