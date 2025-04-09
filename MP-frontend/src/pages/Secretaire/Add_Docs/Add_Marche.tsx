@@ -10,16 +10,23 @@ const Add_Marche = () => {
   const [form] = Form.useForm();
 
   const onFinish = async (values: any) => {
+    console.log('Form values:', values);
+    if (!values.numOrdre || values.numOrdre.trim() === '') {
+      message.error('Le numéro de marché est obligatoire');
+      return;
+    }
     try {
-      await createMarche({
+      const marcheData = {
         id_Marche: 0,
-        numOrdre: values.numOrdre,
-        type_Marche: values.typeMarche,
+        numOrdre: values.numOrdre.trim(),
+        type_Marche: values.type_Marche,
         objet_marche: values.objet_marche,
-        statut: values.statutMarche,
+        statut: values.statut,
         idSociete: null,
         idNotification: null
-      });
+      };
+      console.log('Sending to backend:', marcheData);
+      await createMarche(marcheData);
       message.success('Marché ajouté avec succès');
       form.resetFields();
       navigate('/list-marche');
@@ -34,6 +41,7 @@ const Add_Marche = () => {
       <div className="form">
         <h1>Ajouter un Marché</h1>
         <Form
+          form={form}
           autoComplete="off"
           labelCol={{ span: 10 }}
           wrapperCol={{ span: 14 }}
@@ -47,15 +55,19 @@ const Add_Marche = () => {
           rules={[
             {
               required: true,
-              message: "Champs obligatoire",
+              message: "Le numéro de marché est obligatoire"
             },
-            { whitespace: true }
+            {
+              pattern: /^[a-zA-Z0-9-_/]+$/,
+              message: "Le numéro de marché ne doit contenir que des lettres, chiffres, tirets et underscores"
+            }
           ]}
+          hasFeedback
         >
           <Input placeholder="Tapez le numero de marché" />
         </Form.Item>
 
-        <Form.Item name="typeMarche" label="Type de Marché" initialValue="TRAVAUX">
+        <Form.Item name="type_Marche" label="Type de Marché" initialValue="TRAVAUX">
           <Select placeholder="Selectionner le type de marché">
             <Select.Option value="TRAVAUX">TRAVAUX</Select.Option>
             <Select.Option value="FOURNITURE">FOURNITURE</Select.Option>
@@ -77,7 +89,7 @@ const Add_Marche = () => {
           <Input placeholder="Taper l'objet de marché" />
         </Form.Item>
 
-        <Form.Item name="statutMarche" label="Statut" initialValue="EnAttente">
+        <Form.Item name="statut" label="Statut" initialValue="EnAttente">
         <Select placeholder="Selectionner le statut">
           <Select.Option value="EnAttente">En Attente</Select.Option>
           <Select.Option value="EnCours">En Cours</Select.Option>

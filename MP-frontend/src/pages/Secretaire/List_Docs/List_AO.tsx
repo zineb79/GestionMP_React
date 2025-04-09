@@ -2,11 +2,12 @@ import React, { useState, useEffect } from "react";
 import { Table, Modal, Input, FloatButton, Form, DatePicker, Select, message } from "antd";
 import { EditOutlined, DeleteOutlined, PlusOutlined } from "@ant-design/icons";
 import { useNavigate } from "react-router-dom";
-import api from "../../../utils/axiosInstance";
+import '../PagesSec.css'
 import Sidebar from "../../../components/Sidebar/Sidebar_Sec";
-import { deleteAppelOffre, getAppelsOffre } from "../../../services/AOService";
+import { deleteAppelOffre, getAppelsOffre, updateAppelOffre } from "../../../services/AOService";
 import dayjs from "dayjs";
 interface AppelOffre {
+  id_AO: number;
   num_Ordre_AO: string;
   type_AO: string;
   date_AO: string;
@@ -82,23 +83,24 @@ const List_AO = () => {
     if (!editingAppelOffre) return;
 
     try {
-      await api.put(
-        `/list/update/${editingAppelOffre.num_Ordre_AO}`,
-        editingAppelOffre
-      );
-      setDataSource((pre) =>
-        pre.map((ao) =>
-          ao.num_Ordre_AO === editingAppelOffre.num_Ordre_AO
-            ? editingAppelOffre
-            : ao
-        )
-      );
+      if (!editingAppelOffre.id_AO) {
+        message.error("ID de l'appel d'offre manquant");
+        return;
+      }
+      const updatedAO = await updateAppelOffre(editingAppelOffre.id_AO, editingAppelOffre);
+      
+      // Refresh the list
+      const newData = await getAppelsOffre();
+      setDataSource(newData);
+      
+      message.success("Appel d'offre mis à jour avec succès");
       resetEditing();
     } catch (error) {
       console.error(
         "Erreur lors de la mise à jour de l'appel d'offre :",
         error
       );
+      message.error("Erreur lors de la mise à jour de l'appel d'offre");
       alert(
         "Impossible de mettre à jour l'appel d'offre. Veuillez réessayer plus tard."
       );
@@ -171,8 +173,11 @@ const List_AO = () => {
 
   return (
     <Sidebar>
-      <div className="form">
+      <div className="list-container">
         <FloatButton icon={<PlusOutlined />} onClick={() => navigate("/add-ao")} />
+        <div className="list-header">
+          <h2 className="list-title">Liste des Appels d'offre</h2>
+        </div>
         <Table
           columns={columns}
           dataSource={dataSource}

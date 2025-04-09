@@ -13,17 +13,17 @@ import "./sidebar.css";
 import React from "react";
 
 interface MenuListProps {
-  darkTheme: boolean;
+  darkTheme?: boolean;
 }
 
-const MenuList: React.FC<MenuListProps> = ({ darkTheme }) => {
-  const navigate = useNavigate(); // Initialiser la navigation
+const MenuList: React.FC<MenuListProps> = ({ darkTheme = false }) => {
+  const navigate = useNavigate();
 
-  // Gestionnaire de clic
   const handleMenuClick = ({ key }: { key: string }) => {
     if (key === "deconnexion") {
-      // Ici, tu peux aussi ajouter la logique pour supprimer le token de l'utilisateur
-      navigate("/login"); // Redirection vers la page de connexion
+      localStorage.removeItem('user');
+      localStorage.removeItem('token');
+      navigate("/login");
     }
   };
 

@@ -1,23 +1,16 @@
-import React, { useState } from 'react';
+import { useState } from 'react';
 import { Button, Layout, theme } from 'antd';
 import './sidebar.css';
 import Logo from './Logo';
 import MenuList from './MenuList_Sec';
-import ToggleThemeButton from './ToggleThemeButton';
 import { MenuUnfoldOutlined, MenuFoldOutlined } from '@ant-design/icons';
 
 const { Header, Sider, Content } = Layout;
 
 import { ReactNode } from 'react';
 
-const Sidebare = ({ children }: { children: ReactNode }) => {  // Ajout de { children }
-    const [darkTheme, setDarkTheme] = useState(true);
+const Sidebare = ({ children }: { children: ReactNode }) => {  
     const [collapsed, setCollapsed] = useState(false);
-
-    const toggleTheme = () => {
-        setDarkTheme(!darkTheme);
-    };
-
     const {
         token: { colorBgContainer },
     } = theme.useToken();
@@ -28,15 +21,21 @@ const Sidebare = ({ children }: { children: ReactNode }) => {  // Ajout de { chi
     return (
         <Layout>
             {/* Sidebar à gauche */}
-            <Sider collapsed={collapsed} collapsible trigger={null} theme={darkTheme ? 'dark' : 'light'} className="sidebar">
+            <Sider collapsed={collapsed} collapsible trigger={null} theme="light" className="sidebar">
                 <Logo />
-                <MenuList darkTheme={darkTheme} />
+                <MenuList />
             </Sider>
 
             {/* Partie principale (Header + Formulaire) */}
             <Layout>
                 {/* Header */}
-                <Header style={{ background: colorBgContainer, padding: 0, display: 'flex', alignItems: 'center' }}>
+                <Header style={{ 
+                    background: colorBgContainer,
+                    padding: 0, 
+                    display: 'flex', 
+                    alignItems: 'center',
+                    boxShadow: '0 1px 4px rgba(0,21,41,.08)'
+                }}>
                     <Button
                         type="text"
                         className="toggle"
@@ -44,12 +43,11 @@ const Sidebare = ({ children }: { children: ReactNode }) => {  // Ajout de { chi
                         icon={collapsed ? <MenuUnfoldOutlined /> : <MenuFoldOutlined />}
                     />
                     <span style={{ fontWeight: 'bold' }}>{nom} {prenom}</span>
-                    <ToggleThemeButton darkTheme={darkTheme} toggleTheme={toggleTheme} />
                 </Header>
 
                 {/* Contenu sous le header */}
                 <Content className="content">
-                    {children}  {/* Le formulaire sera affiché ici */}
+                    {children}  
                 </Content>
             </Layout>
         </Layout>

@@ -9,13 +9,9 @@ import {ProductOutlined} from '@ant-design/icons';
 import './sidebar.css';
 import React from 'react'
 
-interface MenuListProps {
-  darkTheme: boolean;
-}
-
-const MenuList : React.FC<MenuListProps> =({ darkTheme }) => {
+const MenuList: React.FC = () => {
   return (
-    <Menu theme={darkTheme ? 'dark' : 'light'} mode='inline' className='menubar'>
+    <Menu mode='inline' className='menubar'>
         <Menu.Item key="Home" icon= {<HomeOutlined />}>Accueil</Menu.Item>
         <Menu.Item key="dashboard" icon= {<ProductOutlined />}>Tableau de bord</Menu.Item>
         <Menu.SubMenu key="Doc" icon= {<FileTextOutlined />} title="Documents">

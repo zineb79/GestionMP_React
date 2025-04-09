@@ -16,7 +16,7 @@ interface Marche {
   
   export const getMarches = async (): Promise<Marche[]> => {
     try {
-      const response = await api.get("/marche");
+      const response = await api.get("/api/marche/get");
       return response.data;
     } catch (error) {
       console.error("Erreur lors de la récupération des marchés :", error);
@@ -26,9 +26,14 @@ interface Marche {
   
   export const deleteMarche = async (numOrdre: string): Promise<void> => {
     try {
-      await api.delete(`/marche/delete/${numOrdre}`);
-    } catch (error) {
+      console.log('Deleting marche with numOrdre:', numOrdre);
+      await api.delete(`/api/marche/delete/byNum/${numOrdre}`);
+      console.log('Marche deleted successfully');
+    } catch (error: any) {
       console.error("Erreur lors de la suppression du marché :", error);
+      if (error.response) {
+        console.error('Backend error response:', error.response.data);
+      }
       throw error;
     }
   };
@@ -36,21 +41,36 @@ interface Marche {
 
   export const createMarche = async (marche: Marche): Promise<Marche> => {
     try {
-      const response = await api.post("/marche/add", marche);
+      const response = await api.post("/api/marche/add", marche);
       return response.data;
-    } catch (error) {
+    } catch (error: any) {
       console.error("Erreur lors de la création du marché :", error);
+      if (error.response) {
+        console.error('Backend error response:', error.response.data);
+      }
       throw error;
     }
   };
   
 
-export const updateMarche = async (numOrdre: string, marche: Marche): Promise<Marche> => {
+export const updateMarche = async (id: number, marche: Marche): Promise<Marche> => {
   try {
-    const response = await api.put(`/marche/update/${numOrdre}`, marche);
+    console.log('Updating marche with ID:', id);
+    console.log('Marche data:', marche);
+    
+    // Make sure id_Marche matches the URL parameter
+    const marcheToUpdate = {
+      ...marche,
+      id_Marche: id
+    };
+    
+    const response = await api.put(`/api/marche/update/${id}`, marcheToUpdate);
     return response.data;
-  } catch (error) {
+  } catch (error: any) {
     console.error("Erreur lors de la mise à jour du marché :", error);
+    if (error.response) {
+      console.error('Backend error response:', error.response.data);
+    }
     throw error;
   }
 };

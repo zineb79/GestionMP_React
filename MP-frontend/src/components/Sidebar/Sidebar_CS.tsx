@@ -1,52 +1,45 @@
-import React, { useState } from 'react';
-import { Button, Layout, theme } from 'antd';
+import { useState } from 'react';
+import { Button, Layout } from 'antd';
 import './sidebar.css';
 import Logo from './Logo';
 import MenuList from './MenuList_CS';
-import ToggleThemeButton from './ToggleThemeButton';
 import { MenuUnfoldOutlined, MenuFoldOutlined } from '@ant-design/icons';
 
 const { Header, Sider } = Layout;
 
-const Sidebare = () => {
-    const [darkTheme, setDarkTheme] = useState(true);
+const Sidebar = () => {
     const [collapsed, setCollapsed] = useState(false);
-    console.log("Thème actuel :", darkTheme);
 
-    const toggleTheme = () => {
-        setDarkTheme(!darkTheme);
-    };
-
-    const {
-        token: { colorBgContainer },
-    } = theme.useToken();
-
+    // Récupérer les informations de l'utilisateur depuis le localStorage
+    const userString = localStorage.getItem('user');
+    let nom = '';
+    let prenom = '';
     
-    const nom = localStorage.getItem("nom") || "Utilisateur";
-    const prenom = localStorage.getItem("prenom") || "";
-
+    if (userString) {
+        const user = JSON.parse(userString);
+        nom = user.nom;
+        prenom = user.prenom;
+    }
 
     return (
         <Layout>
-            <Sider collapsed={collapsed} collapsible trigger={null} theme={darkTheme ? 'dark' : 'light'} className="sidebar">
+            <Sider collapsed={collapsed} collapsible trigger={null} className="sidebar">
                 <Logo />
-                <MenuList darkTheme={darkTheme} />
+                <MenuList darkTheme={false} />
             </Sider>
             <Layout>
-                <Header style={{ background: colorBgContainer, padding: 0 }}>
+                <Header style={{ background: '#fff', padding: 0 }}>
                     <Button
                         type="text"
                         className="toggle"
                         onClick={() => setCollapsed(!collapsed)}
                         icon={collapsed ? <MenuUnfoldOutlined /> : <MenuFoldOutlined />}
                     />
-                        <span style={{ fontWeight: 'bold', fontSize:'16px'}}>Bienvenu {nom} {prenom}</span>
-                        <ToggleThemeButton darkTheme={darkTheme} toggleTheme={toggleTheme} />
-                    
+                    <span style={{ fontWeight: 'bold', fontSize:'16px'}}>Bienvenu {nom} {prenom}</span>
                 </Header>
             </Layout>
         </Layout>
     );
 };
 
-export default Sidebare;
+export default Sidebar;

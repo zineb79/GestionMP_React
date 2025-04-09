@@ -11,11 +11,7 @@ import { useNavigate } from "react-router-dom"; // Importer useNavigate
 import "./sidebar.css";
 import React from "react";
 
-interface MenuListProps {
-  darkTheme: boolean;
-}
-
-const MenuList: React.FC<MenuListProps> = ({ darkTheme }) => {
+const MenuList = () => {
   const navigate = useNavigate(); // Initialiser la navigation
 
   // Gestionnaire de clic
@@ -61,11 +57,9 @@ const MenuList: React.FC<MenuListProps> = ({ darkTheme }) => {
 
   return (
     <Menu
-      theme={darkTheme ? "dark" : "light"}
+      onClick={handleMenuClick}
       mode="inline"
-      className="menubar"
       items={items}
-      onClick={handleMenuClick} // Ajout de l'événement onClick
     />
   );
 };
