@@ -10,7 +10,7 @@ const { Header, Sider, Content } = Layout;
 import { ReactNode } from 'react';
 
 const Sidebare = ({ children }: { children: ReactNode }) => {  
-    const [collapsed, setCollapsed] = useState(false);
+    const [collapsed, setCollapsed] = useState(true);
     const {
         token: { colorBgContainer },
     } = theme.useToken();

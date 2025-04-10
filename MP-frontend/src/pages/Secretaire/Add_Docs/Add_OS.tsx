@@ -1,10 +1,10 @@
 import React, { useState, useEffect } from "react";
-import { Form, Button, Select, message } from "antd";
+import { Form, Button, Select, message, Input, DatePicker } from "antd";
 import { useNavigate } from "react-router-dom";
 import Sidebar from "../../../components/Sidebar/Sidebar_Sec";
-import { getMarches } from "../../../services/MarcheService";
-import { createOrdreDeService } from "../../../services/AuthService";
+import { createOrdreDeService } from "../../../services/OSService";
 import "../PagesSec.css";
+import { getMarches } from "../../../services/MarcheService";
 
 interface Marche {
   id_Marche: number;
@@ -14,6 +14,19 @@ interface Marche {
   statut: string;
   idSociete: number | null;
   idNotification: number | null;
+}
+
+enum Type_OS {
+  TYPE1 = "TYPE1",
+  TYPE2 = "TYPE2",
+  TYPE3 = "TYPE3"
+}
+
+interface OrdreDeService {
+  type_OS: Type_OS;
+  nom_OS: string;
+  date_OS: string;
+  marche_OS: number;
 }
 
 const Add_OS = () => {
@@ -45,13 +58,17 @@ const Add_OS = () => {
         return;
       }
 
+      const date_OS = values.date_OS
+        ? typeof values.date_OS === 'object' 
+          ? values.date_OS.format("YYYY-MM-DD")
+          : values.date_OS
+        : null;
+
       const ordreDeService = {
         type_OS: values.type_OS,
-        marche_OS: marches.find(m => m.id_Marche === values.marche_OS) || {
-          id_Marche: values.marche_OS,
-          numOrdre: "",
-          objet_marche: ""
-        }
+        nom_OS: values.nom_OS,
+        date_OS: date_OS,
+        marche_OS: marches.find(m => m.id_Marche === values.marche_OS)?.id_Marche || values.marche_OS
       };
 
       await createOrdreDeService(ordreDeService);
@@ -65,8 +82,10 @@ const Add_OS = () => {
 
   return (
     <Sidebar>
-      <div className="form">
-        <h1>Ajouter un ordre de service</h1>
+      <div className="list-container">
+        <div className="list-header">
+          <h2 className="list-title">Ajouter un ordre de service</h2>
+        </div>
         <Form
           form={form}
           layout="vertical"
@@ -76,6 +95,36 @@ const Add_OS = () => {
             message.error("Veuillez remplir tous les champs requis correctement");
           }}
         >
+          <Form.Item
+            name="type_OS"
+            label="Type d'Ordre de Service"
+            rules={[{ required: true, message: "Veuillez sélectionner un type" }]}
+          >
+            <Select placeholder="Sélectionner le type">
+              {Object.values(Type_OS).map((type) => (
+                <Select.Option key={type} value={type}>
+                  {type}
+                </Select.Option>
+              ))}
+            </Select>
+          </Form.Item>
+
+          <Form.Item
+            name="numOrdre_OS"
+            label="Numéro de l'Ordre de Service"
+            rules={[{ required: true, message: "Veuillez entrer un numéro" }]}
+          >
+            <Input placeholder="Entrer le numéro" />
+          </Form.Item>
+
+          <Form.Item
+            name="date_OS"
+            label="Date de l'Ordre de Service"
+            rules={[{ required: true, message: "Veuillez sélectionner une date" }]}
+          >
+            <DatePicker style={{ width: '100%' }} />
+          </Form.Item>
+
           <Form.Item
             name="marche_OS"
             label="Marché"
@@ -100,24 +149,9 @@ const Add_OS = () => {
             </Select>
           </Form.Item>
 
-          <Form.Item
-            name="type_OS"
-            label="Type d'ordre de service"
-            rules={[{ required: true, message: "Veuillez sélectionner le type" }]}
-          >
-            <Select placeholder="Sélectionner le type">
-              <Select.Option value="commencement">Commencement</Select.Option>
-              <Select.Option value="arret">Arret</Select.Option>
-              <Select.Option value="reprise">Reprise</Select.Option>
-              <Select.Option value="cession">Cession</Select.Option>
-            </Select>
-          </Form.Item>
-
-          <Form.Item wrapperCol={{ span: 24 }}>
-            <Button block type="primary" htmlType="submit" className="ajouter">
-              Ajouter
-            </Button>
-          </Form.Item>
+          <Button type="primary" htmlType="submit" className="ajouter">
+            Ajouter
+          </Button>
         </Form>
       </div>
     </Sidebar>

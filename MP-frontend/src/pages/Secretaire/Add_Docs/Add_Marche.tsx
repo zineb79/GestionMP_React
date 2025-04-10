@@ -38,8 +38,10 @@ const Add_Marche = () => {
 
   return (
     <Sidebare> {/* Encapsule le formulaire dans Sidebare */}
-      <div className="form">
-        <h1>Ajouter un Marché</h1>
+      <div className="list-container" >
+        <div className="list-header">
+          <h2 className="list-title">Ajouter un Marché</h2>
+        </div>
         <Form
           form={form}
           autoComplete="off"

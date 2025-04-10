@@ -6,11 +6,9 @@ const API_URL = "https://localhost:8443/auth/login";
 interface OrdreDeService {
   id_OS: number;
   type_OS: string;
-  marche_OS: {
-    id_Marche: number;
-    numOrdre: string;
-    objet_marche: string;
-  };
+  nom_OS: string;
+  date_OS: string;
+  marche_OS: number;
 }
 
 export const getOrdresDeService = async (): Promise<OrdreDeService[]> => {

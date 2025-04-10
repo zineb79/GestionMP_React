@@ -17,14 +17,22 @@ const MenuList = () => {
   // Gestionnaire de clic
   const handleMenuClick = ({ key }: { key: string }) => {
     if (key === "deconnexion") {
-      // Ici, tu peux aussi ajouter la logique pour supprimer le token de l'utilisateur
-      navigate("/login"); // Redirection vers la page de connexion
+      navigate("/login"); 
     } else if (key === "AO") {
-      navigate("/list-ao"); // Redirection vers la page List_AO
+      navigate("/list-ao"); 
     } else if (key === "marche") {
-      navigate("/list-marche"); // Redirection vers la page List_Marche
+      navigate("/list-marche"); 
     } else if (key === "OS") {
-      navigate("/list-os"); // Redirection vers la page List_OS
+      navigate("/list-os"); 
+    }
+    else if (key === "NOT") {
+      navigate("/list-notification"); 
+    }
+    else if (key === "PV") {
+      navigate("/list-pv"); 
+    }
+    else if (key === "Decompte") {
+      navigate("/list-decompte"); 
     }
   };
 
@@ -37,15 +45,12 @@ const MenuList = () => {
       label: "Documents",
       children: [
         { key: "AO", label: "Appel d'offre" },
-        { key: "NA", label: "Notification d'approbation" },
+        { key: "NOT", label: "Notification d'approbation" },
         { key: "OS", label: "Ordre de service" },
         {
           key: "PV",
           label: "PV de réception",
-          children: [
-            { key: "PVP", label: "Provisoire" },
-            { key: "PVD", label: "Définitive" },
-          ],
+          
         },
         { key: "Decompte", label: "Décompte" },
       ],

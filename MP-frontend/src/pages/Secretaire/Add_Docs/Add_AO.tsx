@@ -67,18 +67,14 @@ const Add_AO = () => {
         return;
       }
 
-      console.log("Marché sélectionné (raw):", values.idMarche);
-      console.log("Type du marché sélectionné:", typeof values.idMarche);
-      console.log("Liste des marchés disponibles:", marches);
+    // Convertir la date en format ISO
+    const date_AO = values.date_AO
+      ? values.date_AO.format("YYYY-MM-DD")
+      : null;
 
-      // Convertir la date en format ISO
-      const date_AO = values.date_AO
-        ? values.date_AO.format("YYYY-MM-DD")
-        : null;
-
-      // Convertir les coûts en nombres
-      const coutEstime_AO = parseFloat(values.coutEstime_AO);
-      const cautionProvisoire_AO = parseFloat(values.cautionProvisoire_AO);
+    // Convertir les coûts en nombres
+    const coutEstime_AO = parseFloat(values.coutEstime_AO);
+    const cautionProvisoire_AO = parseFloat(values.cautionProvisoire_AO);
 
       const idMarche = parseInt(values.idMarche);
       console.log("Marché converti:", idMarche);
@@ -113,8 +109,10 @@ const Add_AO = () => {
 
   return (
     <Sidebar>
-      <div className="form">
-        <h1>Ajouter un appel d'offre</h1>
+      <div className="list-container">
+        <div className="list-header">
+          <h2 className="list-title">Ajouter un appel d'offre</h2>
+        </div>
         <Form
           form={form}
           layout="vertical"
@@ -242,11 +240,9 @@ const Add_AO = () => {
           </Select>
           </Form.Item>
 
-          <Form.Item wrapperCol={{ span: 24 }}>
-            <Button block type="primary" htmlType="submit" className="ajouter">
-              Ajouter
-            </Button>
-          </Form.Item>
+          <Button block type="primary" htmlType="submit" className="ajouter">
+            Ajouter
+          </Button>
         </Form>
       </div>
     </Sidebar>

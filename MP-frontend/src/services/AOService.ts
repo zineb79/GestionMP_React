@@ -6,7 +6,7 @@ const API_URL = "https://localhost:8443/auth/login";
 
 //Liste des appel d'offre
 interface AppelOffre {
-    id_AO: number;
+    id_AO?: number;
     num_Ordre_AO: string; // Changed to string since it's used as String in backend
     type_AO: string;
     date_AO: string;

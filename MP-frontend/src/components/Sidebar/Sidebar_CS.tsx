@@ -25,7 +25,7 @@ const Sidebar = () => {
         <Layout>
             <Sider collapsed={collapsed} collapsible trigger={null} className="sidebar">
                 <Logo />
-                <MenuList darkTheme={false} />
+                <MenuList darkTheme={true} />
             </Sider>
             <Layout>
                 <Header style={{ background: '#fff', padding: 0 }}>
@@ -33,7 +33,7 @@ const Sidebar = () => {
                         type="text"
                         className="toggle"
                         onClick={() => setCollapsed(!collapsed)}
-                        icon={collapsed ? <MenuUnfoldOutlined /> : <MenuFoldOutlined />}
+                        icon={collapsed ? <MenuFoldOutlined /> : <MenuUnfoldOutlined />}
                     />
                     <span style={{ fontWeight: 'bold', fontSize:'16px'}}>Bienvenu {nom} {prenom}</span>
                 </Header>

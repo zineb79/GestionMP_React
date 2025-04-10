@@ -14,6 +14,12 @@ import Add_AO from "./pages/Secretaire/Add_Docs/Add_AO";
 import Add_OS from "./pages/Secretaire/Add_Docs/Add_OS";
 import List_OS from "./pages/Secretaire/List_Docs/List_OS";
 import RoleProtectedRoute from "./utils/RoleProtectedRoute";
+import Add_Notification from "./pages/Secretaire/Add_Docs/Add_Notification";
+import List_Notification from "./pages/Secretaire/List_Docs/List_Notification";
+import Add_Decompte from "./pages/Secretaire/Add_Docs/Add_Decompte";
+import List_Decompte from "./pages/Secretaire/List_Docs/List_Decomptes";
+import Add_PV from "./pages/Secretaire/Add_Docs/Add_PvReception";
+import List_PV from "./pages/Secretaire/List_Docs/List_PvReceptions";
 
 function App() {
   const [isDarkMode, setIsDarkMode] = React.useState(false);
@@ -73,6 +79,12 @@ function App() {
               <Route path="/list-marche" element={<List_Marche />} />
               <Route path="/add-os" element={<Add_OS />} />
               <Route path="/list-os" element={<List_OS />} />
+              <Route path="/add-notification" element={<Add_Notification />} />
+              <Route path="/list-notification" element={<List_Notification />} />
+              <Route path="/add-pv" element={<Add_PV />} />
+              <Route path="/list-pv" element={<List_PV />} />
+              <Route path="/add-decompte" element={<Add_Decompte />} />
+              <Route path="/list-decompte" element={<List_Decompte />} />
             </Route>
           </Routes>
         </Router>

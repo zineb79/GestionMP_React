@@ -1,5 +1,4 @@
 import React from 'react'
-import {FireFilled} from '@ant-design/icons';
 import logo from '../images/logo_1.png'
 import './sidebar.css';
 

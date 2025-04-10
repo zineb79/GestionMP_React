@@ -2,6 +2,11 @@
 
 .list-container {
     padding: 24px;
+    display: flex;
+    flex-direction: column;
+    border-radius: 10px;
+    align-items: center;
+    height: 100%;
 }
 
 .list-header {
@@ -19,21 +24,11 @@
     flex-grow: 1;
 }
 
-.form {
-    display: flex;
-    flex-direction: column;
-    background: white;
-    border-radius: 10px;
-    align-items: center;
-    box-shadow: 0px 4px 10px rgba(0, 0, 0, 0.1);
-    height: 100%;
-}
-.form  form{
+.list-container form{
   display: flex;
   flex-direction: column;
   width: 70%;
   padding: 30px;
-  background: white;
   justify-content: center;
   border-radius: 10px;
   margin-bottom: 20px;
@@ -60,4 +55,7 @@
   margin-bottom: 50px !important;
 }
 
-
+.ajouter {
+  width: 300px !important;
+  align-self: center !important;
+}

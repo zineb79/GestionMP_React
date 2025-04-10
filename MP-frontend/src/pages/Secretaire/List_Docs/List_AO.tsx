@@ -1,13 +1,14 @@
 import React, { useState, useEffect } from "react";
 import { Table, Modal, Input, FloatButton, Form, DatePicker, Select, message } from "antd";
-import { EditOutlined, DeleteOutlined, PlusOutlined } from "@ant-design/icons";
+import { EditOutlined, DeleteOutlined, PlusOutlined, DownloadOutlined } from "@ant-design/icons";
 import { useNavigate } from "react-router-dom";
 import '../PagesSec.css'
 import Sidebar from "../../../components/Sidebar/Sidebar_Sec";
 import { deleteAppelOffre, getAppelsOffre, updateAppelOffre } from "../../../services/AOService";
 import dayjs from "dayjs";
+
 interface AppelOffre {
-  id_AO: number;
+  id_AO?: number;
   num_Ordre_AO: string;
   type_AO: string;
   date_AO: string;
@@ -161,12 +162,15 @@ const List_AO = () => {
       title: "Actions",
       render: (record: AppelOffre) => (
         <>
-          <EditOutlined onClick={() => onEditAppelOffre(record)} />
+          <EditOutlined onClick={() => onEditAppelOffre(record)} 
+            style={{ color: "green", marginRight: 12 }}
+          />
           <DeleteOutlined
             onClick={() => onDeleteAppelOffre(record)}
             style={{ color: "red", marginLeft: 12 }}
           />
-        </>
+          <DownloadOutlined style={{ color: "blue", marginLeft: 14 }} />
+        </> 
       ),
     },
   ];
