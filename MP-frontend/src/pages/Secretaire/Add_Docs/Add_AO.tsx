@@ -12,6 +12,7 @@ import { useNavigate } from "react-router-dom";
 import Sidebar from "../../../components/Sidebar/Sidebar_Sec";
 import { getMarches } from "../../../services/MarcheService";
 import { createAppelOffre } from "../../../services/AOService";
+import { AppelOffre } from '../../../services/AOService';
 import "../PagesSec.css";
 
 interface Marche {
@@ -79,19 +80,27 @@ const Add_AO = () => {
       const idMarche = parseInt(values.idMarche);
       console.log("Marché converti:", idMarche);
 
-      const appelOffre = {
+      const appelOffre: AppelOffre = {
         num_Ordre_AO: values.num_Ordre_AO.toString(),
         type_AO: values.type_AO,
         date_AO: date_AO,
         coutEstime_AO: coutEstime_AO,
         cautionProvisoire_AO: cautionProvisoire_AO,
         statut_AO: values.statut_AO,
-        idMarche: idMarche,
+        marche: {
+          id_Marche: idMarche,
+          numOrdre: '',
+          type_Marche: '',
+          objet_marche: '',
+          statut: '',
+          idSociete: null,
+          idNotification: null
+        }
       };
 
       console.log("Données à envoyer:", JSON.stringify(appelOffre, null, 2));
 
-      if (!appelOffre.idMarche || appelOffre.idMarche === 0) {
+      if (!appelOffre.marche.id_Marche || appelOffre.marche.id_Marche === 0) {
         message.error("Le marché sélectionné n'est pas valide");
         return;
       }

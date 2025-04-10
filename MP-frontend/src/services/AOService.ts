@@ -1,19 +1,24 @@
-import axios from "axios";
 import api from "../utils/axiosInstance";
 
-const API_URL = "https://localhost:8443/auth/login";
-
-
-//Liste des appel d'offre
-interface AppelOffre {
+  export interface Marche {
+    id_Marche: number;
+    numOrdre: string;
+    type_Marche: string;
+    objet_marche: string;
+    statut: string;
+    idSociete: number | null;
+    idNotification: number | null;
+  }
+  
+  export interface AppelOffre {
     id_AO?: number;
-    num_Ordre_AO: string; // Changed to string since it's used as String in backend
+    num_Ordre_AO: string;
     type_AO: string;
     date_AO: string;
     coutEstime_AO: number;
     cautionProvisoire_AO: number;
     statut_AO: string;
-    idMarche: number;
+    marche: Marche;
   }
   
   export const getAppelsOffre = async (): Promise<AppelOffre[]> => {

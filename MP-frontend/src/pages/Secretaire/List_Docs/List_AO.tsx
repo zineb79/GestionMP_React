@@ -1,22 +1,13 @@
 import React, { useState, useEffect } from "react";
 import { Table, Modal, Input, FloatButton, Form, DatePicker, Select, message } from "antd";
-import { EditOutlined, DeleteOutlined, PlusOutlined, DownloadOutlined } from "@ant-design/icons";
+import { EditOutlined, DeleteOutlined, PlusOutlined, DownloadOutlined, FileWordOutlined } from "@ant-design/icons";
 import { useNavigate } from "react-router-dom";
 import '../PagesSec.css'
 import Sidebar from "../../../components/Sidebar/Sidebar_Sec";
 import { deleteAppelOffre, getAppelsOffre, updateAppelOffre } from "../../../services/AOService";
 import dayjs from "dayjs";
-
-interface AppelOffre {
-  id_AO?: number;
-  num_Ordre_AO: string;
-  type_AO: string;
-  date_AO: string;
-  coutEstime_AO: number;
-  cautionProvisoire_AO: number;
-  statut_AO: string;
-  idMarche: number;
-}
+import { DocumentService } from '../../../services/DocumentService';
+import { AppelOffre } from '../../../services/AOService';
 
 const List_AO = () => {
   const [isEditing, setIsEditing] = useState(false);
@@ -113,6 +104,15 @@ const List_AO = () => {
     setEditingAppelOffre(null);
   };
 
+  const generateDocument = async (appelOffre: AppelOffre) => {
+    try {
+      await DocumentService.generateAppelOffreDocument(appelOffre);
+      message.success('Document généré avec succès');
+    } catch (error) {
+      message.error('Erreur lors de la génération du document');
+    }
+  };
+
   const columns = [
     {
       key: "1",
@@ -169,7 +169,10 @@ const List_AO = () => {
             onClick={() => onDeleteAppelOffre(record)}
             style={{ color: "red", marginLeft: 12 }}
           />
-          <DownloadOutlined style={{ color: "blue", marginLeft: 14 }} />
+          <FileWordOutlined 
+            onClick={() => generateDocument(record)}
+            style={{ color: "purple", marginLeft: 14 }}
+          />
         </> 
       ),
     },
