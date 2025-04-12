@@ -22,12 +22,10 @@ const Add_Marche = () => {
         type_Marche: values.type_Marche,
         objet_marche: values.objet_marche,
         statut: values.statut,
-        idSociete: null,
-        idNotification: null,
         delaisGarantie: 0,
-        delaisMarche: values.delaisMarche ? values.delaisMarche.format('YYYY-MM-DD') : '',
-        chefServiceConcerne: "",
-        serviceConcerne: "",
+        delaisMarche: values.delaisMarche.format('YYYY-MM-DD'),
+        chefServiceConcerne: '',
+        serviceConcerne: '',
         montantFinal: 0,
         isArchived: false,
         societe: {
@@ -92,15 +90,48 @@ const Add_Marche = () => {
           </Select>
           </Form.Item>
 
-        <Form.Item name="statut" label="Statut" initialValue="EnPreparation">
+
+          <Form.Item name="objet_marche" label="Objet du marché"
+            rules={[
+              {
+                required: true,
+                message: "Veuillez entrer l'objet du marché",
+              },
+              { whitespace: true },
+            ]}
+          >
+            <Input placeholder="Tapez l'objet" />
+          </Form.Item>
+
+          <Form.Item
+                name="delaisMarche"
+                label="Delais du marché"
+                rules={[
+                  {
+                    required: true,
+                    message: "Veuillez entrer le délai du marché",
+                  },
+                ]}
+                hasFeedback
+              >
+                <DatePicker
+                  format="YYYY-MM-DD"
+                  placeholder="Sélectionner la date du délai du marché"
+                  className="date-picker-container"
+                />
+              </Form.Item>
+        <Form.Item name="statut" label="Statut" initialValue="EnCoursTraitement">
         <Select placeholder="Selectionner le statut">
-          <Select.Option value="EnPreparation">En Préparation</Select.Option>
           <Select.Option value="EnCoursTraitement">En Cours de Traitement</Select.Option>
-          <Select.Option value="Cloture">Cloturé</Select.Option>
           <Select.Option value="Adjuge">Adjugé</Select.Option>
-          <Select.Option value="Acheve">Achevé</Select.Option>
+          <Select.Option value="EnCoursDeVisa">En Cours de Visa</Select.Option>
+          <Select.Option value="EnCoursApprobation">En Cours d'Approbation</Select.Option>
           <Select.Option value="EnArret">En Arrêt</Select.Option>
+          <Select.Option value="EncoursExecution">En Cours d'Exécution</Select.Option>
+          <Select.Option value="HorsDelais">Hors Délais</Select.Option>
+          <Select.Option value="Acheve">Achevé</Select.Option>
           <Select.Option value="Notifie">Notifié</Select.Option>
+          <Select.Option value="Cloture">Cloturé</Select.Option>
         </Select>
         </Form.Item>
 

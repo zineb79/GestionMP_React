@@ -85,34 +85,12 @@ const Add_AO = () => {
         coutEstime_AO: coutEstime_AO,
         cautionProvisoire_AO: cautionProvisoire_AO,
         statut_AO: values.statut_AO,
-        marche: {
-          id_Marche: idMarche,
-          numOrdre: '',
-          type_Marche: '',
-          objet_marche: '',
-          statut: '',
-          delaisGarantie: 0,
-          delaisMarche: '', 
-          chefServiceConcerne: '',
-          serviceConcerne: '',
-          montantFinal: null,
-          isArchived: false,
-          societe: {
-            id_SO: 0,
-            raisonSociale: '',
-            adresse: '',
-            ville: '',
-            telephone: '',
-            email: '',
-            idFiscale: '',
-          },
-          
-        }
+        marche: marches.find((marche) => marche.id_Marche === idMarche)!,
       };
 
       console.log("Données à envoyer:", JSON.stringify(appelOffre, null, 2));
 
-      if (!appelOffre.marche.id_Marche || appelOffre.marche.id_Marche === 0) {
+      if (!appelOffre.marche) {
         message.error("Le marché sélectionné n'est pas valide");
         return;
       }
@@ -241,35 +219,6 @@ const Add_AO = () => {
             </Col>
           </Row>
 
-          <Form.Item name="objet_marche" label="Objet du marché"
-            rules={[
-              {
-                required: true,
-                message: "Veuillez entrer l'objet du marché",
-              },
-              { whitespace: true },
-            ]}
-          >
-            <Input placeholder="Tapez l'objet" />
-          </Form.Item>
-
-          <Form.Item
-                name="delaisMarche"
-                label="Delais du marché"
-                rules={[
-                  {
-                    required: true,
-                    message: "Veuillez entrer le délai du marché",
-                  },
-                ]}
-                hasFeedback
-              >
-                <DatePicker
-                  format="YYYY-MM-DD"
-                  placeholder="Sélectionner la date du délai du marché"
-                  className="date-picker-container"
-                />
-              </Form.Item>
 
           <Form.Item
             name="coutEstime_AO"

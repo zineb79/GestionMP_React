@@ -1,16 +1,37 @@
 import api from "../utils/axiosInstance";
 import { Societe } from "./SocieteService";
 
+export enum TypeMarche {
+  TRAVAUX,
+  FOURNITURE,
+  PRESTATION_SERVICE
+}
+
+export enum StatutMarche {
+  EN_PREPARATION,
+  EN_COURS_TRAITEMENT,
+  ADJUGE,
+  EN_COURS_DE_VISA,
+  EN_COURS_D_APPROBATION,
+  EN_ARRET,
+  EN_COURS_D_EXECTION,
+  HORS_DELAI,
+  ACHEVE,
+  NOTIFIE,
+  CLOTURE
+}
+
+
 export interface Marche {
   id_Marche: number;
   numOrdre: string;
-  type_Marche: string;
+  type_Marche: TypeMarche;
   objet_marche: string;
-  statut: string; 
-  delaisGarantie: number; // in months
+  statut: StatutMarche;
+  delaisGarantie: number;
   delaisMarche: string; // date in YYYY-MM-DD format
-  chefServiceConcerne: string;
-  serviceConcerne: string;
+  chefServiceConcerne: string | null;
+  serviceConcerne: string | null;
   montantFinal: number | null;
   isArchived: boolean;
   societe: Societe;
