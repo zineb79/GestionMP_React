@@ -6,6 +6,7 @@ import {
   LogoutOutlined,
   BellOutlined,
   BankOutlined,
+  TeamOutlined,
 } from "@ant-design/icons";
 import { useNavigate } from "react-router-dom"; // Importer useNavigate
 import "./sidebar.css";
@@ -24,15 +25,14 @@ const MenuList = () => {
       navigate("/list-marche"); 
     } else if (key === "OS") {
       navigate("/list-os"); 
-    }
-    else if (key === "NOT") {
+    } else if (key === "NOT") {
       navigate("/list-notification"); 
-    }
-    else if (key === "PV") {
+    } else if (key === "PV") {
       navigate("/list-pv"); 
-    }
-    else if (key === "Decompte") {
+    } else if (key === "Decompte") {
       navigate("/list-decompte"); 
+    } else if (key === "Societe") {
+      navigate("/list-societe");
     }
   };
 
@@ -47,13 +47,14 @@ const MenuList = () => {
         { key: "AO", label: "Appel d'offre" },
         { key: "NOT", label: "Notification d'approbation" },
         { key: "OS", label: "Ordre de service" },
-        {
-          key: "PV",
-          label: "PV de réception",
-          
-        },
+        { key: "PV", label: "PV de réception" },
         { key: "Decompte", label: "Décompte" },
       ],
+    },
+    {
+      key: "Societe",
+      icon: <TeamOutlined />,
+      label: "Sociétés"
     },
     { key: "notif", icon: <BellOutlined />, label: "Notification" },
     { key: "setting", icon: <SettingOutlined />, label: "Paramètres" },

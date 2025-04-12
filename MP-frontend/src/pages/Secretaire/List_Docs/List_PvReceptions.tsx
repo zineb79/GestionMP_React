@@ -1,14 +1,16 @@
 import React, { useState, useEffect } from 'react';
-import { Table, Modal, Input, FloatButton, Form, Select, message } from 'antd';
+import { Table, Modal, Input, FloatButton, Form, Select, message, DatePicker } from 'antd';
 import { EditOutlined, DeleteOutlined, PlusOutlined } from '@ant-design/icons';
 import { useNavigate } from 'react-router-dom';
 import { getPvReceptions, deletePvReception, updatePvReception, TypePvReception } from '../../../services/PvReceptionService';
 import Sidebar from '../../../components/Sidebar/Sidebar_Sec';
 import '../PagesSec.css';
+import dayjs from 'dayjs';
 
 export interface PvReception {
     id_PVR: number;
     type_PVR: TypePvReception;
+    date_PVR: string;
     marche_PVR: {
         id_M: number;
         numOrdre_M: string;
@@ -113,6 +115,11 @@ const List_PvReceptions = () => {
       },
     },
     {
+      title: 'Date',
+      dataIndex: 'date_PVR',
+      key: 'date_PVR',
+    },
+    {
       title: 'Marché',
       dataIndex: 'marche_PVR',
       key: 'marche_PVR',
@@ -168,6 +175,21 @@ const List_PvReceptions = () => {
                     <Select.Option value="PROVISOIRE">Provisoire</Select.Option>
                     <Select.Option value="DEFINITIVE">Définitif</Select.Option>
                   </Select>
+                </Form.Item>
+                <Form.Item
+                  label="Date de réception"
+                  name="date_PVR"
+                  initialValue={editingPvReception?.date_PVR}
+                >
+                  <DatePicker
+                    style={{ width: "100%" }}
+                    value={editingPvReception?.date_PVR ? dayjs(editingPvReception.date_PVR) : null}
+                    onChange={(date) =>
+                      setEditingPvReception((pre) =>
+                        pre ? { ...pre, date_PVR: date ? date.format("YYYY-MM-DD") : "" } : pre
+                      )
+                    }
+                  />
                 </Form.Item>
 
                 <Form.Item

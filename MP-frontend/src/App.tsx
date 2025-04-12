@@ -20,6 +20,8 @@ import Add_Decompte from "./pages/Secretaire/Add_Docs/Add_Decompte";
 import List_Decompte from "./pages/Secretaire/List_Docs/List_Decomptes";
 import Add_PV from "./pages/Secretaire/Add_Docs/Add_PvReception";
 import List_PV from "./pages/Secretaire/List_Docs/List_PvReceptions";
+import Add_Societe from "./pages/Secretaire/Add_Docs/Add_Societe";
+import List_Societe from "./pages/Secretaire/List_Docs/List_Societe";
 
 function App() {
   const [isDarkMode, setIsDarkMode] = React.useState(false);
@@ -85,6 +87,8 @@ function App() {
               <Route path="/list-pv" element={<List_PV />} />
               <Route path="/add-decompte" element={<Add_Decompte />} />
               <Route path="/list-decompte" element={<List_Decompte />} />
+              <Route path="/add-societe" element={<Add_Societe />} />
+              <Route path="/list-societe" element={<List_Societe />} />
             </Route>
           </Routes>
         </Router>

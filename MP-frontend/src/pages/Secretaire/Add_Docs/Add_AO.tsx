@@ -5,25 +5,18 @@ import {
   DatePicker,
   Input,
   Select,
-  FloatButton,
   message,
+  TimePicker,
+  Row,
+  Col,
 } from "antd";
 import { useNavigate } from "react-router-dom";
 import Sidebar from "../../../components/Sidebar/Sidebar_Sec";
 import { getMarches } from "../../../services/MarcheService";
 import { createAppelOffre } from "../../../services/AOService";
 import { AppelOffre } from '../../../services/AOService';
+import { Marche } from '../../../services/MarcheService';
 import "../PagesSec.css";
-
-interface Marche {
-  id_Marche: number;
-  numOrdre: string;
-  type_Marche: string;
-  objet_marche: string;
-  statut: string;
-  idSociete: number | null;
-  idNotification: number | null;
-}
 
 const Add_AO = () => {
   const [form] = Form.useForm();
@@ -72,6 +65,9 @@ const Add_AO = () => {
     const date_AO = values.date_AO
       ? values.date_AO.format("YYYY-MM-DD")
       : null;
+    const dateOuverturePli_AO = values.dateOuverturePli_AO
+      ? values.dateOuverturePli_AO.format("YYYY-MM-DD")
+      : null;
 
     // Convertir les coûts en nombres
     const coutEstime_AO = parseFloat(values.coutEstime_AO);
@@ -84,6 +80,8 @@ const Add_AO = () => {
         num_Ordre_AO: values.num_Ordre_AO.toString(),
         type_AO: values.type_AO,
         date_AO: date_AO,
+        dateOuverturePli_AO: dateOuverturePli_AO,
+        heureOuverturePli_AO: values.heureOuverturePli_AO,
         coutEstime_AO: coutEstime_AO,
         cautionProvisoire_AO: cautionProvisoire_AO,
         statut_AO: values.statut_AO,
@@ -93,8 +91,22 @@ const Add_AO = () => {
           type_Marche: '',
           objet_marche: '',
           statut: '',
-          idSociete: null,
-          idNotification: null
+          delaisGarantie: 0,
+          delaisMarche: '', 
+          chefServiceConcerne: '',
+          serviceConcerne: '',
+          montantFinal: null,
+          isArchived: false,
+          societe: {
+            id_SO: 0,
+            raisonSociale: '',
+            adresse: '',
+            ville: '',
+            telephone: '',
+            email: '',
+            idFiscale: '',
+          },
+          
         }
       };
 
@@ -187,23 +199,77 @@ const Add_AO = () => {
           >
             <Input placeholder="Taper le type" />
           </Form.Item>
-          <Form.Item
-            name="date_AO"
-            label="Date d'appel d'offre"
+
+          <Row gutter={16}>
+            <Col span={12}>
+              <Form.Item
+                name="dateOuverturePli_AO"
+                label="Date d'ouverture des plis"
+                rules={[
+                  {
+                    required: true,
+                    message: "Veuillez entrer la date d'ouverture",
+                  },
+                ]}
+                hasFeedback
+              >
+                <DatePicker
+                  format="YYYY-MM-DD"
+                  placeholder="Sélectionner la date d'ouverture"
+                  className="date-picker-container"
+                />
+              </Form.Item>
+            </Col>
+            <Col span={12}>
+              <Form.Item
+                name="heureOuverturePli_AO"
+                label="Heure d'ouverture des plis"
+                rules={[
+                  {
+                    required: true,
+                    message: "Veuillez entrer l'heure d'ouverture",
+                  },
+                ]}
+                hasFeedback
+              >
+                <TimePicker 
+                  format="HH:mm" 
+                  placeholder="Sélectionner l'heure d'ouverture" 
+                  className="date-picker-container"
+                />
+              </Form.Item>
+            </Col>
+          </Row>
+
+          <Form.Item name="objet_marche" label="Objet du marché"
             rules={[
               {
                 required: true,
-                message: "Veuillez entrer la date",
+                message: "Veuillez entrer l'objet du marché",
               },
+              { whitespace: true },
             ]}
-            hasFeedback
           >
-            <DatePicker
-              style={{ width: "100%" }}
-              picker="date"
-              placeholder="Choisir la date"
-            />
+            <Input placeholder="Tapez l'objet" />
           </Form.Item>
+
+          <Form.Item
+                name="delaisMarche"
+                label="Delais du marché"
+                rules={[
+                  {
+                    required: true,
+                    message: "Veuillez entrer le délai du marché",
+                  },
+                ]}
+                hasFeedback
+              >
+                <DatePicker
+                  format="YYYY-MM-DD"
+                  placeholder="Sélectionner la date du délai du marché"
+                  className="date-picker-container"
+                />
+              </Form.Item>
 
           <Form.Item
             name="coutEstime_AO"

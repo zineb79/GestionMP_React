@@ -8,6 +8,7 @@ export enum TypePvReception {
 export interface PvReception {
     id_PVR: number;
     type_PVR: TypePvReception;
+    date_PVR: string;
     marche_PVR: {
         id_M: number;
         numOrdre_M: string;

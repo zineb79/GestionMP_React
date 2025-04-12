@@ -5,35 +5,13 @@ import Sidebar from "../../../components/Sidebar/Sidebar_Sec";
 import { createOrdreDeService } from "../../../services/OSService";
 import "../PagesSec.css";
 import { getMarches } from "../../../services/MarcheService";
-
-interface Marche {
-  id_Marche: number;
-  numOrdre: string;
-  type_Marche: string;
-  objet_marche: string;
-  statut: string;
-  idSociete: number | null;
-  idNotification: number | null;
-}
-
-enum Type_OS {
-  TYPE1 = "TYPE1",
-  TYPE2 = "TYPE2",
-  TYPE3 = "TYPE3"
-}
-
-interface OrdreDeService {
-  type_OS: Type_OS;
-  nom_OS: string;
-  date_OS: string;
-  marche_OS: number;
-}
+import { OrdreDeService, Type_OS } from "../../../services/OSService";
+import { Marche } from "../../../services/MarcheService";
 
 const Add_OS = () => {
   const [form] = Form.useForm();
   const navigate = useNavigate();
   const [marches, setMarches] = useState<Marche[]>([]);
-  const [loading, setLoading] = useState(true);
 
   useEffect(() => {
     const fetchMarches = async () => {
@@ -41,34 +19,21 @@ const Add_OS = () => {
         const data = await getMarches();
         setMarches(data);
       } catch (error) {
-        console.error("Erreur lors de la récupération des marchés :", error);
-        setMarches([]);
-      } finally {
-        setLoading(false);
+        console.error("Erreur lors de la récupération des marchés:", error);
       }
     };
-
     fetchMarches();
   }, []);
 
   const onFinish = async (values: any) => {
     try {
-      if (!values.marche_OS) {
-        message.error("Veuillez sélectionner un marché");
-        return;
-      }
-
-      const date_OS = values.date_OS
-        ? typeof values.date_OS === 'object' 
-          ? values.date_OS.format("YYYY-MM-DD")
-          : values.date_OS
-        : null;
+      const date_OS = values.date_OS ? values.date_OS.format("YYYY-MM-DD") : null;
 
       const ordreDeService = {
+        numOrdre_OS: values.numOrdre_OS,
         type_OS: values.type_OS,
-        nom_OS: values.nom_OS,
         date_OS: date_OS,
-        marche_OS: marches.find(m => m.id_Marche === values.marche_OS)?.id_Marche || values.marche_OS
+        marche_OS: values.marche_OS
       };
 
       await createOrdreDeService(ordreDeService);
@@ -91,46 +56,17 @@ const Add_OS = () => {
           layout="vertical"
           onFinish={onFinish}
           onFinishFailed={(error) => {
-            console.log("Erreur de validation:", error);
-            message.error("Veuillez remplir tous les champs requis correctement");
+            console.log("Failed:", error);
           }}
         >
           <Form.Item
-            name="type_OS"
-            label="Type d'Ordre de Service"
-            rules={[{ required: true, message: "Veuillez sélectionner un type" }]}
-          >
-            <Select placeholder="Sélectionner le type">
-              {Object.values(Type_OS).map((type) => (
-                <Select.Option key={type} value={type}>
-                  {type}
-                </Select.Option>
-              ))}
-            </Select>
-          </Form.Item>
-
-          <Form.Item
-            name="numOrdre_OS"
-            label="Numéro de l'Ordre de Service"
-            rules={[{ required: true, message: "Veuillez entrer un numéro" }]}
-          >
-            <Input placeholder="Entrer le numéro" />
-          </Form.Item>
-
-          <Form.Item
-            name="date_OS"
-            label="Date de l'Ordre de Service"
-            rules={[{ required: true, message: "Veuillez sélectionner une date" }]}
-          >
-            <DatePicker style={{ width: '100%' }} />
-          </Form.Item>
-
-          <Form.Item
-            name="marche_OS"
+            name="idMarche"
             label="Marché"
-            rules={[{ required: true, message: "Veuillez sélectionner un marché" }]}
+            rules={[
+              { required: true, message: "Veuillez sélectionner un marché" },
+            ]}
           >
-            <Select placeholder="Sélectionner le marché" loading={loading}>
+            <Select placeholder="Sélectionner le marché">
               {marches && marches.length > 0 ? (
                 marches.map((marche) => (
                   <Select.Option
@@ -147,6 +83,36 @@ const Add_OS = () => {
                 </Select.Option>
               )}
             </Select>
+          </Form.Item>
+
+          <Form.Item
+            name="numOrdre_OS"
+            label="Numéro d'OS"
+            rules={[{ required: true, message: 'Veuillez entrer le numéro d\'OS' }]}
+          >
+            <Input />
+          </Form.Item>
+
+          <Form.Item
+            name="type_OS"
+            label="Type d'OS"
+            rules={[{ required: true, message: 'Veuillez sélectionner un type d\'OS' }]}
+          >
+            <Select>
+              {Object.values(Type_OS).map((type) => (
+                <Select.Option key={type} value={type}>
+                  {type}
+                </Select.Option>
+              ))}
+            </Select>
+          </Form.Item>
+
+          <Form.Item
+            name="date_OS"
+            label="Date d'ordre de service"
+            rules={[{ required: true, message: 'Veuillez sélectionner une date' }]}
+          >
+            <DatePicker format="YYYY-MM-DD" />
           </Form.Item>
 
           <Button type="primary" htmlType="submit" className="ajouter">

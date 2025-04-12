@@ -1,23 +1,17 @@
 import api from "../utils/axiosInstance";
+import { Marche } from "./MarcheService";
 
-  export interface Marche {
-    id_Marche: number;
-    numOrdre: string;
-    type_Marche: string;
-    objet_marche: string;
-    statut: string;
-    idSociete: number | null;
-    idNotification: number | null;
-  }
   
   export interface AppelOffre {
     id_AO?: number;
     num_Ordre_AO: string;
     type_AO: string;
     date_AO: string;
+    dateOuverturePli_AO: string; 
+    heureOuverturePli_AO: string; 
     coutEstime_AO: number;
     cautionProvisoire_AO: number;
-    statut_AO: string;
+    statut_AO: string; 
     marche: Marche;
   }
   

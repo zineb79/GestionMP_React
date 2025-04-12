@@ -2,21 +2,10 @@ import React, { useState, useEffect } from 'react';
 import { Table, Modal, Input, FloatButton, Form, Select, message } from "antd";
 import { EditOutlined, DeleteOutlined, PlusOutlined } from "@ant-design/icons";
 import { useNavigate } from "react-router-dom";
-import axios from 'axios';
+import { Marche } from '../../../services/MarcheService';
 import '../pagesSec.css';
 import Sidebar from '../../../components/Sidebar/Sidebar_Sec';
 import { deleteMarche, getMarches, updateMarche } from '../../../services/MarcheService';
-import { AxiosError } from 'axios';
-
-interface Marche {
-  id_Marche: number;
-  numOrdre: string;
-  type_Marche: string;
-  objet_marche: string;
-  statut: string;
-  idSociete: number | null;
-  idNotification: number | null;
-}
 
 const List_Marche = () => {
   const [isEditing, setIsEditing] = useState(false);
@@ -41,29 +30,6 @@ const List_Marche = () => {
 
     fetchMarches();
   }, []);
-
-  const onDeleteMarche = async (record: Marche) => {
-    Modal.confirm({
-      title: "Êtes-vous sûr de vouloir supprimer ce marché ?",
-      okText: "Oui",
-      okType: "danger",
-      onOk: async () => {
-        try {
-          await deleteMarche(record.numOrdre);
-          // Refresh the list after deletion
-          const newData = await getMarches();
-          setDataSource(newData);
-          message.success('Marché supprimé avec succès');
-        } catch (error: any) {
-          console.error("Erreur lors de la suppression du marché :", error);
-          if (error.response) {
-            console.error('Backend error response:', error.response.data);
-          }
-          message.error("Impossible de supprimer le marché. Veuillez réessayer plus tard.");
-        }
-      },
-    });
-  };
 
   const onEditMarche = (record: Marche) => {
     setIsEditing(true);
@@ -141,10 +107,6 @@ const List_Marche = () => {
           <EditOutlined
             onClick={() => onEditMarche(record)}
             style={{ color: "blue", marginRight: 12 }}
-          />
-          <DeleteOutlined
-            onClick={() => onDeleteMarche(record)}
-            style={{ color: "red" }}
           />
         </>
       ),

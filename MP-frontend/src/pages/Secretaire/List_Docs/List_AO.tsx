@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from "react";
-import { Table, Modal, Input, FloatButton, Form, DatePicker, Select, message } from "antd";
+import { Table, Modal, Input, FloatButton, Form, DatePicker, Select, message ,TimePicker} from "antd";
 import { EditOutlined, DeleteOutlined, PlusOutlined, DownloadOutlined, FileWordOutlined } from "@ant-design/icons";
 import { useNavigate } from "react-router-dom";
 import '../PagesSec.css'
@@ -8,6 +8,8 @@ import { deleteAppelOffre, getAppelsOffre, updateAppelOffre } from "../../../ser
 import dayjs from "dayjs";
 import { DocumentService } from '../../../services/DocumentService';
 import { AppelOffre } from '../../../services/AOService';
+import { Marche } from '../../../services/MarcheService';
+import { title } from "process";
 
 const List_AO = () => {
   const [isEditing, setIsEditing] = useState(false);
@@ -131,24 +133,42 @@ const List_AO = () => {
     },
     {
       key: "3",
-      title: "Date d'appel d'offre",
-      dataIndex: "date_AO",
-      sorter: (a: AppelOffre, b: AppelOffre) => new Date(a.date_AO).getTime() - new Date(b.date_AO).getTime(),
+      title: "Date et heure d'ouverture des plis",
+      dataIndex: "dateOuverturePli_AO",
+      sorter: (a: AppelOffre, b: AppelOffre) => new Date(a.dateOuverturePli_AO).getTime() - new Date(b.dateOuverturePli_AO).getTime(),
+      render: (text: string, record: AppelOffre) => {
+        return (
+          <div>
+            {text} {record.heureOuverturePli_AO}
+          </div>
+        );
+      },
     },
     {
       key: "4",
+      title: "Objet de marche",
+      dataIndex: "marche.objet_marche",
+    },
+    { 
+      key: "5",
+      title: "Delais du marché",
+      dataIndex: "marche.delaisMarche",
+      sorter: (a: AppelOffre, b: AppelOffre) => new Date(a.marche.delaisMarche).getTime() - new Date(b.marche.delaisMarche).getTime(),
+    },
+    {
+      key: "6",
       title: "Coût estimé",
       dataIndex: "coutEstime_AO",
       sorter: (a: AppelOffre, b: AppelOffre) => a.coutEstime_AO - b.coutEstime_AO,
     },
     {
-      key: "5",
+      key: "7",
       title: "Caution provisoire",
       dataIndex: "cautionProvisoire_AO",
       sorter: (a: AppelOffre, b: AppelOffre) => a.cautionProvisoire_AO - b.cautionProvisoire_AO,
     },
     {
-      key: "6",
+      key: "8",
       title: "Statut",
       dataIndex: "statut_AO",
       filters: loadingStatuts ? [] : statuts.map(statut => ({
@@ -158,7 +178,7 @@ const List_AO = () => {
       onFilter: (value: any, record: AppelOffre) => record.statut_AO === value,
     },
     {
-      key: "7",
+      key: "9",
       title: "Actions",
       render: (record: AppelOffre) => (
         <>
@@ -221,13 +241,32 @@ const List_AO = () => {
               />
             </Form.Item>
 
-            <Form.Item label="Date d'appel d'offre">
+            <Form.Item label="Date et heure d'ouverture des plis">
               <DatePicker
                 style={{ width: "100%" }}
-                value={editingAppelOffre?.date_AO ? dayjs(editingAppelOffre.date_AO) : null}
+                value={editingAppelOffre?.dateOuverturePli_AO ? dayjs(editingAppelOffre.dateOuverturePli_AO) : null}
                 onChange={(date) =>
                   setEditingAppelOffre((pre) =>
-                    pre ? { ...pre, date_AO: date ? date.format("YYYY-MM-DD") : "" } : pre
+                    pre ? { ...pre, dateOuverturePli_AO: date ? date.format("YYYY-MM-DD") : "" } : pre
+                  )
+                }
+              />
+              <TimePicker
+                style={{ width: "100%" }}
+                value={editingAppelOffre?.heureOuverturePli_AO ? dayjs(editingAppelOffre.heureOuverturePli_AO) : null}
+                onChange={(time) =>
+                  setEditingAppelOffre((pre) =>
+                    pre ? { ...pre, heureOuverturePli_AO: time ? time.format("HH:mm") : "" } : pre
+                  )
+                }
+              />
+            </Form.Item>
+            <Form.Item label="Objet de marche">
+              <Input
+                value={editingAppelOffre?.marche.objet_marche}
+                onChange={(e) =>
+                  setEditingAppelOffre((pre) =>
+                    pre ? { ...pre, marche: { ...pre.marche, objet_marche: e.target.value } } : pre
                   )
                 }
               />

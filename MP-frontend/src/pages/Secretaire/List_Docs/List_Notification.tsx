@@ -6,13 +6,8 @@ import { getNotifications, deleteNotification, updateNotification } from '../../
 import Sidebar from '../../../components/Sidebar/Sidebar_Sec';
 import '../PagesSec.css';
 import dayjs from 'dayjs';
-
-export interface Notification {
-    id_NOTIF: number;
-    numOrdre_NOTIF: string;
-    dateVisa_NOTIF: string; // Will be sent as ISO string
-    dateApprobation_NOTIF: string; // Will be sent as ISO string
-}
+import { Notification } from '../../../services/NotificationService';
+import { Marche } from '../../../services/MarcheService';
 
 const List_Notification = () => {
       const [isEditing, setIsEditing] = useState(false);
@@ -44,16 +39,21 @@ const List_Notification = () => {
       }, []);
     
     
-      const onDeleteNotification = async (record: Notification) => {
+      const onDeleteNotification = async (record: any) => {
         Modal.confirm({
           title: "Êtes-vous sûr de vouloir supprimer cette notification ?",
           okText: "Oui",
           okType: "danger",
           onOk: async () => {
             try {
-              await deleteNotification(record.numOrdre_NOTIF);
+              // Use id_NOTIF instead of numOrdre_NOTIF for deletion
+              if (!record.notificationAppr?.id_NOTIF) {
+                throw new Error("ID de la notification manquant");
+              }
+              
+              await deleteNotification(record.notificationAppr.id_NOTIF);
               setDataSource((pre) =>
-                pre.filter((not) => not.numOrdre_NOTIF !== record.numOrdre_NOTIF)
+                pre.filter((not) => not.notificationAppr.id_NOTIF !== record.notificationAppr.id_NOTIF)
               );
               message.success("La notification a été supprimée avec succès");
             } catch (error) {
@@ -61,6 +61,7 @@ const List_Notification = () => {
                 "Erreur lors de la suppression de la notification :",
                 error
               );
+              message.error("Erreur lors de la suppression de la notification");
               alert(
                 "Impossible de supprimer la notification. Veuillez réessayer plus tard."
               );
@@ -78,11 +79,11 @@ const List_Notification = () => {
         if (!editingNotification) return;
     
         try {
-          if (!editingNotification.id_NOTIF) {
+          if (!editingNotification.notificationAppr.id_NOTIF) {
             message.error("ID de la notification manquant");
             return;
           }
-          const updatedNotification = await updateNotification(editingNotification.id_NOTIF, editingNotification);
+          const updatedNotification = await updateNotification(editingNotification.notificationAppr.id_NOTIF, editingNotification);
           
           // Refresh the list
           const newData = await getNotifications();
@@ -115,20 +116,32 @@ const List_Notification = () => {
             sorter: (a: any, b: any) => a.numOrdre_NOTIF.localeCompare(b.numOrdre_NOTIF)
         },
         {
+            title: 'Numéro de Marché',
+            dataIndex: 'marche_NOTIF',
+            key: 'marche_NOTIF',
+            render: (marche: any) => marche?.numOrdre || 'N/A'
+        },
+        {
+            title: 'Societe',
+            dataIndex: 'marche_NOTIF',
+            key: 'societe',
+            render: (marche: any) => marche?.societe?.raisonSociale || 'N/A'
+        },
+        {
             title: 'Date de Visa',
             dataIndex: 'dateVisa_NOTIF',
             key: 'dateVisa_NOTIF',
-            render: (date: string) => new Date(date).toLocaleDateString()
+            render: (date: string) => date ? new Date(date).toLocaleDateString() : 'N/A'
         },
         {
             title: 'Date d\'Approbation',
             dataIndex: 'dateApprobation_NOTIF',
             key: 'dateApprobation_NOTIF',
-            render: (date: string) => new Date(date).toLocaleDateString()
+            render: (date: string) => date ? new Date(date).toLocaleDateString() : 'N/A'
         },
         {
             title: "Actions",
-            render: (record: Notification) => (
+            render: (record: any) => (
             <>
             <EditOutlined onClick={() => onEditNotification(record)} />
             <DeleteOutlined
@@ -167,7 +180,19 @@ const List_Notification = () => {
           >
             <Form.Item label="Numéro de notification">
               <Input
-                value={editingNotification?.numOrdre_NOTIF}
+                value={editingNotification?.notificationAppr.numOrdre_NOTIF}
+                disabled
+              />
+            </Form.Item>
+            <Form.Item label="Numéro de marché">
+              <Input
+                value={editingNotification?.notificationAppr.marche_NOTIF.numOrdre}
+                disabled
+              />
+            </Form.Item>
+            <Form.Item label="Societe">
+              <Input
+                value={editingNotification?.notificationAppr.marche_NOTIF.societe.raisonSociale}
                 disabled
               />
             </Form.Item>
@@ -175,10 +200,10 @@ const List_Notification = () => {
             <Form.Item label="Date de visa">
               <DatePicker
                 style={{ width: "100%" }}
-                value={editingNotification?.dateVisa_NOTIF ? dayjs(editingNotification.dateVisa_NOTIF) : null}
+                value={editingNotification?.notificationAppr.dateVisa_NOTIF ? dayjs(editingNotification.notificationAppr.dateVisa_NOTIF) : null}
                 onChange={(date) =>
                   setEditingNotification((pre) =>
-                    pre ? { ...pre, dateVisa_NOTIF: date ? date.format("YYYY-MM-DD") : "" } : pre
+                    pre ? { ...pre, notificationAppr: { ...pre.notificationAppr, dateVisa_NOTIF: date ? date.format("YYYY-MM-DD") : "" } } : pre
                   )
                 }
               />
@@ -187,10 +212,10 @@ const List_Notification = () => {
             <Form.Item label="Date d'approbation">
               <DatePicker
                 style={{ width: "100%" }}
-                value={editingNotification?.dateApprobation_NOTIF ? dayjs(editingNotification.dateApprobation_NOTIF) : null}
+                value={editingNotification?.notificationAppr.dateApprobation_NOTIF ? dayjs(editingNotification.notificationAppr.dateApprobation_NOTIF) : null}
                 onChange={(date) =>
                   setEditingNotification((pre) =>
-                    pre ? { ...pre, dateApprobation_NOTIF: date ? date.format("YYYY-MM-DD") : "" } : pre
+                    pre ? { ...pre, notificationAppr: { ...pre.notificationAppr, dateApprobation_NOTIF: date ? date.format("YYYY-MM-DD") : "" } } : pre
                   )
                 }
               />

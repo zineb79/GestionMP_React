@@ -48,6 +48,7 @@
   margin: 1vh;
 }
 
+
 .ant-modal-title {
   text-align: center !important; 
   font-size: 20px !important;
@@ -58,4 +59,8 @@
 .ajouter {
   width: 300px !important;
   align-self: center !important;
+}
+
+.date-picker-container {
+  width: 100%;
 }

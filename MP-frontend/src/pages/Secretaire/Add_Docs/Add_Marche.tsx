@@ -23,7 +23,22 @@ const Add_Marche = () => {
         objet_marche: values.objet_marche,
         statut: values.statut,
         idSociete: null,
-        idNotification: null
+        idNotification: null,
+        delaisGarantie: 0,
+        delaisMarche: values.delaisMarche ? values.delaisMarche.format('YYYY-MM-DD') : '',
+        chefServiceConcerne: "",
+        serviceConcerne: "",
+        montantFinal: 0,
+        isArchived: false,
+        societe: {
+          id_SO: 0,
+          raisonSociale: "",
+          adresse: "",
+          ville: "",
+          telephone: "",
+          email: "",
+          idFiscale: ""
+        }
       };
       console.log('Sending to backend:', marcheData);
       await createMarche(marcheData);
@@ -76,36 +91,22 @@ const Add_Marche = () => {
             <Select.Option value="PRESTATION_SERVICE">PRESTATION_SERVICE</Select.Option>
           </Select>
           </Form.Item>
-          
-        <Form.Item
-          name="objet_marche"
-          label="Objet de Marché"
-          rules={[
-            {
-              required: true,
-              message: "Champs obligatoire",
-            },
-            { whitespace: true }
-          ]}
-          hasFeedback >
-          <Input placeholder="Taper l'objet de marché" />
-        </Form.Item>
 
-        <Form.Item name="statut" label="Statut" initialValue="EnAttente">
+        <Form.Item name="statut" label="Statut" initialValue="EnPreparation">
         <Select placeholder="Selectionner le statut">
-          <Select.Option value="EnAttente">En Attente</Select.Option>
-          <Select.Option value="EnCours">En Cours</Select.Option>
-          <Select.Option value="Valide">Valide</Select.Option>
-          <Select.Option value="NonValide">NonValide</Select.Option>
-          <Select.Option value="Cloture">Cloture</Select.Option>
+          <Select.Option value="EnPreparation">En Préparation</Select.Option>
+          <Select.Option value="EnCoursTraitement">En Cours de Traitement</Select.Option>
+          <Select.Option value="Cloture">Cloturé</Select.Option>
+          <Select.Option value="Adjuge">Adjugé</Select.Option>
+          <Select.Option value="Acheve">Achevé</Select.Option>
+          <Select.Option value="EnArret">En Arrêt</Select.Option>
+          <Select.Option value="Notifie">Notifié</Select.Option>
         </Select>
         </Form.Item>
 
-        <Form.Item wrapperCol={{ span: 24 }}>
-          <Button block type="primary" htmlType="submit" className='ajouter'>
-            Ajouter
-          </Button>
-        </Form.Item>
+        <Button block type="primary" htmlType="submit" className='ajouter'>
+          Ajouter
+        </Button>
         </Form>
       </div>
     </Sidebare>

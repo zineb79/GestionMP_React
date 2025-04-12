@@ -31,6 +31,8 @@ const Sidebare = ({ children }: { children: ReactNode }) => {
                 {/* Header */}
                 <Header style={{ 
                     background: colorBgContainer,
+                    backgroundColor: '#005fad',
+                    color: '#000',
                     padding: 0, 
                     display: 'flex', 
                     alignItems: 'center',

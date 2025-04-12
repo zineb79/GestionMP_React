@@ -1,8 +1,9 @@
-import React, { useState, useEffect } from 'react';
-import { Form, Input, Button, Select, message } from 'antd';
+import { useState, useEffect } from 'react';
+import { Form, Button, Select, message, DatePicker } from 'antd';
 import { useNavigate } from 'react-router-dom';
-import { createPvReception, TypePvReception } from '../../../services/PvReceptionService';
+import { createPvReception, PvReception, TypePvReception } from '../../../services/PvReceptionService';
 import Sidebar from '../../../components/Sidebar/Sidebar_Sec';
+import dayjs from 'dayjs';
 import '../PagesSec.css';
 
 const { Option } = Select;
@@ -11,6 +12,7 @@ const Add_PvReception = () => {
   const [form] = Form.useForm();
   const navigate = useNavigate();
   const [marches, setMarches] = useState([]);
+  const [editingPvReception, setEditingPvReception] = useState<PvReception | null>(null);
 
   useEffect(() => {
     // Fetch marches data
@@ -74,9 +76,26 @@ const Add_PvReception = () => {
                 ))}
               </Select>
             </Form.Item>
-              <Button block type="primary" htmlType="submit" className='ajouter'>
-                Ajouter
-              </Button>
+
+            <Form.Item
+              name="date_PVR"
+              label="Date de réception"
+              rules={[{ required: true, message: 'Veuillez sélectionner la date de réception' }]}
+            >
+              <DatePicker
+                style={{ width: "100%" }}
+                value={editingPvReception?.date_PVR ? dayjs(editingPvReception.date_PVR) : null}
+                onChange={(date) =>
+                  setEditingPvReception((pre) =>
+                    pre ? { ...pre, date_PVR: date ? date.format("YYYY-MM-DD") : "" } : pre
+                  )
+                }
+              />
+            </Form.Item>
+
+            <Button block type="primary" htmlType="submit" className='ajouter'>
+              Ajouter
+            </Button>
           </Form>
         </div>
       </Sidebar>
