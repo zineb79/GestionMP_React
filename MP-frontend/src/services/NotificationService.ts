@@ -2,15 +2,13 @@ import api from "../utils/axiosInstance";
 import { Marche } from "./MarcheService";
 
 export interface Notification {
-  notificationAppr:{
-    id_NOTIF: number;
-    numOrdre_NOTIF: string;
-    dateVisa_NOTIF: string;
-    dateApprobation_NOTIF: string;
-    marche_NOTIF: Marche;
-  };
+  id_NOTIF?: number;
+  numOrdre_NOTIF: string;
+  dateVisa_NOTIF: string;
+  dateApprobation_NOTIF: string;
+  marche_NOTIF?: number;  // ID du marché dans la base de données
+  marche_NOTIF_obj?: Marche;   // Objet Marché associé (pour l'affichage)
 }
-
 export const getNotifications = async (): Promise<Notification[]> => {
     try {
       const response = await api.get("/api/Notification/get");
@@ -37,9 +35,9 @@ export const getNotifications = async (): Promise<Notification[]> => {
     }
   };
   
-  export const deleteNotification = async (num_Ordre_NOTIF: string): Promise<void> => {
+  export const deleteNotification = async (id_NOTIF: number): Promise<void> => {
     try {
-      await api.delete(`/api/Notification/delete/${num_Ordre_NOTIF}`);
+      await api.delete(`/api/Notification/delete/${id_NOTIF}`);
     } catch (error) {
       console.error("Erreur lors de la suppression de la notification :", error);
       throw error;

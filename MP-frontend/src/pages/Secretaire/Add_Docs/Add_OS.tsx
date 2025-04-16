@@ -12,14 +12,18 @@ const Add_OS = () => {
   const [form] = Form.useForm();
   const navigate = useNavigate();
   const [marches, setMarches] = useState<Marche[]>([]);
+  const [loading, setLoading] = useState(true);
 
   useEffect(() => {
     const fetchMarches = async () => {
       try {
         const data = await getMarches();
         setMarches(data);
+        setLoading(false);
       } catch (error) {
         console.error("Erreur lors de la récupération des marchés:", error);
+        message.error("Erreur lors du chargement des marchés");
+        setLoading(false);
       }
     };
     fetchMarches();
@@ -29,16 +33,17 @@ const Add_OS = () => {
     try {
       const date_OS = values.date_OS ? values.date_OS.format("YYYY-MM-DD") : null;
 
-      const ordreDeService = {
-        numOrdre_OS: values.numOrdre_OS,
-        type_OS: values.type_OS,
-        date_OS: date_OS,
-        marche_OS: values.marche_OS
+      const payload = {
+        ...values,
+        date_OS: date_OS
       };
 
-      await createOrdreDeService(ordreDeService);
+      console.log('Form values:', values);
+      console.log('Payload to backend:', payload);
+
+      await createOrdreDeService(payload);
       message.success("L'ordre de service a été ajouté avec succès");
-      navigate("/list-os");
+      navigate("/OrdreService");
     } catch (error) {
       console.error("Erreur lors de l'ajout de l'ordre de service :", error);
       message.error("Une erreur est survenue lors de l'ajout de l'ordre de service");
@@ -60,7 +65,7 @@ const Add_OS = () => {
           }}
         >
           <Form.Item
-            name="idMarche"
+            name="marche_OS"
             label="Marché"
             rules={[
               { required: true, message: "Veuillez sélectionner un marché" },

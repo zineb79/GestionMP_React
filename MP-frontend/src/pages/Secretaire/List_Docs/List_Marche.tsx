@@ -1,11 +1,12 @@
 import React, { useState, useEffect } from 'react';
-import { Table, Modal, Input, FloatButton, Form, Select, message } from "antd";
+import { Table, Modal, Input, FloatButton, Form, Select, message, DatePicker } from "antd";
 import { EditOutlined, DeleteOutlined, PlusOutlined } from "@ant-design/icons";
 import { useNavigate } from "react-router-dom";
 import { Marche } from '../../../services/MarcheService';
+import dayjs from 'dayjs'; 
 import '../pagesSec.css';
 import Sidebar from '../../../components/Sidebar/Sidebar_Sec';
-import { deleteMarche, getMarches, updateMarche } from '../../../services/MarcheService';
+import { getMarches, updateMarche } from '../../../services/MarcheService';
 
 const List_Marche = () => {
   const [isEditing, setIsEditing] = useState(false);
@@ -34,31 +35,42 @@ const List_Marche = () => {
   const onEditMarche = (record: Marche) => {
     setIsEditing(true);
     setEditingMarche(record);
-    form.setFieldsValue(record);
+    form.setFieldsValue({
+      ...record,
+      delaisMarche: record.delaisMarche ? dayjs(record.delaisMarche) : null,
+      statut: record.statut,
+      type_Marche: record.type_Marche
+    });
   };
 
-  const handleSave = async () => {
+  const handleSave = async (values: any) => {
     try {
-      const values = await form.validateFields();
-      if (!editingMarche) return;
+      if (!editingMarche) {
+        message.error("ID du marché manquant");
+        return;
+      }
 
       if (!editingMarche.id_Marche) {
         message.error('ID du marché manquant');
         return;
       }
 
+      // Prepare the data to send to backend
       const updatedMarche = {
-        ...editingMarche,
-        ...values,
-        numOrdre: editingMarche.numOrdre // Preserve the original numOrdre
+        id_Marche: editingMarche.id_Marche,
+        numOrdre: editingMarche.numOrdre,
+        type_Marche: values.type_Marche,
+        objet_marche: values.objet_marche,
+        statut: values.statut,
+        delaisMarche: values.delaisMarche ? values.delaisMarche.format('YYYY-MM-DD') : null,
+        delaisGarantie: values.delaisGarantie,
+        chefServiceConcerne: values.chefServiceConcerne,
+        serviceConcerne: values.serviceConcerne,
+        montantFinal: values.montantFinal,
+        isArchived: values.isArchived
       };
 
-      console.log("Données envoyées au backend:", {
-        id: editingMarche.id_Marche,
-        marche: updatedMarche
-      });
-
-      const result = await updateMarche(editingMarche.id_Marche, updatedMarche);
+      await updateMarche(editingMarche.id_Marche, updatedMarche);
       
       setDataSource((pre) =>
         pre.map((marche) =>
@@ -66,15 +78,12 @@ const List_Marche = () => {
         )
       );
       
-      message.success('Marché mis à jour avec succès');
       setIsEditing(false);
       setEditingMarche(null);
-    } catch (error: any) {
-      console.error("Erreur lors de la mise à jour du marché:", error);
-      if (error.response) {
-        console.error("Réponse d'erreur du serveur:", error.response.data);
-      }
-      message.error("Erreur lors de la mise à jour du marché");
+      message.success('Marché mis à jour avec succès');
+    } catch (error) {
+      console.error('Erreur lors de la mise à jour du marché:', error);
+      message.error('Erreur lors de la mise à jour du marché');
     }
   };
 
@@ -96,11 +105,16 @@ const List_Marche = () => {
     },
     {
       key: "4",
+      title: "Délais du marché",
+      dataIndex: "delaisMarche",
+    },
+    {
+      key: "5",
       title: "Statut",
       dataIndex: "statut",
     },
     {
-      key: "5",
+      key: "6",
       title: "Actions",
       render: (record: Marche) => (
         <>
@@ -118,7 +132,7 @@ const List_Marche = () => {
       <div className="list-container">
         <FloatButton
           icon={<PlusOutlined />}
-          onClick={() => navigate("/add-marche")}
+          onClick={() => navigate("/AddMarche")}
           style={{ right: '24px', backgroundColor: 'black !important' }}
         />
         <div className="list-header">
@@ -137,11 +151,12 @@ const List_Marche = () => {
             setIsEditing(false);
             setEditingMarche(null);
           }}
-          onOk={handleSave}
+          onOk={form.submit}
         >
           <Form
             form={form}
             layout="vertical"
+            onFinish={handleSave}
           >
             <Form.Item
               name="numOrdre"
@@ -169,6 +184,19 @@ const List_Marche = () => {
               rules={[{ required: true, message: "Champ obligatoire" }]}
             >
               <Input />
+            </Form.Item>
+
+            <Form.Item
+              name="delaisMarche"
+              label="Délais du marché"
+              rules={[{ required: true, message: "Champ obligatoire" }]}
+            >
+              <DatePicker
+                format="YYYY-MM-DD"
+                placeholder="Sélectionner la date du délai du marché"
+                className="date-picker-container"
+                value={form.getFieldValue('delaisMarche') ? dayjs(form.getFieldValue('delaisMarche')) : null}
+              />
             </Form.Item>
 
             <Form.Item

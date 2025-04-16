@@ -13,7 +13,8 @@ export interface OrdreDeService {
   numOrdre_OS: string;
   type_OS: Type_OS;
   date_OS: string;
-  marche_OS: Marche;
+  marche_OS?: number;
+  marche_OS_obj? : Marche;
 }
 
 export const getOrdresDeService = async (): Promise<OrdreDeService[]> => {

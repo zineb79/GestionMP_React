@@ -8,21 +8,18 @@ import { deleteAppelOffre, getAppelsOffre, updateAppelOffre } from "../../../ser
 import dayjs from "dayjs";
 import { DocumentService } from '../../../services/DocumentService';
 import { AppelOffre } from '../../../services/AOService';
-import { Marche } from '../../../services/MarcheService';
-import { title } from "process";
 
 const List_AO = () => {
   const [isEditing, setIsEditing] = useState(false);
-  const [editingAppelOffre, setEditingAppelOffre] = useState<AppelOffre | null>(
-    null
-  );
+  const [editingAppelOffre, setEditingAppelOffre] = useState<AppelOffre | null>(null);
   const [dataSource, setDataSource] = useState<AppelOffre[]>([]);
   const [loading, setLoading] = useState(true);
-  const [statuts, setStatuts] = useState<string[]>([]);
-  const [loadingStatuts, setLoadingStatuts] = useState(true);
   const navigate = useNavigate();
   const [form] = Form.useForm();
-
+  const [statuts, setStatuts] = useState<string[]>([]);
+  const [loadingStatuts, setLoadingStatuts] = useState(true);
+  const [isEditModalVisible, setIsEditModalVisible] = useState(false);
+ 
   // Charger les appels d'offre depuis l'API
   useEffect(() => {
     const fetchAppelsOffre = async () => {
@@ -30,10 +27,7 @@ const List_AO = () => {
         const data = await getAppelsOffre();
         setDataSource(data);
       } catch (error) {
-        console.error(
-          "Erreur lors de la récupération des appels d'offre :",
-          error
-        );
+        console.error("Erreur lors de la récupération des appels d'offre :", error);
       } finally {
         setLoading(false);
       }
@@ -69,8 +63,15 @@ const List_AO = () => {
   };
 
   const onEditAppelOffre = (record: AppelOffre) => {
+    setIsEditModalVisible(true);
     setIsEditing(true);
     setEditingAppelOffre({ ...record });
+    form.setFieldsValue({
+      ...record,
+      dateOuverturePli_AO: record.dateOuverturePli_AO ? dayjs(record.dateOuverturePli_AO) : null,
+      heureOuverturePli_AO: record.heureOuverturePli_AO ? dayjs(record.heureOuverturePli_AO) : null,
+      statut_AO: record.statut_AO
+    });
   };
 
   const handleSave = async () => {
@@ -81,29 +82,28 @@ const List_AO = () => {
         message.error("ID de l'appel d'offre manquant");
         return;
       }
-      const updatedAO = await updateAppelOffre(editingAppelOffre.id_AO, editingAppelOffre);
+
+      // Ensure date fields are properly formatted
+      const payload = {
+        ...editingAppelOffre,
+        dateOuverturePli_AO: editingAppelOffre.dateOuverturePli_AO || '',
+        heureOuverturePli_AO: editingAppelOffre.heureOuverturePli_AO || ''
+      };
+
+      const updatedAO = await updateAppelOffre(editingAppelOffre.id_AO, payload);
       
       // Refresh the list
       const newData = await getAppelsOffre();
       setDataSource(newData);
       
+      setEditingAppelOffre(null);
+      setIsEditing(false);
+      setIsEditModalVisible(false);
       message.success("Appel d'offre mis à jour avec succès");
-      resetEditing();
     } catch (error) {
-      console.error(
-        "Erreur lors de la mise à jour de l'appel d'offre :",
-        error
-      );
+      console.error("Erreur lors de la mise à jour de l'appel d'offre :", error);
       message.error("Erreur lors de la mise à jour de l'appel d'offre");
-      alert(
-        "Impossible de mettre à jour l'appel d'offre. Veuillez réessayer plus tard."
-      );
     }
-  };
-
-  const resetEditing = () => {
-    setIsEditing(false);
-    setEditingAppelOffre(null);
   };
 
   const generateDocument = async (appelOffre: AppelOffre) => {
@@ -134,35 +134,25 @@ const List_AO = () => {
     {
       key: "3",
       title: "Date et heure d'ouverture des plis",
-      dataIndex: "dateOuverturePli_AO",
-      sorter: (a: AppelOffre, b: AppelOffre) => new Date(a.dateOuverturePli_AO).getTime() - new Date(b.dateOuverturePli_AO).getTime(),
-      render: (text: string, record: AppelOffre) => {
-        return (
-          <div>
-            {text} {record.heureOuverturePli_AO}
-          </div>
-        );
+      render: (record: AppelOffre) => {
+        const date = record.dateOuverturePli_AO ? dayjs(record.dateOuverturePli_AO).format("DD/MM/YYYY") : "";
+        const time = record.heureOuverturePli_AO || "";
+        return `${date} -- ${time}`;
+      },
+      sorter: (a: AppelOffre, b: AppelOffre) => {
+        const dateA = a.dateOuverturePli_AO ? new Date(a.dateOuverturePli_AO).getTime() : 0;
+        const dateB = b.dateOuverturePli_AO ? new Date(b.dateOuverturePli_AO).getTime() : 0;
+        return dateA - dateB;
       },
     },
     {
       key: "4",
-      title: "Objet de marche",
-      dataIndex: "marche.objet_marche",
-    },
-    { 
-      key: "5",
-      title: "Delais du marché",
-      dataIndex: "marche.delaisMarche",
-      sorter: (a: AppelOffre, b: AppelOffre) => new Date(a.marche.delaisMarche).getTime() - new Date(b.marche.delaisMarche).getTime(),
-    },
-    {
-      key: "6",
       title: "Coût estimé",
       dataIndex: "coutEstime_AO",
       sorter: (a: AppelOffre, b: AppelOffre) => a.coutEstime_AO - b.coutEstime_AO,
     },
     {
-      key: "7",
+      key: "5",
       title: "Caution provisoire",
       dataIndex: "cautionProvisoire_AO",
       sorter: (a: AppelOffre, b: AppelOffre) => a.cautionProvisoire_AO - b.cautionProvisoire_AO,
@@ -201,7 +191,7 @@ const List_AO = () => {
   return (
     <Sidebar>
       <div className="list-container">
-        <FloatButton icon={<PlusOutlined />} onClick={() => navigate("/add-ao")} />
+        <FloatButton icon={<PlusOutlined />} onClick={() => navigate("/AddAO")} />
         <div className="list-header">
           <h2 className="list-title">Liste des Appels d'offre</h2>
         </div>
@@ -211,11 +201,15 @@ const List_AO = () => {
           rowKey="num_Ordre_AO"
           loading={loading}
         />
-         <Modal 
+        <Modal 
           title="Modifier l'appel d'offre" 
-          open={isEditing} 
-          onCancel={resetEditing} 
-          onOk={() => form.submit()}
+          open={isEditModalVisible}
+          onCancel={() => {
+            setIsEditModalVisible(false);
+            setIsEditing(false);
+            setEditingAppelOffre(null);
+          }}
+          onOk={form.submit}
           width={500}
         >
           <Form 
@@ -241,36 +235,32 @@ const List_AO = () => {
               />
             </Form.Item>
 
-            <Form.Item label="Date et heure d'ouverture des plis">
-              <DatePicker
-                style={{ width: "100%" }}
-                value={editingAppelOffre?.dateOuverturePli_AO ? dayjs(editingAppelOffre.dateOuverturePli_AO) : null}
-                onChange={(date) =>
-                  setEditingAppelOffre((pre) =>
-                    pre ? { ...pre, dateOuverturePli_AO: date ? date.format("YYYY-MM-DD") : "" } : pre
-                  )
-                }
-              />
-              <TimePicker
-                style={{ width: "100%" }}
-                value={editingAppelOffre?.heureOuverturePli_AO ? dayjs(editingAppelOffre.heureOuverturePli_AO) : null}
-                onChange={(time) =>
-                  setEditingAppelOffre((pre) =>
-                    pre ? { ...pre, heureOuverturePli_AO: time ? time.format("HH:mm") : "" } : pre
-                  )
-                }
-              />
-            </Form.Item>
-            <Form.Item label="Objet de marche">
-              <Input
-                value={editingAppelOffre?.marche.objet_marche}
-                onChange={(e) =>
-                  setEditingAppelOffre((pre) =>
-                    pre ? { ...pre, marche: { ...pre.marche, objet_marche: e.target.value } } : pre
-                  )
-                }
-              />
-            </Form.Item>
+            <Form.Item 
+                name="dateOuverturePli_AO"
+                label="Date d'ouverture des plis">
+                
+                <DatePicker
+                  style={{ width: "100%" }}
+                  format="YYYY-MM-DD"
+                  placeholder="Sélectionner la date d'ouverture des plis"
+                  className="date-picker-container"
+                  value={form.getFieldValue('dateOuverturePli_AO') ? dayjs(form.getFieldValue('dateOuverturePli_AO')) : null}
+                               
+                />
+              </Form.Item>
+
+              <Form.Item 
+                name="heureOuverturePli_AO"
+                label="Heure d'ouverture des plis">
+                <TimePicker
+                  style={{ width: "100%" }}
+                  format="HH:mm:ss"
+                  placeholder="Sélectionner Heure d'ouverture des plis"
+                  className="date-picker-container"
+                  value={form.getFieldValue('delaisMarche') ? dayjs(form.getFieldValue('delaisMarche')) : null}
+             
+                />
+              </Form.Item>  
 
             <Form.Item label="Coût estimé">
               <Input

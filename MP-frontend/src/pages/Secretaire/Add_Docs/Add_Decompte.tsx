@@ -1,49 +1,50 @@
 import React, { useState, useEffect } from 'react';
 import { Form, Input, Button, Select, DatePicker, message } from 'antd';
-import { useNavigate } from 'react-router-dom';
+import { data, useNavigate } from 'react-router-dom';
 import { createDecompte } from '../../../services/DecompteService';
 import Sidebar from '../../../components/Sidebar/Sidebar_Sec';
+import { getMarches, Marche } from "../../../services/MarcheService";
 import '../PagesSec.css';
+import { getSocietes, Societe } from '../../../services/SocieteService';
 
 const { Option } = Select;
 
 const Add_Decompte = () => {
   const [form] = Form.useForm();
   const navigate = useNavigate();
-  const [societes, setSocietes] = useState([]);
-  const [marches, setMarches] = useState([]);
+  const [societes, setSocietes] = useState<Societe[]>([]);
+  const [loading, setLoading] = useState(true);
 
   useEffect(() => {
     // Fetch societes and marches data
     const fetchSocietes = async () => {
       try {
         // Replace with actual API call
-        const data = await fetch('/api/societes').then(res => res.json());
-        setSocietes(data);
+        const dataSociete = await getSocietes();
+        if (Array.isArray(dataSociete)) {
+          setSocietes(dataSociete);
+        } 
+        setLoading(false);
       } catch (error) {
         console.error('Error fetching societes:', error);
+        message.error('Erreur lors du chargement des societes');
+        setLoading(false);
       }
     };
-
-    const fetchMarches = async () => {
-      try {
-        // Replace with actual API call
-        const data = await fetch('/api/marches').then(res => res.json());
-        setMarches(data);
-      } catch (error) {
-        console.error('Error fetching marches:', error);
-      }
-    };
-
     fetchSocietes();
-    fetchMarches();
   }, []);
 
   const onFinish = async (values: any) => {
     try {
-      await createDecompte(values);
+      // Formatage des dates avec gestion des valeurs null/undefined
+      const payload = {
+        ...values,
+        dateFait_D: values.dateFait_D.format('YYYY-MM-DD'),
+        datePaiement: values.datePaiement.format('YYYY-MM-DD')
+      };
+      await createDecompte(payload);
       message.success('Décompte ajouté avec succès');
-      navigate('/secretaire/list-decomptes');
+      navigate('/Decompte');
     } catch (error) {
       message.error('Erreur lors de l\'ajout du décompte');
       console.error('Error:', error);
@@ -62,14 +63,6 @@ const Add_Decompte = () => {
             layout="vertical"
             onFinish={onFinish}
           >
-            <Form.Item
-              name="nom_D"
-              label="Nom"
-              rules={[{ required: true, message: 'Veuillez entrer le nom' }]}
-            >
-              <Input />
-            </Form.Item>
-
             <Form.Item
               name="numOrdre_D"
               label="Numéro d'ordre"
@@ -95,28 +88,30 @@ const Add_Decompte = () => {
             </Form.Item>
 
             <Form.Item
+              name="dateFait_D"
+              label="Date de fait"
+              rules={[{ required: true, message: 'Veuillez sélectionner une date' }]}
+            >
+              <DatePicker />
+            </Form.Item>
+
+            <Form.Item
+              name="datePaiement"
+              label="Date de paiement"
+              rules={[{ required: true, message: 'Veuillez sélectionner une date' }]}
+            >
+              <DatePicker />
+            </Form.Item>
+
+            <Form.Item
               name="societe_D"
               label="Société"
               rules={[{ required: true, message: 'Veuillez sélectionner une société' }]}
             >
               <Select>
                 {societes.map((societe: any) => (
-                  <Option key={societe.id_S} value={societe.id_S}>
-                    {societe.nom_S}
-                  </Option>
-                ))}
-              </Select>
-            </Form.Item>
-
-            <Form.Item
-              name="marche_D"
-              label="Marché"
-              rules={[{ required: true, message: 'Veuillez sélectionner un marché' }]}
-            >
-              <Select>
-                {marches.map((marche: any) => (
-                  <Option key={marche.id_M} value={marche.id_M}>
-                    {marche.numOrdre_M}
+                  <Option key={societe.id_SO} value={societe.id_SO}>
+                    {societe.raisonSociale}
                   </Option>
                 ))}
               </Select>

@@ -34,13 +34,18 @@ export interface Marche {
   serviceConcerne: string | null;
   montantFinal: number | null;
   isArchived: boolean;
-  societe: Societe;
-  appel_offres?: any[];
-  notificationAppr?: any;
-  ordreDeServices?: any[];
-  pvReceptions?: any[];
-  decomptes?: any[];
+  societe?: Societe;
 }
+
+export const getMarchesById = async (id: number): Promise<Marche> => {
+  try {
+    const response = await api.get(`/api/marche/${id}`);
+    return response.data;
+  } catch (error) {
+    console.error("Erreur lors de la récupération du marché :", error);
+    throw error;
+  }
+};
 
 export const getMarches = async (): Promise<Marche[]> => {
   try {
@@ -55,7 +60,7 @@ export const getMarches = async (): Promise<Marche[]> => {
 export const deleteMarche = async (numOrdre: string): Promise<void> => {
   try {
     console.log('Deleting marche with numOrdre:', numOrdre);
-    await api.delete(`/api/marche/delete/byNum/${numOrdre}`);
+    await api.delete('/api/marche/delete/${numOrdre}');
     console.log('Marche deleted successfully');
   } catch (error: any) {
     console.error("Erreur lors de la suppression du marché :", error);

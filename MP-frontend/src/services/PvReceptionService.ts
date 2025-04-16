@@ -1,4 +1,5 @@
-import axios from 'axios';
+import api from "../utils/axiosInstance";
+import { Marche } from './MarcheService';
 
 export enum TypePvReception {
     PROVISOIRE = 'PROVISOIRE',
@@ -6,28 +7,32 @@ export enum TypePvReception {
 }
 
 export interface PvReception {
-    id_PVR: number;
+    id_PVR?: number;
     type_PVR: TypePvReception;
     date_PVR: string;
-    marche_PVR: {
-        id_M: number;
-        numOrdre_M: string;
-    };
+    marche_PVR? : number;
+    marche_PVR_obj?: Marche;
 }
 
-export const createPvReception = async (pvReception: Omit<PvReception, 'id_PVR'>) => {
+export const createPvReception = async (
+    pvReception: Omit<PvReception, 'id_PVR'>
+  ): Promise<PvReception> => {
     try {
-        const response = await axios.post('/api/pv-receptions', pvReception);
-        return response.data;
+      console.log(
+        "Envoi des données au backend:",
+        JSON.stringify(pvReception, null, 2)
+      );
+      const response = await api.post("/api/PvReception/add", pvReception);
+      return response.data;
     } catch (error) {
-        console.error('Error creating PV reception:', error);
-        throw error;
+      console.error("Erreur lors de la création de la notification :", error);
+      throw error;
     }
-};
+  };
 
 export const getPvReceptions = async (): Promise<PvReception[]> => {
     try {
-        const response = await axios.get('/api/pv-receptions');
+        const response = await api.get("/api/PvReception/get");
         return response.data;
     } catch (error) {
         console.error('Error fetching PV receptions:', error);
@@ -37,7 +42,7 @@ export const getPvReceptions = async (): Promise<PvReception[]> => {
 
 export const deletePvReception = async (id: number): Promise<void> => {
     try {
-        await axios.delete(`/api/pv-receptions/${id}`);
+        await api.delete("/api/PvReception/delete/" + id);
     } catch (error) {
         console.error('Error deleting PV reception:', error);
         throw error;
@@ -46,7 +51,7 @@ export const deletePvReception = async (id: number): Promise<void> => {
 
 export const updatePvReception = async (pvReception: PvReception): Promise<PvReception> => {
     try {
-        const response = await axios.put(`/api/pv-receptions/${pvReception.id_PVR}`, pvReception);
+        const response = await api.put("/api/PvReception/update/" + pvReception.id_PVR, pvReception);
         return response.data;
     } catch (error) {
         console.error('Error updating PV reception:', error);

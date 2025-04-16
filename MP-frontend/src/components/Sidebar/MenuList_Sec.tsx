@@ -20,19 +20,19 @@ const MenuList = () => {
     if (key === "deconnexion") {
       navigate("/login"); 
     } else if (key === "AO") {
-      navigate("/list-ao"); 
+      navigate("/AO"); 
     } else if (key === "marche") {
-      navigate("/list-marche"); 
+      navigate("/Marche"); 
     } else if (key === "OS") {
-      navigate("/list-os"); 
+      navigate("/OrdreService"); 
     } else if (key === "NOT") {
-      navigate("/list-notification"); 
+      navigate("/Notification"); 
     } else if (key === "PV") {
-      navigate("/list-pv"); 
+      navigate("/PV"); 
     } else if (key === "Decompte") {
-      navigate("/list-decompte"); 
+      navigate("/Decompte"); 
     } else if (key === "Societe") {
-      navigate("/list-societe");
+      navigate("/Societe");
     }
   };
 

@@ -14,9 +14,9 @@ import { useNavigate } from "react-router-dom";
 import Sidebar from "../../../components/Sidebar/Sidebar_Sec";
 import { getMarches } from "../../../services/MarcheService";
 import { createAppelOffre } from "../../../services/AOService";
-import { AppelOffre } from '../../../services/AOService';
 import { Marche } from '../../../services/MarcheService';
 import "../PagesSec.css";
+import dayjs from 'dayjs';
 
 const Add_AO = () => {
   const [form] = Form.useForm();
@@ -27,23 +27,14 @@ const Add_AO = () => {
   useEffect(() => {
     const fetchMarches = async () => {
       try {
-        console.log("Début de la récupération des marchés...");
         const data = await getMarches();
-        console.log(
-          "Données des marchés reçues:",
-          JSON.stringify(data, null, 2)
-        );
         if (data && Array.isArray(data)) {
           setMarches(data);
         } else {
-          console.error("Les données reçues ne sont pas un tableau:", data);
           setMarches([]);
         }
       } catch (error) {
-        console.error(
-          "Erreur détaillée lors de la récupération des marchés :",
-          error
-        );
+        console.error("Erreur lors de la récupération des marchés :", error);
         setMarches([]);
       } finally {
         setLoading(false);
@@ -55,54 +46,28 @@ const Add_AO = () => {
 
   const onFinish = async (values: any) => {
     try {
-      // Vérification du marché sélectionné
       if (!values.idMarche) {
         message.error("Veuillez sélectionner un marché");
         return;
       }
-
-    // Convertir la date en format ISO
-    const date_AO = values.date_AO
-      ? values.date_AO.format("YYYY-MM-DD")
-      : null;
-    const dateOuverturePli_AO = values.dateOuverturePli_AO
-      ? values.dateOuverturePli_AO.format("YYYY-MM-DD")
-      : null;
-
-    // Convertir les coûts en nombres
-    const coutEstime_AO = parseFloat(values.coutEstime_AO);
-    const cautionProvisoire_AO = parseFloat(values.cautionProvisoire_AO);
-
-      const idMarche = parseInt(values.idMarche);
-      console.log("Marché converti:", idMarche);
-
-      const appelOffre: AppelOffre = {
-        num_Ordre_AO: values.num_Ordre_AO.toString(),
-        type_AO: values.type_AO,
-        date_AO: date_AO,
-        dateOuverturePli_AO: dateOuverturePli_AO,
-        heureOuverturePli_AO: values.heureOuverturePli_AO,
-        coutEstime_AO: coutEstime_AO,
-        cautionProvisoire_AO: cautionProvisoire_AO,
-        statut_AO: values.statut_AO,
-        marche: marches.find((marche) => marche.id_Marche === idMarche)!,
+  
+      const payload = {
+        ...values,
+        dateOuverturePli_AO: values.dateOuverturePli_AO 
+          ? dayjs(values.dateOuverturePli_AO).format('YYYY-MM-DD') 
+          : null,
+        heureOuverturePli_AO: values.heureOuverturePli_AO 
+          ? dayjs(values.heureOuverturePli_AO).format('HH:mm:ss') 
+          : null
       };
-
-      console.log("Données à envoyer:", JSON.stringify(appelOffre, null, 2));
-
-      if (!appelOffre.marche) {
-        message.error("Le marché sélectionné n'est pas valide");
-        return;
-      }
-
-      await createAppelOffre(appelOffre);
-      message.success("L'appel d'offre a été ajouté avec succès");
-      navigate("/list-ao");
-    } catch (error) {
-      console.error("Erreur détaillée:", error);
-      message.error(
-        "Une erreur est survenue lors de l'ajout de l'appel d'offre"
-      );
+  
+      await createAppelOffre(payload);
+      message.success('Appel d\'offre ajouté avec succès!');
+      form.resetFields();
+      navigate('/AO');
+    } catch (err) {
+      console.error('Erreur:', err);
+      message.error('Erreur lors de l\'ajout');
     }
   };
 

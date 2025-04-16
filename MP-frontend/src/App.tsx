@@ -75,20 +75,20 @@ function App() {
             </Route>
             <Route element={<RoleProtectedRoute allowedRoles={["SECRETAIRE"]} />}>
               <Route path="/accueil-secretaire" element={<Accueil_Sec />} />
-              <Route path="/add-ao" element={<Add_AO />} />
-              <Route path="/list-ao" element={<List_AO />} />
-              <Route path="/add-marche" element={<Add_Marche />} />
-              <Route path="/list-marche" element={<List_Marche />} />
-              <Route path="/add-os" element={<Add_OS />} />
-              <Route path="/list-os" element={<List_OS />} />
-              <Route path="/add-notification" element={<Add_Notification />} />
-              <Route path="/list-notification" element={<List_Notification />} />
-              <Route path="/add-pv" element={<Add_PV />} />
-              <Route path="/list-pv" element={<List_PV />} />
-              <Route path="/add-decompte" element={<Add_Decompte />} />
-              <Route path="/list-decompte" element={<List_Decompte />} />
-              <Route path="/add-societe" element={<Add_Societe />} />
-              <Route path="/list-societe" element={<List_Societe />} />
+              <Route path="/AddAO" element={<Add_AO />} />
+              <Route path="/AO" element={<List_AO />} />
+              <Route path="/AddMarche" element={<Add_Marche />} />
+              <Route path="/Marche" element={<List_Marche />} />
+              <Route path="/AddOs" element={<Add_OS />} />
+              <Route path="/OrdreService" element={<List_OS />} />
+              <Route path="/AddNotification" element={<Add_Notification />} />
+              <Route path="/Notification" element={<List_Notification />} />
+              <Route path="/AddPV" element={<Add_PV />} />
+              <Route path="/PV" element={<List_PV />} />
+              <Route path="/AddDecompte" element={<Add_Decompte />} />
+              <Route path="/Decompte" element={<List_Decompte />} />
+              <Route path="/AddSociete" element={<Add_Societe />} />
+              <Route path="/Societe" element={<List_Societe />} />
             </Route>
           </Routes>
         </Router>

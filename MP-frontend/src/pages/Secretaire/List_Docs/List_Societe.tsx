@@ -148,7 +148,7 @@ const List_Societe = () => {
     <Sidebar>
       <div className="list-container">
         <h1>Liste des sociétés</h1>
-        <FloatButton icon={<PlusOutlined />} onClick={() => navigate("/add-societe")} />
+        <FloatButton icon={<PlusOutlined />} onClick={() => navigate("/AddSociete")} />
         <Table
           columns={columns}
           dataSource={dataSource}

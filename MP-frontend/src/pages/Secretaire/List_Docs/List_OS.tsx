@@ -1,36 +1,54 @@
 import { useState, useEffect } from "react";
-import { Table, Modal, Input, FloatButton, message, Form, DatePicker } from "antd";
+import { Table, Modal, Input, FloatButton, message, Form, DatePicker, Select } from "antd";
 import { EditOutlined, DeleteOutlined, PlusOutlined } from "@ant-design/icons";
 import { useNavigate } from "react-router-dom";
 import dayjs from 'dayjs';
 import Sidebar from "../../../components/Sidebar/Sidebar_Sec";
 import { deleteOrdreDeService, OrdreDeService, updateOrdreDeService, getOrdresDeService } from "../../../services/OSService";
+import { getMarches, Marche } from "../../../services/MarcheService";
 
 const List_OS = () => {
   const [isEditing, setIsEditing] = useState(false);
-  const [dataSource, setDataSource] = useState<OrdreDeService[]>([]);
-  const [loading, setLoading] = useState(true);
-  const navigate = useNavigate();
-  const [form] = Form.useForm();
-  const [editingOS, setEditingOS] = useState<OrdreDeService | null>(null);
+      const [editingOS, setEditingOS] = useState<OrdreDeService | null>(null);
+      const [dataSource, setDataSource] = useState<OrdreDeService[]>([]);
+      const [loading, setLoading] = useState(true);
+      const [marches, setMarches] = useState<Marche[]>([]);
+      const navigate = useNavigate();
+      const [form] = Form.useForm();
+      
       
   // Charger les appels d'offre depuis l'API
   useEffect(() => {
-    const fetchMarches = async () => {
-      try {
-        const data = await getOrdresDeService();
-        setDataSource(data as OrdreDeService[]);
-      } catch (error) {
-        console.error(
-          "Erreur lors de la récupération des marchés :",
-          error
-        );
-      } finally {
-        setLoading(false);
-      }
-    };
-    fetchMarches();
-  }, []);
+          const fetchData = async () => {
+              try {
+                  setLoading(true);
+                  const [osData, marchesData] = await Promise.all([
+                      getOrdresDeService(),
+                      getMarches()
+                  ]);
+  
+                  // Associer les marchés aux notifications
+                  const enrichedData = osData.map(os => {
+                      const marche = marchesData.find(m => m.id_Marche === os.marche_OS);
+                      console.log(`Notification ${os.numOrdre_OS}: marche_NOTIF = ${os.marche_OS}, found marche =`, marche);
+                      return {
+                          ...os,
+                          marche_OS_obj: marche,
+                          marche_OS: marche?.id_Marche
+                      };
+                  });
+  
+                  setDataSource(enrichedData);
+                  setMarches(marchesData);
+              } catch (error) {
+                  console.error("Erreur lors du chargement:", error);
+                  message.error("Erreur de chargement des données");
+              } finally {
+                  setLoading(false);
+              }
+          };
+          fetchData();
+      }, []);
       
       
         const onDeleteOS = async (record: OrdreDeService) => {
@@ -98,14 +116,13 @@ const List_OS = () => {
   const columns = [
     {
       key: "1",
-      title: "numero de l'ordre de service",
-      dataIndex: "numOrdre_OS",
-    },
-    {
-      key: "2",
       title: "Marché",
       render: (record: OrdreDeService) => 
-        `${record.marche_OS.numOrdre} - ${record.marche_OS.objet_marche}`,
+        `${record.marche_OS_obj?.numOrdre} - ${record.marche_OS_obj?.objet_marche}`,
+    },{
+      key: "2",
+      title: "numero de l'ordre de service",
+      dataIndex: "numOrdre_OS",
     },
     {
       key: "3",
@@ -129,14 +146,17 @@ const List_OS = () => {
 
   return (
     <Sidebar>
-      <div className="form">
-        <FloatButton icon={<PlusOutlined />} onClick={() => navigate("/add-os")} />
-        <Table
-          columns={columns}
-          dataSource={dataSource}
-          rowKey={(record) => record.id_OS}
-          loading={loading}
-        />
+      <div className="list-header">
+        <h2 className="list-title">Liste des Ordres de service</h2>
+      </div>
+      <FloatButton icon={<PlusOutlined />} onClick={() => navigate("/AddOS")} />
+      <Table
+        columns={columns}
+        dataSource={dataSource}
+        rowKey={(record) => record.id_OS}
+        loading={loading}
+        bordered
+      />
         <Modal 
           title="Modifier l'ordre de service" 
           open={isEditing} 
@@ -155,12 +175,29 @@ const List_OS = () => {
                 disabled
               />
             </Form.Item>
-            <Form.Item label="Numéro de marché">
-              <Input
-                value={editingOS?.marche_OS.numOrdre}
-                disabled
-              />
-            </Form.Item>
+            <Form.Item
+                            name="marche_NOTIF"
+                            label="Marché"
+                            rules={[{ required: true, message: 'Veuillez sélectionner un marché' }]}
+                        >
+                            <Select 
+                                placeholder="Sélectionner le marché"
+                                showSearch
+                                optionFilterProp="children"
+                                filterOption={(input, option) =>
+                                    String(option?.children ?? '').toLowerCase().includes(input.toLowerCase())
+                                }
+                            >
+                                {marches.map(marche => (
+                                    <Select.Option 
+                                        key={marche.id_Marche} 
+                                        value={marche.id_Marche}
+                                    >
+                                        {`${marche.numOrdre} - ${marche.objet_marche}`}
+                                    </Select.Option>
+                                ))}
+                            </Select>
+                        </Form.Item>
             <Form.Item label="Type d'ordre de service">
               <Input
                 value={editingOS?.type_OS}
@@ -181,7 +218,7 @@ const List_OS = () => {
             </Form.Item>
           </Form>
         </Modal>
-      </div>
+      
     </Sidebar>
   );
 };

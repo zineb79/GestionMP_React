@@ -6,22 +6,8 @@ import { getDecomptes, deleteDecompte, updateDecompte } from '../../../services/
 import Sidebar from '../../../components/Sidebar/Sidebar_Sec';
 import '../PagesSec.css';
 import dayjs from 'dayjs';
-
-export interface Decompte {
-    id_D: number;
-    nom_D: string;
-    numOrdre_D: string;
-    aCompte: number;
-    somme_D: number;
-    societe_D: {
-        id_S: number;
-        nom_S: string;
-    };
-    marche_D: {
-        id_M: number;
-        numOrdre_M: string;
-    };
-}
+import { getSocietes, Societe } from '../../../services/SocieteService';
+import { Decompte } from '../../../services/DecompteService';
 
 const List_Decomptes = () => {
   const [isEditing, setIsEditing] = useState(false);
@@ -30,20 +16,42 @@ const List_Decomptes = () => {
   const [loading, setLoading] = useState(true);
   const navigate = useNavigate();
   const [form] = Form.useForm();
+  const [societes, setSocietes] = useState<Societe[]>([]);
 
   useEffect(() => {
     const fetchDecomptes = async () => {
       try {
-        const data = await getDecomptes();
-        setDataSource(data);
+        setLoading(true);
+        const [decomptesData, societesData] = await Promise.all([
+          getDecomptes(),
+          getSocietes()
+        ]);
+      
+        // Associer les societes aux decomptes
+        const enrichedData = decomptesData.map(decompte => {
+          const societe = societesData.find(s => s.id_SO === decompte.societe_D);
+          const marche = societesData.find(s => s.id_SO === decompte.idMarche);
+          console.log(`Decompte ${decompte.numOrdre_D}: societe_D = ${decompte.societe_D}, found societe =`, societe);
+          return {
+            ...decompte,
+            societe_D: societe?.id_SO || 0,
+            idMarche: marche?.id_SO || 0
+          };
+        });
+      
+        setDataSource(enrichedData);
+        console.log("Décomptes chargés:", enrichedData);
+        console.log("Marchés chargés:", societesData);
+        console.log("Données enrichies:", enrichedData);
+        console.log("Marchés IDs:", societesData.map(s => s.id_SO));
       } catch (error) {
-        console.error('Error fetching decomptes:', error);
-        message.error('Erreur lors du chargement des décomptes');
-      } finally {
-        setLoading(false);
-      }
-    };
-
+                      console.error("Erreur lors du chargement:", error);
+                      message.error("Erreur de chargement des données");
+                  } finally {
+                      setLoading(false);
+                  }
+              };
+      
     fetchDecomptes();
   }, []);
 
@@ -54,7 +62,7 @@ const List_Decomptes = () => {
       okType: "danger",
       onOk: async () => {
         try {
-          await deleteDecompte(record.id_D);
+          await deleteDecompte(record.id_D!);
           setDataSource((pre) => pre.filter((dec) => dec.id_D !== record.id_D));
           message.success("Le décompte a été supprimé avec succès");
         } catch (error) {
@@ -158,7 +166,7 @@ const List_Decomptes = () => {
           <div className="list-header">
             <h2 className="list-title">Liste des Décomptes</h2>
           </div>
-          <FloatButton icon={<PlusOutlined />} onClick={() => navigate("/add-decompte")} />
+          <FloatButton icon={<PlusOutlined />} onClick={() => navigate("/AddDecompte")} />
           <Table
             columns={columns}
             dataSource={dataSource}
@@ -181,7 +189,7 @@ const List_Decomptes = () => {
                 <Form.Item
                   label="Nom"
                   name="nom_D"
-                  initialValue={editingDecompte?.nom_D}
+                  initialValue={editingDecompte?.numOrdre_D}
                 >
                   <Input />
                 </Form.Item>

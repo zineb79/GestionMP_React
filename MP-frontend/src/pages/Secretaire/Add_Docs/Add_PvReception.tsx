@@ -5,35 +5,45 @@ import { createPvReception, PvReception, TypePvReception } from '../../../servic
 import Sidebar from '../../../components/Sidebar/Sidebar_Sec';
 import dayjs from 'dayjs';
 import '../PagesSec.css';
+import { Marche, getMarches } from '../../../services/MarcheService';
 
 const { Option } = Select;
 
 const Add_PvReception = () => {
-  const [form] = Form.useForm();
-  const navigate = useNavigate();
-  const [marches, setMarches] = useState([]);
-  const [editingPvReception, setEditingPvReception] = useState<PvReception | null>(null);
-
+     const [form] = Form.useForm();
+     const navigate = useNavigate();
+     const [marches, setMarches] = useState<Marche[]>([]);
+     const [loading, setLoading] = useState(true);
+     
   useEffect(() => {
-    // Fetch marches data
-    const fetchMarches = async () => {
-      try {
-        // Replace with actual API call
-        const data = await fetch('/api/marches').then(res => res.json());
-        setMarches(data);
-      } catch (error) {
-        console.error('Error fetching marches:', error);
-      }
-    };
-
-    fetchMarches();
-  }, []);
+      const fetchMarches = async () => {
+        try {
+          const data = await getMarches();
+          if (data && Array.isArray(data)) {
+            setMarches(data);
+          }
+        } catch (error) {
+          console.error("Erreur lors de la récupération des marchés :", error);
+          message.error("Erreur lors du chargement des données");
+        } finally {
+          setLoading(false);
+        }
+      };
+  
+      fetchMarches();
+    }, []);
 
   const onFinish = async (values: any) => {
     try {
-      await createPvReception(values);
+      const payload = {
+        ...values,
+        date_PVR: values.date_PVR ? dayjs(values.date_PVR).format('YYYY-MM-DD') : null
+      };
+      console.log('Form values:', values);
+      console.log('Payload to backend:', payload);
+      await createPvReception(payload);
       message.success('PV de réception ajouté avec succès');
-      navigate('/secretaire/list-pv-receptions');
+      navigate('/PV');
     } catch (error) {
       message.error('Erreur lors de l\'ajout du PV de réception');
       console.error('Error:', error);
@@ -68,14 +78,24 @@ const Add_PvReception = () => {
               label="Marché"
               rules={[{ required: true, message: 'Veuillez sélectionner un marché' }]}
             >
-              <Select>
-                {marches.map((marche: any) => (
-                  <Option key={marche.id_M} value={marche.id_M}>
-                    {marche.numOrdre_M}
-                  </Option>
-                ))}
-              </Select>
-            </Form.Item>
+              <Select placeholder="Sélectionner le marché" loading={loading}>
+                            {marches && marches.length > 0 ? (
+                              marches.map((marche) => (
+                                <Select.Option
+                                  key={marche.id_Marche}
+                                  value={marche.id_Marche}
+                                  disabled={!marche.id_Marche}
+                                >
+                                  {`${marche.numOrdre} - ${marche.objet_marche}`}
+                                </Select.Option>
+                              ))
+                            ) : (
+                              <Select.Option value="" disabled>
+                                Aucun marché disponible
+                              </Select.Option>
+                            )}
+                          </Select>
+                        </Form.Item>
 
             <Form.Item
               name="date_PVR"
@@ -84,12 +104,8 @@ const Add_PvReception = () => {
             >
               <DatePicker
                 style={{ width: "100%" }}
-                value={editingPvReception?.date_PVR ? dayjs(editingPvReception.date_PVR) : null}
-                onChange={(date) =>
-                  setEditingPvReception((pre) =>
-                    pre ? { ...pre, date_PVR: date ? date.format("YYYY-MM-DD") : "" } : pre
-                  )
-                }
+                format="YYYY-MM-DD"
+                
               />
             </Form.Item>
 

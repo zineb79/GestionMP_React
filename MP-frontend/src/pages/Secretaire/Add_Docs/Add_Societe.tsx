@@ -23,7 +23,7 @@ const Add_Societe = () => {
       await createSociete(societeData);
       message.success('Société ajoutée avec succès');
       form.resetFields();
-      navigate('/list-societe');
+      navigate('/Societe');
     } catch (error) {
       console.error("Erreur lors de l'ajout de la société:", error);
       message.error("Erreur lors de l'ajout de la société");
