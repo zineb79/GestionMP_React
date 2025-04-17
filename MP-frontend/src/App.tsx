@@ -1,6 +1,6 @@
 import React, { useEffect } from "react";
 import { BrowserRouter as Router, Route, Routes } from "react-router-dom";
-import { ConfigProvider, theme, Button } from 'antd';
+import { ConfigProvider, theme, Button, Input } from 'antd';
 import { HiOutlineSun , HiOutlineMoon } from 'react-icons/hi';
 import './styles/theme.css';
 import Login from "./pages/Login";
@@ -25,6 +25,7 @@ import List_Societe from "./pages/Secretaire/List_Docs/List_Societe";
 
 function App() {
   const [isDarkMode, setIsDarkMode] = React.useState(false);
+  const [searchQuery, setSearchQuery] = React.useState('');
 
   useEffect(() => {
     // Check system preference
@@ -53,18 +54,25 @@ function App() {
       }}
     >
       <div className={`app-container ${isDarkMode ? 'theme-dark' : 'theme-light'}`}>
-        <Button
-          type="text"
-          icon={isDarkMode ? <HiOutlineSun  /> : <HiOutlineMoon  />}
-          onClick={toggleTheme}
-          style={{
-            position: 'fixed',
-            top: '70px',
-            right: '20px',
-            zIndex: 1000,
-            color: isDarkMode ? '#fff' : '#000'
-          }}
-        />
+        <div style={{
+          position: 'fixed',
+          top: '70px',
+          right: '20px',
+          zIndex: 1000,
+          display: 'flex',
+          gap: '10px',
+          alignItems: 'center'
+        }}>
+          
+          <Button
+            type="text"
+            icon={isDarkMode ? <HiOutlineSun  /> : <HiOutlineMoon  />}
+            onClick={toggleTheme}
+            style={{
+              color: isDarkMode ? '#fff' : '#000'
+            }}
+          />
+        </div>
         <Router>
           <Routes>
             <Route path="/" element={<Login />} />

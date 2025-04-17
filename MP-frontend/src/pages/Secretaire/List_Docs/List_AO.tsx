@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from "react";
-import { Table, Modal, Input, FloatButton, Form, DatePicker, Select, message ,TimePicker} from "antd";
+import { Table, Modal, Input, FloatButton, Form, DatePicker, Select, message ,TimePicker, Tag} from "antd";
 import { EditOutlined, DeleteOutlined, PlusOutlined, DownloadOutlined, FileWordOutlined } from "@ant-design/icons";
 import { useNavigate } from "react-router-dom";
 import '../PagesSec.css'
@@ -69,7 +69,9 @@ const List_AO = () => {
     form.setFieldsValue({
       ...record,
       dateOuverturePli_AO: record.dateOuverturePli_AO ? dayjs(record.dateOuverturePli_AO) : null,
-      heureOuverturePli_AO: record.heureOuverturePli_AO ? dayjs(record.heureOuverturePli_AO) : null,
+      heureOuverturePli_AO: editingAppelOffre?.heureOuverturePli_AO 
+    ? dayjs(editingAppelOffre.heureOuverturePli_AO, 'HH:mm:ss') 
+    : null,
       statut_AO: record.statut_AO
     });
   };
@@ -80,6 +82,15 @@ const List_AO = () => {
     try {
       if (!editingAppelOffre.id_AO) {
         message.error("ID de l'appel d'offre manquant");
+        return;
+      }
+
+      // Validate date before sending
+      const today = dayjs();
+      const selectedDate = dayjs(editingAppelOffre.dateOuverturePli_AO);
+      
+      if (selectedDate.isBefore(today)) {
+        message.error("La date de l'Appel d'Offre ne peut pas être antérieure à aujourd'hui");
         return;
       }
 
@@ -161,6 +172,23 @@ const List_AO = () => {
       key: "8",
       title: "Statut",
       dataIndex: "statut_AO",
+      render: (statut: string) => {
+        let color = 'default';
+        switch (statut) {
+          case 'ENCOURS':
+            color = 'orange'; // En cours = orange
+            break;
+          case 'VALIDE':
+            color = 'green'; // Validé = vert
+            break;
+          case 'INFRUTUEUSE':
+            color = 'red'; // Infructueux = rouge
+            break;
+          default:
+            color = 'gray'; // Par défaut (au cas où)
+        }
+        return <Tag color={color}>{statut}</Tag>;
+      },
       filters: loadingStatuts ? [] : statuts.map(statut => ({
         text: statut,
         value: statut
@@ -244,8 +272,15 @@ const List_AO = () => {
                   format="YYYY-MM-DD"
                   placeholder="Sélectionner la date d'ouverture des plis"
                   className="date-picker-container"
-                  value={form.getFieldValue('dateOuverturePli_AO') ? dayjs(form.getFieldValue('dateOuverturePli_AO')) : null}
-                               
+                  disabledDate={(current) => current && current < dayjs().startOf('day')}
+                  onChange={(date) => {
+                    if (date) {
+                      setEditingAppelOffre(prev => prev ? {
+                        ...prev, 
+                        dateOuverturePli_AO: date.format('YYYY-MM-DD')
+                      } : prev);
+                    }
+                  }}
                 />
               </Form.Item>
 
@@ -256,11 +291,17 @@ const List_AO = () => {
                   style={{ width: "100%" }}
                   format="HH:mm:ss"
                   placeholder="Sélectionner Heure d'ouverture des plis"
-                  className="date-picker-container"
-                  value={form.getFieldValue('delaisMarche') ? dayjs(form.getFieldValue('delaisMarche')) : null}
-             
+                  onChange={(time) => {
+                    if (time) {
+                      const timeString = time.format('HH:mm:ss');
+                      setEditingAppelOffre(prev => prev ? {
+                        ...prev,
+                        heureOuverturePli_AO: timeString
+                      } : null);
+                    }
+                  }}
                 />
-              </Form.Item>  
+              </Form.Item>
 
             <Form.Item label="Coût estimé">
               <Input

@@ -16,7 +16,7 @@ import { Marche } from "./MarcheService";
   
   export const getAppelsOffre = async (): Promise<AppelOffre[]> => {
     try {
-      const response = await api.get("/api/AppelOffre");
+      const response = await api.get("/api/AppelOffre/getAll");
       return response.data;
     } catch (error) {
       console.error("Erreur lors de la récupération des appels d'offre :", error);

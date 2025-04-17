@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { Table, Modal, Input, FloatButton, Form, Select, message, DatePicker } from "antd";
+import { Table, Modal, Input, FloatButton, Form, Select, message, DatePicker, Tag } from "antd";
 import { EditOutlined, DeleteOutlined, PlusOutlined } from "@ant-design/icons";
 import { useNavigate } from "react-router-dom";
 import { Marche } from '../../../services/MarcheService';
@@ -15,6 +15,7 @@ const List_Marche = () => {
   const [loading, setLoading] = useState(true);
   const [form] = Form.useForm();
   const navigate = useNavigate();
+  const [statuts, setStatuts] = useState<string[]>([]);
 
   // Charger les marchés depuis l'API
   useEffect(() => {
@@ -112,6 +113,48 @@ const List_Marche = () => {
       key: "5",
       title: "Statut",
       dataIndex: "statut",
+      render : (statut : string) => {
+        let color = 'default';
+        switch (statut) {
+          case 'EnCoursTraitement':
+            color = 'blue';
+            break;
+          case 'Adjuge':
+            color = 'green';
+            break;
+          case 'EnCoursApprobation':
+            color = 'purple';
+            break;
+          case 'EnArret':
+            color = 'orange';
+            break;
+          case 'Notifie':
+            color = 'red';
+            break;
+          case 'EnCoursDeVisa':
+            color = 'volcano';
+            break;
+          case 'EnCoursDExecution':
+            color = 'volcano';
+            break;
+          case 'HorsDelaisMarche':
+            color = 'red';
+            break;
+          case 'Acheve':
+            color = 'green';
+            break;
+          case 'Cloture':
+            color = 'gold';
+            break;
+          default:
+            color = 'gray';
+        }
+        return <Tag color={color}>{statut}</Tag>;
+      },
+      filters: loading ? [] : statuts.map(statut => ({
+        text: statut,
+        value: statut
+      }))
     },
     {
       key: "6",
@@ -205,11 +248,16 @@ const List_Marche = () => {
               rules={[{ required: true, message: "Champ obligatoire" }]}
             >
               <Select>
-                <Select.Option value="EnAttente">En Attente</Select.Option>
-                <Select.Option value="EnCours">En Cours</Select.Option>
-                <Select.Option value="Valide">Valide</Select.Option>
-                <Select.Option value="NonValide">NonValide</Select.Option>
+                <Select.Option value="EnCoursTraitement">En Cours</Select.Option>
+                <Select.Option value="EnCoursApprobation">Cloture</Select.Option>
+                <Select.Option value="Adjuge">Valide</Select.Option>
+                <Select.Option value="EnCoursDExecution">En Cours d'Execution</Select.Option>
+                <Select.Option value="EnArret">Arret</Select.Option>
+                <Select.Option value="Acheve">Acheve</Select.Option>
+                <Select.Option value="HorsDelaisMarche">Hors delai</Select.Option>
                 <Select.Option value="Cloture">Cloture</Select.Option>
+                <Select.Option value="EnCoursDeVisa">En Cours de Visa</Select.Option>
+                <Select.Option value="Notifie">Notifie</Select.Option>
               </Select>
             </Form.Item>
           </Form>

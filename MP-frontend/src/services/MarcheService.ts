@@ -8,16 +8,13 @@ export enum TypeMarche {
 }
 
 export enum StatutMarche {
-  EN_PREPARATION,
   EN_COURS_TRAITEMENT,
   ADJUGE,
-  EN_COURS_DE_VISA,
   EN_COURS_D_APPROBATION,
   EN_ARRET,
   EN_COURS_D_EXECTION,
   HORS_DELAI,
   ACHEVE,
-  NOTIFIE,
   CLOTURE
 }
 

@@ -82,7 +82,8 @@ export class DocumentService {
       // Préparer les données pour le template
       const data = {
         numOrdreAO: appelOffre.num_Ordre_AO || '',
-        dateAO: appelOffre.date_AO || '',
+        dateOuverturePli_AO: appelOffre.dateOuverturePli_AO || '',
+        heureOuverturePli_AO: appelOffre.heureOuverturePli_AO || '',
         typeAO: appelOffre.type_AO.toUpperCase() || '',
         idMarcheAO: appelOffre.marche?.id_Marche || '',
         objetAO: appelOffre.marche?.objet_marche || '',
