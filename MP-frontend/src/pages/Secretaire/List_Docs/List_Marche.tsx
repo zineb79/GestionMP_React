@@ -7,6 +7,7 @@ import dayjs from 'dayjs';
 import '../pagesSec.css';
 import Sidebar from '../../../components/Sidebar/Sidebar_Sec';
 import { getMarches, updateMarche } from '../../../services/MarcheService';
+import { title } from 'process';
 
 const List_Marche = () => {
   const [isEditing, setIsEditing] = useState(false);
@@ -108,6 +109,11 @@ const List_Marche = () => {
       key: "4",
       title: "Délais du marché",
       dataIndex: "delaisMarche",
+    },
+    {
+      key: "5",
+      title : "Service concerné",
+      dataIndex: "serviceConcerne",
     },
     {
       key: "5",
@@ -240,6 +246,19 @@ const List_Marche = () => {
                 className="date-picker-container"
                 value={form.getFieldValue('delaisMarche') ? dayjs(form.getFieldValue('delaisMarche')) : null}
               />
+            </Form.Item>
+
+            <Form.Item
+              name="serviceConcerne"
+              label="Service concerné"
+              rules={[{ required: true, message: "Champ obligatoire" }]}
+            >
+              <Select placeholder="Sélectionner le service concerné">
+                <Select.Option value="Service_AdministrationGeneral">Service Administration Générale</Select.Option>
+                <Select.Option value="Service_MarchePublic">Service Marché Public</Select.Option>
+                <Select.Option value="Service_GestionCourrier">Service Gestion Courrier</Select.Option>
+                <Select.Option value="Service_SuiviTravaux">Service Suivi Travaux</Select.Option>
+              </Select>
             </Form.Item>
 
             <Form.Item

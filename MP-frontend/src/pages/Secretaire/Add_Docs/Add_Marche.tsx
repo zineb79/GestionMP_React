@@ -99,6 +99,15 @@ const Add_Marche = () => {
             />
           </Form.Item>
 
+          <Form.Item name="serviceConcerne" label="Service concerné">
+            <Select placeholder="Sélectionner le service concerné">
+              <Select.Option value="Service_AdministrationGeneral">Service Administration Générale</Select.Option>
+              <Select.Option value="Service_MarchePublic">Service Marché Public</Select.Option>
+              <Select.Option value="Service_GestionCourrier">Service Gestion Courrier</Select.Option>
+              <Select.Option value="Service_SuiviTravaux">Service Suivi Travaux</Select.Option>
+            </Select>
+          </Form.Item>
+
           <Form.Item name="statut" label="Statut" initialValue="EnCoursTraitement">
             <Select placeholder="Sélectionner le statut">
               <Select.Option value="EnCoursTraitement">En Cours de Traitement</Select.Option>

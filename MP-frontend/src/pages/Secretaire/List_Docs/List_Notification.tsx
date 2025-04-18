@@ -1,14 +1,15 @@
 import React, { useState, useEffect } from 'react';
 import { Table, Modal, Input, FloatButton, Form, DatePicker, Select, message } from "antd";
-import { EditOutlined, DeleteOutlined, PlusOutlined } from "@ant-design/icons";
+import { EditOutlined, DeleteOutlined, PlusOutlined, FileWordOutlined } from "@ant-design/icons";
 import { useNavigate } from 'react-router-dom';
-import { getNotifications, deleteNotification, updateNotification } from '../../../services/NotificationService';
+import { getNotifications, deleteNotification, updateNotification, getNotificationsByMarche } from '../../../services/NotificationService';
 import { getMarches } from '../../../services/MarcheService';
 import Sidebar from '../../../components/Sidebar/Sidebar_Sec';
 import '../PagesSec.css';
 import dayjs from 'dayjs';
 import { Notification } from '../../../services/NotificationService';
 import { Marche } from '../../../services/MarcheService';
+import { DocumentService } from '../../../services/DocumentService';
 
 
 const List_Notification = () => {
@@ -31,12 +32,13 @@ const List_Notification = () => {
 
                 // Associer les marchés aux notifications
                 const enrichedData = notificationsData.map(notif => {
+                    // Try to find the marche by matching numOrdre_NOTIF with marche's numOrdre
                     const marche = marchesData.find(m => m.id_Marche === notif.marche_NOTIF);
-                    console.log(`Notification ${notif.numOrdre_NOTIF}: marche_NOTIF = ${notif.marche_NOTIF}, found marche =`, marche);
+                    console.log(`Notification ${notif.numOrdre_NOTIF}: found marche =`, marche);
                     return {
                         ...notif,
                         marche_NOTIF_obj: marche,
-                        marche_NOTIF: marche?.id_Marche
+                        marche_NOTIF: marche?.id_Marche || notif.marche_NOTIF
                     };
                 });
 
@@ -90,7 +92,6 @@ const List_Notification = () => {
             message.error("ID de la notification manquant");
             return;
         }
-
         try {
             const updatedNotification = {
                 ...editingNotification,
@@ -103,11 +104,21 @@ const List_Notification = () => {
             const response = await updateNotification(editingNotification.id_NOTIF, updatedNotification);
             
             const newData = await getNotifications();
-            setDataSource(newData);
+            const enrichedData = newData.map(notif => {
+                // Try to find the marche by matching numOrdre_NOTIF with marche's numOrdre
+                const marche = marches.find(m => m.id_Marche === notif.marche_NOTIF);
+                console.log(`Notification ${notif.numOrdre_NOTIF}: found marche =`, marche);
+                return {
+                    ...notif,
+                    marche_NOTIF_obj: marche,
+                    marche_NOTIF: marche?.id_Marche || notif.marche_NOTIF
+                };
+            });
+            setDataSource(enrichedData);
             
             setEditingNotification(null);
             setIsEditing(false);
-            
+            console.log("Données enrichies:", updatedNotification);
             message.success("Notification mise à jour avec succès");
             resetEditing();
         } catch (error) {
@@ -121,7 +132,14 @@ const List_Notification = () => {
         setEditingNotification(null);
         form.resetFields();
     };
-
+  const generateDocument = async (notification: Notification) => {
+    try {
+      await DocumentService.generateNotificationDocument(notification);
+      message.success('Document généré avec succès');
+    } catch (error) {
+      message.error('Erreur lors de la génération du document');
+    }
+  } 
     const columns = [
         {
             title: 'Numéro de Marché',
@@ -165,7 +183,12 @@ const List_Notification = () => {
                     <DeleteOutlined
                         onClick={() => onDeleteNotification(record)}
                         style={{ color: 'red', marginLeft: 12, cursor: 'pointer' }}
-                    />
+                        />
+                        <FileWordOutlined 
+                          onClick={() => generateDocument(record)}
+                          style={{ color: "purple", marginLeft: 14 }}
+                        />
+                    
                 </>
             ),
         }
@@ -214,23 +237,7 @@ const List_Notification = () => {
                             label="Marché"
                             rules={[{ required: true, message: 'Veuillez sélectionner un marché' }]}
                         >
-                            <Select 
-                                placeholder="Sélectionner le marché"
-                                showSearch
-                                optionFilterProp="children"
-                                filterOption={(input, option) =>
-                                    String(option?.children ?? '').toLowerCase().includes(input.toLowerCase())
-                                }
-                            >
-                                {marches.map(marche => (
-                                    <Select.Option 
-                                        key={marche.id_Marche} 
-                                        value={marche.id_Marche}
-                                    >
-                                        {`${marche.numOrdre} - ${marche.objet_marche}`}
-                                    </Select.Option>
-                                ))}
-                            </Select>
+                            <Input disabled />
                         </Form.Item>
 
                         <Form.Item
