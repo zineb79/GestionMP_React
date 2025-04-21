@@ -1,45 +1,58 @@
 import { useState } from 'react';
-import { Button, Layout } from 'antd';
+import { Button, Layout, theme } from 'antd';
 import './sidebar.css';
 import Logo from './Logo';
 import MenuList from './MenuList_CS';
 import { MenuUnfoldOutlined, MenuFoldOutlined } from '@ant-design/icons';
 
-const { Header, Sider } = Layout;
+const { Header, Sider, Content } = Layout;
 
-const Sidebar = () => {
-    const [collapsed, setCollapsed] = useState(false);
+import { ReactNode } from 'react';
 
-    // Récupérer les informations de l'utilisateur depuis le localStorage
-    const userString = localStorage.getItem('user');
-    let nom = '';
-    let prenom = '';
-    
-    if (userString) {
-        const user = JSON.parse(userString);
-        nom = user.nom;
-        prenom = user.prenom;
-    }
+const Sidebare = ({ children }: { children: ReactNode }) => {  
+    const [collapsed, setCollapsed] = useState(true);
+    const {
+        token: { colorBgContainer },
+    } = theme.useToken();
+
+    const nom = localStorage.getItem("nom") || "Utilisateur";
+    const prenom = localStorage.getItem("prenom") || "";
 
     return (
         <Layout>
-            <Sider collapsed={collapsed} collapsible trigger={null} className="sidebar">
+            {/* Sidebar à gauche */}
+            <Sider collapsed={collapsed} collapsible trigger={null} theme="light" className="sidebar">
                 <Logo />
-                <MenuList darkTheme={true} />
+                <MenuList />
             </Sider>
+
+            {/* Partie principale (Header + Formulaire) */}
             <Layout>
-                <Header style={{ background: '#fff', padding: 0 }}>
+                {/* Header */}
+                <Header style={{ 
+                    background: colorBgContainer,
+                    color: '#000',
+                    padding: 0, 
+                    display: 'flex', 
+                    alignItems: 'center',
+                    boxShadow: '0 1px 4px rgba(0,21,41,.08)'
+                }}>
                     <Button
                         type="text"
                         className="toggle"
                         onClick={() => setCollapsed(!collapsed)}
-                        icon={collapsed ? <MenuFoldOutlined /> : <MenuUnfoldOutlined />}
+                        icon={collapsed ? <MenuUnfoldOutlined /> : <MenuFoldOutlined />}
                     />
-                    <span style={{ fontWeight: 'bold', fontSize:'16px'}}>Bienvenu {nom} {prenom}</span>
+                    <span style={{ fontWeight: 'bold' }}>{nom} {prenom}</span>
                 </Header>
+
+                {/* Contenu sous le header */}
+                <Content className="content">
+                    {children}  
+                </Content>
             </Layout>
         </Layout>
     );
 };
 
-export default Sidebar;
+export default Sidebare;

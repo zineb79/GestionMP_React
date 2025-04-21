@@ -10,7 +10,6 @@ import {
 } from "@ant-design/icons";
 import { useNavigate } from "react-router-dom"; // Importer useNavigate
 import "./sidebar.css";
-import React from "react";
 
 const MenuList = () => {
   const navigate = useNavigate(); // Initialiser la navigation
@@ -19,6 +18,8 @@ const MenuList = () => {
   const handleMenuClick = ({ key }: { key: string }) => {
     if (key === "deconnexion") {
       navigate("/login"); 
+    } else if (key === "Home") {
+      navigate("/accueil-secretaire"); 
     } else if (key === "AO") {
       navigate("/AO"); 
     } else if (key === "marche") {
@@ -66,6 +67,7 @@ const MenuList = () => {
       onClick={handleMenuClick}
       mode="inline"
       items={items}
+      style={{background: '#c6c6c6'}}
     />
   );
 };

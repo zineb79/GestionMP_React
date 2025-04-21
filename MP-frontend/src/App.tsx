@@ -5,7 +5,7 @@ import { HiOutlineSun , HiOutlineMoon } from 'react-icons/hi';
 import './styles/theme.css';
 import Login from "./pages/Login";
 import Accueil_CS from "./pages/ChefService/Accueil_CS";
-import Accueil_Sec from "./pages/Secretaire/Accueil_Sec";
+import Accueil_Sec from "./pages/Accueil_Sec";
 import Unauthorized from "./pages/Unauthorized";
 import List_AO from "./pages/Secretaire/List_Docs/List_AO";
 import List_Marche from "./pages/Secretaire/List_Docs/List_Marche";
@@ -22,6 +22,7 @@ import Add_PV from "./pages/Secretaire/Add_Docs/Add_PvReception";
 import List_PV from "./pages/Secretaire/List_Docs/List_PvReceptions";
 import Add_Societe from "./pages/Secretaire/Add_Docs/Add_Societe";
 import List_Societe from "./pages/Secretaire/List_Docs/List_Societe";
+import GestionComptes from "./pages/ChefService/GestionComptes";
 
 function App() {
   const [isDarkMode, setIsDarkMode] = React.useState(false);
@@ -80,6 +81,7 @@ function App() {
             <Route path="/unauthorized" element={<Unauthorized />} />
             <Route element={<RoleProtectedRoute allowedRoles={["CHEF_DE_SERVICE"]} />}>
               <Route path="/accueil-chef" element={<Accueil_CS />} />
+              <Route path="/gestionComptes" element={<GestionComptes />} />
             </Route>
             <Route element={<RoleProtectedRoute allowedRoles={["SECRETAIRE"]} />}>
               <Route path="/accueil-secretaire" element={<Accueil_Sec />} />

@@ -8,14 +8,17 @@ export enum TypeMarche {
 }
 
 export enum StatutMarche {
-  EN_COURS_TRAITEMENT,
-  ADJUGE,
-  EN_COURS_D_APPROBATION,
-  EN_ARRET,
-  EN_COURS_D_EXECTION,
-  HORS_DELAI,
-  ACHEVE,
-  CLOTURE
+  EnCoursTraitement,
+  Adjuge,
+  EnCoursDeVisa,
+  EnCoursApprobation,
+  EnArret,
+  EncoursExecution,
+  HorsDelaisMarche,
+  HorsDelaisGarantie,
+  Acheve,
+  Notifie,
+  Cloture
 }
 
 

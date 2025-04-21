@@ -1,6 +1,7 @@
 .sidebar{
     color: #ffff;
     height: 100vh;
+    background-color: #c6c6c6;
 }
 .menubar{
     position: relative;
@@ -61,4 +62,22 @@ Header{
     align-items: center; 
     justify-content: space-between;
     gap: 16px;
+    background-color: #c6c6c6 !important;
 }
+
+.ant-menu-item-selected {
+    background-color: #6b6b6b !important; /* Gris foncé */
+    color: white !important;
+  }
+  
+  .ant-menu-item:hover {
+    background-color: #8a8a8a !important; /* Gris un peu plus clair au survol */
+  }
+  
+  .ant-menu-submenu-title:hover {
+    background-color: #8a8a8a !important;
+  }
+  
+  .ant-menu-submenu-selected > .ant-menu-submenu-title {
+    color: white !important;
+  }

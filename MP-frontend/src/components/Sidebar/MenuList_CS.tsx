@@ -25,6 +25,12 @@ const MenuList: React.FC<MenuListProps> = ({ darkTheme = false }) => {
       localStorage.removeItem('token');
       navigate("/login");
     }
+    else if (key === "Home") {
+      navigate("/accueil-chef");
+    }
+    else if (key === "membre") {
+      navigate("/gestionComptes");
+    }
   };
 
   const items = [
