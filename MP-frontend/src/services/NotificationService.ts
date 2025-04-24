@@ -13,7 +13,7 @@ export interface Notification {
 export const getNotificationsByMarche = async (idMarche: number): Promise<Notification[]> => {
   try {
     const response = await api.get(`/api/Notification/getByMarche/${idMarche}`);
-    return response.data;
+    return response.data as Notification[];
   } catch (error) {
     console.error("Erreur lors de la récupération des notifications pour le marché :", error);
     throw error;
@@ -23,7 +23,7 @@ export const getNotificationsByMarche = async (idMarche: number): Promise<Notifi
 export const getNotifications = async (): Promise<Notification[]> => {
   try {
     const response = await api.get("/api/Notification/get");
-    return response.data;
+    return response.data as Notification[];
   } catch (error) {
     console.error("Erreur lors de la récupération des notifications :", error);
     throw error;
@@ -37,7 +37,7 @@ export const createNotification = async (notification: Notification): Promise<No
       JSON.stringify(notification, null, 2)
     );
     const response = await api.post("/api/Notification/add", notification);
-    return response.data;
+    return response.data as Notification;
   } catch (error) {
     console.error("Erreur lors de la création de la notification :", error);
     throw error;
@@ -58,7 +58,7 @@ export const updateNotification = async (id: number, notification: Notification)
     console.log('Updating Notification with data:', notification);
     const response = await api.put(`/api/Notification/update/${id}`, notification);
     console.log('Backend response:', response.data);
-    return response.data;
+    return response.data as Notification;
   } catch (error: any) {
     console.error("Erreur lors de la mise à jour de la notification :", error);
     throw error;

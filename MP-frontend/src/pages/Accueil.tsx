@@ -1,9 +1,11 @@
-import React from 'react'
-import Sidebar from '../components/Sidebar/Sidebar'
+import React from "react";
+import Sidebar from "../components/Sidebar/Sidebar_Sec";
 
 function Accueil() {
   return (
-    <Sidebar/>
+    <Sidebar>
+      <div></div>
+    </Sidebar>
   );
 }
 

@@ -31,22 +31,26 @@ const Add_OS = () => {
 
   const onFinish = async (values: any) => {
     try {
-      const date_OS = values.date_OS ? values.date_OS.format("YYYY-MM-DD") : null;
+      const date_OS = values.date_OS
+        ? values.date_OS.format("YYYY-MM-DD")
+        : null;
 
       const payload = {
         ...values,
-        date_OS: date_OS
+        date_OS: date_OS,
       };
 
-      console.log('Form values:', values);
-      console.log('Payload to backend:', payload);
+      console.log("Form values:", values);
+      console.log("Payload to backend:", payload);
 
       await createOrdreDeService(payload);
       message.success("L'ordre de service a été ajouté avec succès");
       navigate("/OrdreService");
     } catch (error) {
       console.error("Erreur lors de l'ajout de l'ordre de service :", error);
-      message.error("Une erreur est survenue lors de l'ajout de l'ordre de service");
+      message.error(
+        "Une erreur est survenue lors de l'ajout de l'ordre de service"
+      );
     }
   };
 
@@ -65,7 +69,7 @@ const Add_OS = () => {
           }}
         >
           <Form.Item
-            name="marche_OS"
+            name="marche_os_id_marche"
             label="Marché"
             rules={[
               { required: true, message: "Veuillez sélectionner un marché" },
@@ -93,7 +97,9 @@ const Add_OS = () => {
           <Form.Item
             name="numOrdre_OS"
             label="Numéro d'OS"
-            rules={[{ required: true, message: 'Veuillez entrer le numéro d\'OS' }]}
+            rules={[
+              { required: true, message: "Veuillez entrer le numéro d'OS" },
+            ]}
           >
             <Input />
           </Form.Item>
@@ -101,7 +107,9 @@ const Add_OS = () => {
           <Form.Item
             name="type_OS"
             label="Type d'OS"
-            rules={[{ required: true, message: 'Veuillez sélectionner un type d\'OS' }]}
+            rules={[
+              { required: true, message: "Veuillez sélectionner un type d'OS" },
+            ]}
           >
             <Select>
               {Object.values(Type_OS).map((type) => (
@@ -115,7 +123,9 @@ const Add_OS = () => {
           <Form.Item
             name="date_OS"
             label="Date d'ordre de service"
-            rules={[{ required: true, message: 'Veuillez sélectionner une date' }]}
+            rules={[
+              { required: true, message: "Veuillez sélectionner une date" },
+            ]}
           >
             <DatePicker format="YYYY-MM-DD" />
           </Form.Item>

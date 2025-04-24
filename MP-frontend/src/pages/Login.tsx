@@ -21,7 +21,9 @@ const Login = () => {
 
       // Mettre à jour le contexte d'authentification
       if (authContext) {
-        authContext.login(token);
+        const refreshToken = localStorage.getItem("refreshToken");
+        const role = localStorage.getItem("role");
+        authContext.login(token, refreshToken || "", role || "");
       }
 
       // Récupérer le rôle du localStorage

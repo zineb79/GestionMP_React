@@ -36,11 +36,20 @@ export interface Marche {
   isArchived: boolean;
   societe?: Societe;
 }
+export const getNumOrdreMarche = async (idMarche: number): Promise<string> => {
+  try {
+    const response = await api.get(`/api/marche/numOrdre/${idMarche}`);
+    return response.data as string;
+  } catch (error) {
+    console.error(`Erreur lors de la récupération du numéro d'ordre pour le marché ID ${idMarche}`, error);
+    return 'N/A';
+  }
+};
 
 export const getMarchesById = async (id: number): Promise<Marche> => {
   try {
-    const response = await api.get(`/api/marche/${id}`);
-    return response.data;
+    const response = await api.get<Marche>(`/api/marche/${id}`);
+    return response.data as Marche;
   } catch (error) {
     console.error("Erreur lors de la récupération du marché :", error);
     throw error;
@@ -49,8 +58,8 @@ export const getMarchesById = async (id: number): Promise<Marche> => {
 
 export const getMarches = async (): Promise<Marche[]> => {
   try {
-    const response = await api.get("/api/marche/get");
-    return response.data;
+    const response = await api.get<Marche[]>("/api/marche/get");
+    return response.data as Marche[];
   } catch (error) {
     console.error("Erreur lors de la récupération des marchés :", error);
     throw error;
@@ -74,7 +83,7 @@ export const deleteMarche = async (numOrdre: string): Promise<void> => {
 export const createMarche = async (marche: Marche): Promise<Marche> => {
   try {
     const response = await api.post("/api/marche/add", marche);
-    return response.data;
+    return response.data as Marche;
   } catch (error: any) {
     console.error("Erreur lors de la création du marché :", error);
     if (error.response) {
@@ -96,7 +105,7 @@ export const updateMarche = async (id: number, marche: Marche): Promise<Marche> 
     };
     
     const response = await api.put(`/api/marche/update/${id}`, marcheToUpdate);
-    return response.data;
+    return response.data as Marche;
   } catch (error: any) {
     console.error("Erreur lors de la mise à jour du marché :", error);
     if (error.response) {

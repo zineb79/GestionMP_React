@@ -1,5 +1,5 @@
 import api from "../utils/axiosInstance";
-import { Marche } from './MarcheService';
+import { Marche, getMarchesById, getNumOrdreMarche } from './MarcheService';
 
 export enum TypePvReception {
     PROVISOIRE = 'PROVISOIRE',
@@ -9,31 +9,60 @@ export enum TypePvReception {
 export interface PvReception {
     id_PVR?: number;
     type_PVR: TypePvReception;
-    date_PVR: string;
-    marche_PVR? : number;
+    date?: string;
+    idMarche_PVR?: number;
     marche_PVR_obj?: Marche;
 }
 
+export interface PvReceptionWithNumOrdre extends PvReception {
+    numOrdreMarche?: string;
+}
+
 export const createPvReception = async (
-    pvReception: Omit<PvReception, 'id_PVR'>
+    pvReception: Omit<PvReception, 'id_PVR' | 'marche_PVR_obj'>
   ): Promise<PvReception> => {
     try {
+      const payload = {
+        type_PVR: pvReception.type_PVR,
+        date: pvReception.date,
+        idMarche_PVR: pvReception.idMarche_PVR,
+      };
       console.log(
         "Envoi des données au backend:",
-        JSON.stringify(pvReception, null, 2)
+        JSON.stringify(payload, null, 2)
       );
-      const response = await api.post("/api/PvReception/add", pvReception);
-      return response.data;
+      const response = await api.post("/api/PvReception/add", payload);
+      return response.data as PvReception;
     } catch (error) {
       console.error("Erreur lors de la création de la notification :", error);
       throw error;
     }
   };
 
-export const getPvReceptions = async (): Promise<PvReception[]> => {
+export const getPvReceptions = async (): Promise<PvReceptionWithNumOrdre[]> => {
     try {
         const response = await api.get("/api/PvReception/get");
-        return response.data;
+        const pvs = response.data as PvReception[];
+
+        const enrichedPvs = await Promise.all(
+            pvs.map(async (pv) => {
+                let numOrdre: string | undefined = undefined;
+                if (pv.idMarche_PVR) {
+                    try {
+                        numOrdre = await getNumOrdreMarche(pv.idMarche_PVR);
+                    } catch (numOrdreError) {
+                        console.error(`Error fetching numOrdre for Marche ID ${pv.idMarche_PVR}:`, numOrdreError);
+                        numOrdre = 'N/A';
+                    }
+                }
+                return {
+                    ...pv,
+                    numOrdreMarche: numOrdre ?? 'N/A'
+                };
+            })
+        );
+
+        return enrichedPvs;
     } catch (error) {
         console.error('Error fetching PV receptions:', error);
         throw error;
@@ -49,10 +78,20 @@ export const deletePvReception = async (id: number): Promise<void> => {
     }
 };
 
-export const updatePvReception = async (pvReception: PvReception): Promise<PvReception> => {
+export const updatePvReception = async (pvReception: Omit<PvReception, 'marche_PVR_obj'>): Promise<PvReception> => {
     try {
-        const response = await api.put("/api/PvReception/update/" + pvReception.id_PVR, pvReception);
-        return response.data;
+        const payload = {
+           id_PVR: pvReception.id_PVR,
+           type_PVR: pvReception.type_PVR,
+           date: pvReception.date,
+           idMarche_PVR: pvReception.idMarche_PVR,
+        };
+        console.log(
+            "Envoi des données (update) au backend:",
+            JSON.stringify(payload, null, 2) 
+        );
+        const response = await api.put(`/api/PvReception/update/${pvReception.id_PVR}`, payload);
+        return response.data as PvReception;
     } catch (error) {
         console.error('Error updating PV reception:', error);
         throw error;
