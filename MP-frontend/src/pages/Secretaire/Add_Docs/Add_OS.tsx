@@ -1,8 +1,11 @@
 import React, { useState, useEffect } from "react";
-import { Form, Button, Select, message, Input, DatePicker } from "antd";
+import { Form, Button, Select, message, Input, DatePicker, App } from "antd";
 import { useNavigate } from "react-router-dom";
 import Sidebar from "../../../components/Sidebar/Sidebar_Sec";
-import { createOrdreDeService } from "../../../services/OSService";
+import {
+  createOrdreDeService,
+  getOrdresDeService,
+} from "../../../services/OSService";
 import "../PagesSec.css";
 import { getMarches } from "../../../services/MarcheService";
 import { OrdreDeService, Type_OS } from "../../../services/OSService";
@@ -13,20 +16,25 @@ const Add_OS = () => {
   const navigate = useNavigate();
   const [marches, setMarches] = useState<Marche[]>([]);
   const [loading, setLoading] = useState(true);
+  const [existingOS, setExistingOS] = useState<OrdreDeService[]>([]);
 
   useEffect(() => {
-    const fetchMarches = async () => {
+    const fetchData = async () => {
       try {
-        const data = await getMarches();
-        setMarches(data);
+        const [marchesData, osData] = await Promise.all([
+          getMarches(),
+          getOrdresDeService(),
+        ]);
+        setMarches(marchesData);
+        setExistingOS(osData);
         setLoading(false);
       } catch (error) {
-        console.error("Erreur lors de la récupération des marchés:", error);
-        message.error("Erreur lors du chargement des marchés");
+        console.error("Erreur lors de la récupération des données:", error);
+        message.error("Erreur lors du chargement des données");
         setLoading(false);
       }
     };
-    fetchMarches();
+    fetchData();
   }, []);
 
   const onFinish = async (values: any) => {
@@ -46,96 +54,122 @@ const Add_OS = () => {
       await createOrdreDeService(payload);
       message.success("L'ordre de service a été ajouté avec succès");
       navigate("/OrdreService");
-    } catch (error) {
+    } catch (error: any) {
       console.error("Erreur lors de l'ajout de l'ordre de service :", error);
-      message.error(
-        "Une erreur est survenue lors de l'ajout de l'ordre de service"
-      );
+      if (error.response?.data) {
+        message.error(error.response.data);
+      } else {
+        message.error(
+          "Une erreur est survenue lors de l'ajout de l'ordre de service"
+        );
+      }
     }
   };
 
   return (
-    <Sidebar>
-      <div className="list-container">
-        <div className="list-header">
-          <h2 className="list-title">Ajouter un ordre de service</h2>
-        </div>
-        <Form
-          form={form}
-          layout="vertical"
-          onFinish={onFinish}
-          onFinishFailed={(error) => {
-            console.log("Failed:", error);
-          }}
-        >
-          <Form.Item
-            name="marche_os_id_marche"
-            label="Marché"
-            rules={[
-              { required: true, message: "Veuillez sélectionner un marché" },
-            ]}
+    <App>
+      <Sidebar>
+        <div className="list-container">
+          <div className="list-header">
+            <h2 className="list-title">Ajouter un ordre de service</h2>
+          </div>
+          <Form
+            form={form}
+            layout="vertical"
+            onFinish={onFinish}
+            onFinishFailed={(error) => {
+              console.log("Failed:", error);
+            }}
           >
-            <Select placeholder="Sélectionner le marché">
-              {marches && marches.length > 0 ? (
-                marches.map((marche) => (
-                  <Select.Option
-                    key={marche.id_Marche}
-                    value={marche.id_Marche}
-                    disabled={!marche.id_Marche}
-                  >
-                    {`${marche.numOrdre} - ${marche.objet_marche}`}
+            <Form.Item
+              name="idMarche"
+              label="Marché"
+              rules={[
+                { required: true, message: "Veuillez sélectionner un marché" },
+              ]}
+            >
+              <Select placeholder="Sélectionner le marché">
+                {marches && marches.length > 0 ? (
+                  marches.map((marche) => (
+                    <Select.Option
+                      key={marche.id_Marche}
+                      value={marche.id_Marche}
+                      disabled={!marche.id_Marche}
+                    >
+                      {`${marche.numOrdre} - ${marche.objet_marche}`}
+                    </Select.Option>
+                  ))
+                ) : (
+                  <Select.Option value="" disabled>
+                    Aucun marché disponible
                   </Select.Option>
-                ))
-              ) : (
-                <Select.Option value="" disabled>
-                  Aucun marché disponible
-                </Select.Option>
-              )}
-            </Select>
-          </Form.Item>
+                )}
+              </Select>
+            </Form.Item>
 
-          <Form.Item
-            name="numOrdre_OS"
-            label="Numéro d'OS"
-            rules={[
-              { required: true, message: "Veuillez entrer le numéro d'OS" },
-            ]}
-          >
-            <Input />
-          </Form.Item>
+            <Form.Item
+              name="numOrdre_OS"
+              label="Numéro d'OS"
+              rules={[
+                { required: true, message: "Veuillez entrer le numéro d'OS" },
+              ]}
+            >
+              <Input />
+            </Form.Item>
 
-          <Form.Item
-            name="type_OS"
-            label="Type d'OS"
-            rules={[
-              { required: true, message: "Veuillez sélectionner un type d'OS" },
-            ]}
-          >
-            <Select>
-              {Object.values(Type_OS).map((type) => (
-                <Select.Option key={type} value={type}>
-                  {type}
-                </Select.Option>
-              ))}
-            </Select>
-          </Form.Item>
+            <Form.Item
+              name="type_OS"
+              label="Type d'OS"
+              rules={[
+                {
+                  required: true,
+                  message: "Veuillez sélectionner un type d'OS",
+                },
+                {
+                  validator: async (_, value) => {
+                    const selectedMarche = form.getFieldValue("idMarche");
+                    if (
+                      value &&
+                      selectedMarche &&
+                      existingOS.some(
+                        (os) =>
+                          os.type_OS === value && os.idMarche === selectedMarche
+                      )
+                    ) {
+                      throw new Error(
+                        `Un ordre de service de type ${value} existe déjà pour ce marché`
+                      );
+                    }
+                  },
+                },
+              ]}
+            >
+              <Select>
+                {Object.values(Type_OS).map((type) => (
+                  <Select.Option key={type} value={type}>
+                    {type}
+                  </Select.Option>
+                ))}
+              </Select>
+            </Form.Item>
 
-          <Form.Item
-            name="date_OS"
-            label="Date d'ordre de service"
-            rules={[
-              { required: true, message: "Veuillez sélectionner une date" },
-            ]}
-          >
-            <DatePicker format="YYYY-MM-DD" />
-          </Form.Item>
+            <Form.Item
+              name="date_OS"
+              label="Date d'ordre de service"
+              rules={[
+                { required: true, message: "Veuillez sélectionner une date" },
+              ]}
+            >
+              <DatePicker format="YYYY-MM-DD" />
+            </Form.Item>
 
-          <Button type="primary" htmlType="submit" className="ajouter">
-            Ajouter
-          </Button>
-        </Form>
-      </div>
-    </Sidebar>
+            <Button type="primary" htmlType="submit" className="ajouter">
+              Ajouter
+            </Button>
+          </Form>
+        </div>
+      </Sidebar>
+    </App>
   );
 };
 

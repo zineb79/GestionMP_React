@@ -9,6 +9,7 @@ import {
   DatePicker,
   Select,
   message,
+  App,
 } from "antd";
 import {
   EditOutlined,
@@ -187,82 +188,87 @@ const List_OS = () => {
   ];
 
   return (
-    <Sidebar>
-      <div className="list-container">
-        <FloatButton
-          icon={<PlusOutlined />}
-          onClick={() => navigate("/AddOs")}
-          tooltip="Ajouter une ordre de service"
-        />
-        <div className="list-header">
-          <h2 className="list-title">Liste des Ordres de services</h2>
-        </div>
-        <Table
-          columns={columns}
-          dataSource={dataSource}
-          rowKey="id_OS"
-          loading={loading}
-          bordered
-        />
-        <Modal
-          title="Modifier l'ordre de service"
-          open={isEditing}
-          onCancel={resetEditing}
-          onOk={() => form.submit()}
-          width={600}
-          destroyOnClose
-        >
-          <Form form={form} layout="vertical" onFinish={handleSave}>
-            <Form.Item name="numOrdre_OS" label="Numéro de ordre de service">
-              <Input disabled />
-            </Form.Item>
+    <App>
+      <Sidebar>
+        <div className="list-container">
+          <FloatButton
+            icon={<PlusOutlined />}
+            onClick={() => navigate("/AddOs")}
+            tooltip="Ajouter une ordre de service"
+          />
+          <div className="list-header">
+            <h2 className="list-title">Liste des Ordres de services</h2>
+          </div>
+          <Table
+            columns={columns}
+            dataSource={dataSource}
+            rowKey="id_OS"
+            loading={loading}
+            bordered
+          />
+          <Modal
+            title="Modifier l'ordre de service"
+            open={isEditing}
+            onCancel={resetEditing}
+            onOk={() => form.submit()}
+            width={600}
+            destroyOnClose
+          >
+            <Form form={form} layout="vertical" onFinish={handleSave}>
+              <Form.Item name="numOrdre_OS" label="Numéro de ordre de service">
+                <Input disabled />
+              </Form.Item>
 
-            <Form.Item
-              name="idMarche"
-              label="Marché"
-              rules={[
-                { required: true, message: "Veuillez sélectionner un marché" },
-              ]}
-            >
-              <Input disabled />
-            </Form.Item>
-
-            <Form.Item
-              name="type_OS"
-              label="Type"
-              rules={[
-                { required: true, message: "Veuillez sélectionner un type" },
-              ]}
-            >
-              <Select
-                style={{ width: "100%" }}
-                options={[
-                  { value: Type_OS.COMMENCEMENT, label: "Commencement" },
-                  { value: Type_OS.ARRET, label: "Arret" },
-                  { value: Type_OS.REPRISE, label: "Reprise" },
-                  { value: Type_OS.CESSION, label: "Cession" },
+              <Form.Item
+                name="idMarche"
+                label="Marché"
+                rules={[
+                  {
+                    required: true,
+                    message: "Veuillez sélectionner un marché",
+                  },
                 ]}
-              />
-            </Form.Item>
-            <Form.Item
-              name="date_OS"
-              label="Date d'ordre de service"
-              rules={[
-                { required: true, message: "Veuillez sélectionner la date" },
-              ]}
-            >
-              <DatePicker
-                style={{ width: "100%" }}
-                format="DD/MM/YYYY"
-                disabledDate={(current) =>
-                  current && current > dayjs().endOf("day")
-                }
-              />
-            </Form.Item>
-          </Form>
-        </Modal>
-      </div>
-    </Sidebar>
+              >
+                <Input disabled />
+              </Form.Item>
+
+              <Form.Item
+                name="type_OS"
+                label="Type"
+                rules={[
+                  { required: true, message: "Veuillez sélectionner un type" },
+                ]}
+              >
+                <Select
+                  style={{ width: "100%" }}
+                  options={[
+                    { value: Type_OS.COMMENCEMENT, label: "Commencement" },
+                    { value: Type_OS.ARRET, label: "Arret" },
+                    { value: Type_OS.REPRISE, label: "Reprise" },
+                    { value: Type_OS.CESSION, label: "Cession" },
+                  ]}
+                />
+              </Form.Item>
+              <Form.Item
+                name="date_OS"
+                label="Date d'ordre de service"
+                rules={[
+                  { required: true, message: "Veuillez sélectionner la date" },
+                ]}
+              >
+                <DatePicker
+                  style={{ width: "100%" }}
+                  format="DD/MM/YYYY"
+                  disabledDate={(current) =>
+                    current && current > dayjs().endOf("day")
+                  }
+                />
+              </Form.Item>
+            </Form>
+          </Modal>
+        </div>
+      </Sidebar>
+    </App>
   );
 };
 

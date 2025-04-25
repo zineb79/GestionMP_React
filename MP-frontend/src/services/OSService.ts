@@ -1,6 +1,5 @@
 import api from "../utils/axiosInstance";
-import { Marche } from "./MarcheService";
-import { getNumOrdreMarche } from "./MarcheService";
+import { Marche, getNumOrdreMarche, updateMarche, StatutMarche } from "./MarcheService";
 
 export enum Type_OS {
   COMMENCEMENT = "COMMENCEMENT",
@@ -57,7 +56,26 @@ export const createOrdreDeService = async (
       JSON.stringify(payload, null, 2)
     );
     const response = await api.post("/api/OS/add", payload);
-    return response.data as OrdreDeService;
+    const createdOS = response.data as OrdreDeService;
+
+    // Si c'est un ordre de reprise, mettre à jour l'état du marché
+    if (ordreDeService.type_OS === Type_OS.REPRISE && ordreDeService.idMarche) {
+      try {
+        // Récupérer le marché actuel
+        const marcheResponse = await api.get(`/api/marche/get/${ordreDeService.idMarche}`);
+        const marche = marcheResponse.data as Marche;
+        
+        // Mettre à jour l'état du marché
+        await updateMarche(marche.id_Marche, {
+          ...marche,
+          statut: StatutMarche.EncoursExecution
+        });
+      } catch (error) {
+        console.error("Erreur lors de la mise à jour de l'état du marché:", error);
+      }
+    }
+
+    return createdOS;
   } catch (error) {
     console.error("Erreur lors de la création de l'ordre de service :", error);
     if (error && typeof error === 'object' && 'response' in error) {

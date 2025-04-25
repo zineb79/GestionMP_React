@@ -58,7 +58,7 @@ export const getMarchesById = async (id: number): Promise<Marche> => {
 
 export const getMarches = async (): Promise<Marche[]> => {
   try {
-    const response = await api.get<Marche[]>("/api/marche/get");
+    const response = await api.get<Marche[]>("/api/marche/");
     return response.data as Marche[];
   } catch (error) {
     console.error("Erreur lors de la récupération des marchés :", error);
