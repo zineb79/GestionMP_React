@@ -250,10 +250,12 @@ const List_AO = () => {
             onClick={() => onEditAppelOffre(record)}
             style={{ color: "green", marginRight: 12 }}
           />
+          {/*
           <DeleteOutlined
             onClick={() => onDeleteAppelOffre(record)}
             style={{ color: "red", marginLeft: 12 }}
           />
+          */}
           <FileWordOutlined
             onClick={() => generateDocument(record)}
             style={{ color: "purple", marginLeft: 14 }}

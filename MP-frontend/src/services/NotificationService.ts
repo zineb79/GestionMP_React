@@ -1,5 +1,6 @@
 import api from "../utils/axiosInstance";
 import { Marche } from "./MarcheService";
+import { Societe } from "./SocieteService";
 
 export interface Notification {
   id_NOTIF?: number;
@@ -8,6 +9,8 @@ export interface Notification {
   dateApprobation_NOTIF: string;
   marche_NOTIF?: number;  // ID du marché dans la base de données
   marche_NOTIF_obj?: Marche;   // Objet Marché associé (pour l'affichage)
+  societe_NOTIF?: string;  // ID fiscal de la société
+  societe_NOTIF_obj?: Societe;  // Objet Société associé (pour l'affichage)
 };
 
 export const getNotificationsByMarche = async (idMarche: number): Promise<Notification[]> => {

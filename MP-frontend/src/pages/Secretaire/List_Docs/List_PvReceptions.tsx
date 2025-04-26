@@ -185,10 +185,12 @@ const List_PvReceptions = () => {
             onClick={() => onEditPvReception(record)}
             style={{ color: "#1890ff", cursor: "pointer" }}
           />
+          {/*
           <DeleteOutlined
             onClick={() => onDeletePvReception(record)}
             style={{ color: "red", marginLeft: 12, cursor: "pointer" }}
           />
+          */}
         </>
       ),
     },

@@ -1,129 +1,169 @@
-import React, { useState, useEffect } from 'react';
-import { Form, Input, Button, Select, DatePicker, message } from 'antd';
-import { data, useNavigate } from 'react-router-dom';
-import { createDecompte } from '../../../services/DecompteService';
-import Sidebar from '../../../components/Sidebar/Sidebar_Sec';
-import { getMarches, Marche } from "../../../services/MarcheService";
-import '../PagesSec.css';
-import { getSocietes, Societe } from '../../../services/SocieteService';
-
-const { Option } = Select;
+import React, { useEffect, useState } from "react";
+import {
+  Form,
+  Input,
+  InputNumber,
+  Button,
+  DatePicker,
+  Select,
+  message,
+} from "antd";
+import { useNavigate } from "react-router-dom";
+import { createDecompte } from "../../../services/DecompteService";
+import { getMarches } from "../../../services/MarcheService";
+import { getSocietes } from "../../../services/SocieteService";
+import { Marche } from "../../../services/MarcheService";
+import { Societe } from "../../../services/SocieteService";
+import dayjs from "dayjs";
+import Sidebar from "../../../components/Sidebar/Sidebar_Sec";
+import "../PagesSec.css";
 
 const Add_Decompte = () => {
   const [form] = Form.useForm();
   const navigate = useNavigate();
+  const [marches, setMarches] = useState<Marche[]>([]);
   const [societes, setSocietes] = useState<Societe[]>([]);
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
-    // Fetch societes and marches data
-    const fetchSocietes = async () => {
+    const fetchData = async () => {
       try {
-        // Replace with actual API call
-        const dataSociete = await getSocietes();
-        if (Array.isArray(dataSociete)) {
-          setSocietes(dataSociete);
-        } 
-        setLoading(false);
+        const [marchesData, societesData] = await Promise.all([
+          getMarches(),
+          getSocietes(),
+        ]);
+        setMarches(marchesData);
+        setSocietes(societesData);
       } catch (error) {
-        console.error('Error fetching societes:', error);
-        message.error('Erreur lors du chargement des societes');
+        message.error("Erreur lors du chargement des données");
+      } finally {
         setLoading(false);
       }
     };
-    fetchSocietes();
+    fetchData();
   }, []);
 
   const onFinish = async (values: any) => {
     try {
-      // Formatage des dates avec gestion des valeurs null/undefined
       const payload = {
         ...values,
-        dateFait_D: values.dateFait_D.format('YYYY-MM-DD'),
-        datePaiement: values.datePaiement.format('YYYY-MM-DD')
+        dateFait_D: values.dateFait_D.format("YYYY-MM-DD"),
+        datePaiement: values.datePaiement.format("YYYY-MM-DD"),
+        idMarche: values.idMarche,
+        idSociete: values.societe_D,
       };
       await createDecompte(payload);
-      message.success('Décompte ajouté avec succès');
-      navigate('/Decompte');
+      message.success("Décompte ajouté avec succès !");
+      form.resetFields();
+      navigate("/Decompte"); // Change this route if needed
     } catch (error) {
-      message.error('Erreur lors de l\'ajout du décompte');
-      console.error('Error:', error);
+      message.error("Erreur lors de l'ajout du décompte");
     }
   };
 
   return (
-    <div>
-      <Sidebar>
-        <div className="list-container">
-          <div className="list-header">
-            <h2 className="list-title">Ajouter un Décompte</h2>
-          </div>
-          <Form
-            form={form}
-            layout="vertical"
-            onFinish={onFinish}
+    <Sidebar>
+      <div className="list-container">
+        <div className="list-header">
+          <h2 className="list-title">Ajouter un Décompte</h2>
+        </div>
+        <Form
+          form={form}
+          layout="vertical"
+          onFinish={onFinish}
+          style={{ maxWidth: 600, margin: "0 auto" }}
+        >
+          <Form.Item
+            name="idMarche"
+            label="Marché"
+            rules={[
+              { required: true, message: "Veuillez sélectionner un marché" },
+            ]}
           >
-            <Form.Item
-              name="numOrdre_D"
-              label="Numéro d'ordre"
-              rules={[{ required: true, message: 'Veuillez entrer le numéro d\'ordre' }]}
-            >
-              <Input />
-            </Form.Item>
-
-            <Form.Item
-              name="aCompte"
-              label="Acompte"
-              rules={[{ required: true, message: 'Veuillez entrer l\'acompte' }]}
-            >
-              <Input type="number" />
-            </Form.Item>
-
-            <Form.Item
-              name="somme_D"
-              label="Somme"
-              rules={[{ required: true, message: 'Veuillez entrer la somme' }]}
-            >
-              <Input type="number" />
-            </Form.Item>
-
-            <Form.Item
-              name="dateFait_D"
-              label="Date de fait"
-              rules={[{ required: true, message: 'Veuillez sélectionner une date' }]}
-            >
-              <DatePicker />
-            </Form.Item>
-
-            <Form.Item
-              name="datePaiement"
-              label="Date de paiement"
-              rules={[{ required: true, message: 'Veuillez sélectionner une date' }]}
-            >
-              <DatePicker />
-            </Form.Item>
-
-            <Form.Item
-              name="societe_D"
-              label="Société"
-              rules={[{ required: true, message: 'Veuillez sélectionner une société' }]}
-            >
-              <Select>
-                {societes.map((societe: any) => (
-                  <Option key={societe.id_SO} value={societe.id_SO}>
-                    {societe.raisonSociale}
-                  </Option>
-                ))}
-              </Select>
-            </Form.Item>
-
-            <Button block type="primary" htmlType="submit" className='ajouter'>
+            <Select
+              placeholder="Sélectionner le marché"
+              loading={loading}
+              showSearch
+              optionFilterProp="label"
+              options={marches.map((m) => ({
+                value: m.id_Marche,
+                label: m.numOrdre,
+              }))}
+            />
+          </Form.Item>
+          <Form.Item
+            name="societe_D"
+            label="Société"
+            rules={[
+              { required: true, message: "Veuillez sélectionner une société" },
+            ]}
+          >
+            <Select
+              placeholder="Sélectionner la société"
+              loading={loading}
+              showSearch
+              optionFilterProp="label"
+              options={societes.map((s) => ({
+                value: s.id_SO,
+                label: s.raisonSociale,
+              }))}
+            />
+          </Form.Item>
+          <Form.Item
+            name="numOrdre_D"
+            label="Numéro de Décompte"
+            rules={[
+              {
+                required: true,
+                message: "Le numéro de décompte est obligatoire",
+              },
+            ]}
+          >
+            <Input />
+          </Form.Item>
+          <Form.Item
+            name="aCompte"
+            label="Acompte"
+            rules={[{ required: true, message: "L'acompte est obligatoire" }]}
+          >
+            <InputNumber min={0} style={{ width: "100%" }} />
+          </Form.Item>
+          <Form.Item
+            name="somme_D"
+            label="Somme"
+            rules={[{ required: true, message: "La somme est obligatoire" }]}
+          >
+            <InputNumber min={0} style={{ width: "100%" }} />
+          </Form.Item>
+          <Form.Item
+            name="dateFait_D"
+            label="Date de Fait"
+            rules={[
+              { required: true, message: "La date de fait est obligatoire" },
+            ]}
+          >
+            <DatePicker style={{ width: "100%" }} format="DD/MM/YYYY" />
+          </Form.Item>
+          <Form.Item
+            name="datePaiement"
+            label="Date de Paiement"
+            rules={[
+              {
+                required: true,
+                message: "La date de paiement est obligatoire",
+              },
+            ]}
+          >
+            <DatePicker style={{ width: "100%" }} format="DD/MM/YYYY" />
+          </Form.Item>
+          <Form.Item>
+            <Button type="primary" htmlType="submit" loading={loading}>
               Ajouter
             </Button>
-          </Form>
-        </div>
-      </Sidebar>
-    </div>
+          </Form.Item>
+        </Form>
+      </div>
+    </Sidebar>
   );
 };
 

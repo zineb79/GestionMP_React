@@ -23,7 +23,7 @@ export const createDecompte = async (
         JSON.stringify(decompte, null, 2)
       );
       const response = await api.post("/api/decompte/add", decompte);
-      return response.data;
+      return response.data as Decompte;
     } catch (error) {
       console.error("Erreur lors de la création du décompte :", error);
       throw error;
@@ -32,7 +32,7 @@ export const createDecompte = async (
 export const getDecomptes = async (): Promise<Decompte[]> => {
     try {
         const response = await api.get('/api/decompte/get');
-        return response.data;
+        return response.data as Decompte[];
     } catch (error) {
         console.error('Error fetching decomptes:', error);
         throw error;
@@ -51,7 +51,7 @@ export const deleteDecompte = async (id: number): Promise<void> => {
 export const updateDecompte = async (decompte: Decompte): Promise<Decompte> => {
     try {
         const response = await api.put(`/api/decompte/update/${decompte.id_D}`, decompte);
-        return response.data;
+        return response.data as Decompte;
     } catch (error) {
         console.error('Error updating decompte:', error);
         throw error;

@@ -47,8 +47,8 @@ const Add_Notification = () => {
         dateVisa_NOTIF: values.dateVisa_NOTIF.format("YYYY-MM-DD"),
         dateApprobation_NOTIF:
           values.dateApprobation_NOTIF.format("YYYY-MM-DD"),
-        // Si vous avez besoin de l'objet société complet
-        societe: societes.find((s) => s.idFiscale === values.id_SO),
+        marche_NOTIF: values.marche_NOTIF,
+        societe_NOTIF: values.societe_NOTIF,
       };
 
       await createNotification(payload);
@@ -108,6 +108,36 @@ const Add_Notification = () => {
           </Form.Item>
 
           <Form.Item
+            name="societe_NOTIF"
+            label="Société"
+            rules={[
+              { required: true, message: "Veuillez sélectionner une société" },
+            ]}
+          >
+            <Select
+              placeholder="Sélectionner la société"
+              loading={loading}
+              showSearch
+              optionFilterProp="label"
+              filterOption={(input, option) =>
+                String(option?.label ?? "")
+                  .toLowerCase()
+                  .includes(input.toLowerCase())
+              }
+              options={societes.map((s) => ({
+                value: s.id_SO,
+                label: s.raisonSociale,
+              }))}
+            >
+              {societes.map((societe) => (
+                <Select.Option key={societe.id_SO} value={societe.id_SO}>
+                  {societe.raisonSociale}
+                </Select.Option>
+              ))}
+            </Select>
+          </Form.Item>
+
+          <Form.Item
             name="numOrdre_NOTIF"
             label="Numéro de Notification"
             rules={[
@@ -125,45 +155,13 @@ const Add_Notification = () => {
           </Form.Item>
 
           <Form.Item
-            name="id_SO"
-            label="Société"
-            rules={[
-              { required: true, message: "Veuillez sélectionner une société" },
-            ]}
-          >
-            <Select
-              placeholder="Sélectionner la société"
-              loading={loading}
-              showSearch
-              optionFilterProp="children"
-              filterOption={(input, option) =>
-                String(option?.children ?? "")
-                  .toLowerCase()
-                  .includes(input.toLowerCase())
-              }
-            >
-              {societes.map((societe) => (
-                <Select.Option
-                  key={societe.idFiscale}
-                  value={societe.idFiscale}
-                >
-                  {societe.raisonSociale}
-                </Select.Option>
-              ))}
-            </Select>
-          </Form.Item>
-          <Form.Item
             name="dateVisa_NOTIF"
             label="Date de Visa"
             rules={[
               { required: true, message: "La date de visa est obligatoire" },
             ]}
           >
-            <DatePicker
-              style={{ width: "100%" }}
-              format="DD/MM/YYYY"
-              //disabledDate={(current) => current && current > dayjs().endOf('day')}
-            />
+            <DatePicker style={{ width: "100%" }} format="DD/MM/YYYY" />
           </Form.Item>
 
           <Form.Item
@@ -176,13 +174,7 @@ const Add_Notification = () => {
               },
             ]}
           >
-            <DatePicker
-              style={{ width: "100%" }}
-              format="DD/MM/YYYY"
-              disabledDate={(current) =>
-                current && current > dayjs().endOf("day")
-              }
-            />
+            <DatePicker style={{ width: "100%" }} format="DD/MM/YYYY" />
           </Form.Item>
 
           <Form.Item wrapperCol={{ offset: 10, span: 14 }}>

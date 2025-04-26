@@ -13,7 +13,7 @@ export interface Societe {
 export const getSocietes = async (): Promise<Societe[]> => {
   try {
     const response = await api.get("/api/societe/get");
-    return response.data;
+    return response.data as Societe[];
   } catch (error) {
     console.error("Erreur lors de la récupération des sociétés :", error);
     throw error;
@@ -23,7 +23,7 @@ export const getSocietes = async (): Promise<Societe[]> => {
 export const createSociete = async (societe: Societe): Promise<Societe> => {
   try {
     const response = await api.post("/api/societe/add", societe);
-    return response.data;
+    return response.data as Societe;
   } catch (error: any) {
     console.error("Erreur lors de la création de la société :", error);
     if (error.response) {
@@ -36,7 +36,7 @@ export const createSociete = async (societe: Societe): Promise<Societe> => {
 export const updateSociete = async (id: number, societe: Societe): Promise<Societe> => {
   try {
     const response = await api.put(`/api/societe/update/${id}`, societe);
-    return response.data;
+    return response.data as Societe;
   } catch (error: any) {
     console.error("Erreur lors de la mise à jour de la société :", error);
     if (error.response) {
