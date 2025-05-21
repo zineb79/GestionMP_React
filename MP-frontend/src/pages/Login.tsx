@@ -16,26 +16,24 @@ const Login = () => {
   const handleLogin = async (e: React.FormEvent) => {
     e.preventDefault();
     try {
-      // Appel à l'API pour se connecter
-      const token = await login(email, password); // Le rôle est déjà stocké dans le localStorage par le service
-
-      // Mettre à jour le contexte d'authentification
+      const token = await login(email, password);
+      console.log("Token reçu:", token); // Debug 1
+  
       if (authContext) {
-        authContext.login(token);
+        const refreshToken = localStorage.getItem("refreshToken");
+        const role = localStorage.getItem("role");
+        console.log("Rôle:", role); // Debug 2
+        authContext.login(token, refreshToken || "", role || "");
       }
-
-      // Récupérer le rôle du localStorage
+  
       const role = localStorage.getItem("role");
-
-      // Rediriger en fonction du rôle
-      if (role === "CHEF_DE_SERVICE") {
-        navigate("/accueil-chef");
-      } else if (role === "SECRETAIRE") {
-        navigate("/accueil-secretaire");
-      } else {
-        navigate("/unauthorized"); // Rediriger vers une page par défaut si le rôle n'est pas reconnu
-      }
+      console.log("Redirection vers:", role); // Debug 3
+  
+      if (role === "CHEF_DE_SERVICE") navigate("/accueil-chef");
+      else if (role === "SECRETAIRE") navigate("/accueil-secretaire");
+      else navigate("/unauthorized");
     } catch (error) {
+      console.error("Erreur de connexion:", error); // Debug 4
       alert("Email ou mot de passe invalide");
     }
   };

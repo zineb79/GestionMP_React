@@ -23,6 +23,11 @@ import List_PV from "./pages/Secretaire/List_Docs/List_PvReceptions";
 import Add_Societe from "./pages/Secretaire/Add_Docs/Add_Societe";
 import List_Societe from "./pages/Secretaire/List_Docs/List_Societe";
 import GestionComptes from "./pages/ChefService/GestionComptes";
+import Dashboard from "./pages/ChefService/Dashboard";
+import DocAO from "./pages/ChefService/Doc/DocAO";
+import DocOS from "./pages/ChefService/Doc/DocOS";
+import DocNotif from "./pages/ChefService/Doc/DocNotif";
+import DocDecompte from "./pages/ChefService/Doc/DocDecompte";
 
 function App() {
   const [isDarkMode, setIsDarkMode] = React.useState(false);
@@ -82,6 +87,11 @@ function App() {
             <Route element={<RoleProtectedRoute allowedRoles={["CHEF_DE_SERVICE"]} />}>
               <Route path="/accueil-chef" element={<Accueil_CS />} />
               <Route path="/gestionComptes" element={<GestionComptes />} />
+              <Route path="/dashboard" element={<Dashboard />} />
+              <Route path="/DocAO" element={<DocAO />} />
+              <Route path="/DocOS" element={<DocOS />} />
+              <Route path="/DocNotif" element={<DocNotif />} />
+              <Route path="/DocDecompte" element={<DocDecompte />} />
             </Route>
             <Route element={<RoleProtectedRoute allowedRoles={["SECRETAIRE"]} />}>
               <Route path="/accueil-secretaire" element={<Accueil_Sec />} />

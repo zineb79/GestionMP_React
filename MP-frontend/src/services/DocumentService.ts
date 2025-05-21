@@ -1,7 +1,9 @@
 import PizZip from 'pizzip';
 import Docxtemplater from 'docxtemplater';
-import saveAs from 'file-saver';
+import { saveAs } from 'file-saver';
+import { SecureDocumentService } from '../config/SecurityService';
 import { AppelOffre } from './AOService';
+import { Notification } from './NotificationService';
 
 interface TemplateErrorProperties {
   errors: Array<{
@@ -10,9 +12,6 @@ interface TemplateErrorProperties {
     };
   }>;
 }
-
-import { Notification } from './NotificationService';
-import { Marche } from './MarcheService';
 
 // Utility function to convert numbers to words in French
 const numberToWords = (number: number): string => {
@@ -72,16 +71,6 @@ export class DocumentService {
   //************************************ Appel d'offre **************************************** 
   static async generateAppelOffreDocument(appelOffre: AppelOffre): Promise<void> {
     try {
-      // Charger le template Word
-      const response = await fetch('/templates/AppelOffre.docx');
-      const buffer = await response.arrayBuffer();
-      
-      // Initialiser PizZip et Docxtemplater
-      const zip = new PizZip(buffer);
-      const doc = new Docxtemplater(zip, {
-        paragraphLoop: true,
-        linebreaks: true,
-      });
 
       // Préparer les données pour le template
       const data = {
@@ -89,8 +78,8 @@ export class DocumentService {
         dateOuverturePli_AO: appelOffre.dateOuverturePli_AO || '',
         heureOuverturePli_AO: appelOffre.heureOuverturePli_AO || '',
         typeAO: appelOffre.type_AO.toUpperCase() || '',
-        idMarcheAO: appelOffre.marche?.id_Marche || '',
-        objetAO: appelOffre.marche?.objet_marche || '',
+        idMarche: appelOffre.idMarche?.toString() || '',
+        objetAO: appelOffre.marche_AO_obj?.objet_marche || '',
         coutEstimeAO: appelOffre.coutEstime_AO || 0,
         coutEstimeAOLetters: numberToWords(appelOffre.coutEstime_AO || 0),
         coutEstimeAONumeric: (appelOffre.coutEstime_AO || 0).toLocaleString('fr-FR', {
@@ -105,53 +94,28 @@ export class DocumentService {
         }),
       };
 
-      // Remplir le template
-      try {
-        doc.render(data);
-      } catch (error) {
-        const errorProperties = (error as any).properties as TemplateErrorProperties;
-        if (errorProperties) {
-          const placeholders = errorProperties.errors.map(e => e.properties.placeholder);
-          console.error('Erreur de template:', errorProperties);
-        }
-        throw error;
-      }
+      // Générer le document sécurisé avec le template sécurisé
+      await SecureDocumentService.generateSecureDocument(
+        '/templates/AppelOffre.docx',
+        data,
+        `APPEL_OFFRE_${appelOffre.num_Ordre_AO}`
+      );
 
-      // Générer le fichier Word
-      const out = doc.getZip().generate({
-        type: 'blob',
-        mimeType: 'application/vnd.openxmlformats-officedocument.wordprocessingml.document',
-      });
-
-      // Sauvegarder le fichier
-      saveAs(out, `appel_offre_${appelOffre.num_Ordre_AO}.docx`);
-    } catch (error) {
-      console.error('Erreur lors de la génération du document:', error);
-      throw error;
+    } catch (error: unknown) {
+      // Gestion des erreurs sécurisées
+      SecureDocumentService.handleSecurityError(error);
+      throw new Error('Échec de génération du document sécurisé');
     }
   }
-//************************************ Notification **************************************** 
+
+  //************************************ Notification **************************************** 
   static async generateNotificationDocument(notification: Notification): Promise<void> {
     try {
-      // Charger le template Word pour les notifications
-      const response = await fetch('/templates/NotificationApprobation.docx');
-      const buffer = await response.arrayBuffer();
-      
-      // Initialiser PizZip et Docxtemplater
-      const zip = new PizZip(buffer);
-      const doc = new Docxtemplater(zip, {
-        paragraphLoop: true,
-        linebreaks: true,
-        nullGetter: function() {
-          return '';
-        }
-      });
-
       // Préparer les données pour le template
       const marcheData = notification.marche_NOTIF_obj ? {
-        numOrdreMarche: notification.marche_NOTIF_obj.numOrdre,
-        objetMarche: notification.marche_NOTIF_obj.objet_marche,
-        typeMarche: notification.marche_NOTIF_obj.type_Marche,
+        numOrdreMarche: notification.marche_NOTIF_obj?.numOrdre,
+        objetMarche: notification.marche_NOTIF_obj?.objet_marche,
+        typeMarche: notification.marche_NOTIF_obj?.type_Marche,
         statutMarche: notification.marche_NOTIF_obj.statut,
         delaisGarantieMarche: notification.marche_NOTIF_obj.delaisGarantie,
         delaisMarche: notification.marche_NOTIF_obj.delaisMarche,
@@ -159,50 +123,28 @@ export class DocumentService {
       } : null;
 
       const data = {
-        numOrdreNotif: notification.numOrdre_NOTIF,
-        dateVisaNotif: notification.dateVisa_NOTIF,
-        dateApprobationNotif: notification.dateApprobation_NOTIF,
-        marche: marcheData
+        numOrdreNOTIF: notification.numOrdre_NOTIF,
+        dateVisa_NOTIF: notification.dateVisa_NOTIF,
+        dateApprobation_NOTIF: notification.dateApprobation_NOTIF,
+        montantFinal: notification.marche_NOTIF_obj?.montantFinal,
+        delaisMarche: notification.marche_NOTIF_obj?.delaisMarche,
+        montantFinalLetters: numberToWords(notification.marche_NOTIF_obj?.montantFinal || 0),
+        montantFinalNumeric: (notification.marche_NOTIF_obj?.montantFinal || 0).toLocaleString('fr-FR', {
+          minimumFractionDigits: 2,
+          maximumFractionDigits: 2
+        }),
       };
 
-      try {
-        // Remplir le template
-        doc.render(data);
-      } catch (error) {
-        if (error instanceof Error && 'properties' in error) {
-          const errorProperties = error as unknown as TemplateErrorProperties;
-          if (errorProperties.errors) {
-            const missingPlaceholders = errorProperties.errors.map(e => e.properties.placeholder);
-            console.error('Placeholders manquants dans le template:', missingPlaceholders);
-            throw new Error(`Erreur de template: Placeholders manquants - ${missingPlaceholders.join(', ')}`);
-          }
-        }
-        throw error;
-      }
-
-      // Générer le fichier Word
-      const out = doc.getZip().generate({
-        type: 'blob',
-        mimeType: 'application/vnd.openxmlformats-offecedocument.wordprocessingml.document'
-      });
-
-      // Créer un lien de téléchargement
-      const url = window.URL.createObjectURL(out);
-      const a = document.createElement('a');
-      a.href = url;
-      a.download = `Notification_${notification.numOrdre_NOTIF}.docx`;
-      document.body.appendChild(a);
-      a.click();
-      window.URL.revokeObjectURL(url);
-      document.body.removeChild(a);
+      // Générer le document sécurisé avec le template sécurisé
+      await SecureDocumentService.generateSecureDocument(
+        '/templates/NotificationApprobation.docx',
+        data,
+        `NOTIFICATION_${notification.numOrdre_NOTIF}`
+      );
 
     } catch (error) {
-      console.error('Erreur lors de la génération du document:', error);
-      if (error instanceof Error && 'properties' in error) {
-        const errorProperties = error as unknown as TemplateErrorProperties;
-        console.error('Erreurs de template:', errorProperties.errors);
-      }
-      throw error;
+      // Gestion des erreurs sécurisées
+      SecureDocumentService.handleSecurityError(error);
     }
   }
 }

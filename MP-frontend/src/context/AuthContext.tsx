@@ -2,10 +2,11 @@ import { createContext, useState, useEffect, ReactNode } from "react";
 import { jwtDecode } from "jwt-decode";
 
 interface AuthContextType {
-  token: string | null;
+  accessToken: string | null;
+  refreshToken: string | null;
   user: any;
-  role: string | null; // Ajout du rôle
-  login: (newToken: string) => void; // Mise à jour pour inclure le rôle
+  role: string | null;
+  login: (accessToken: string, refreshToken: string, role: string) => void;
   logout: () => void;
 }
 
@@ -16,50 +17,67 @@ interface AuthProviderProps {
 }
 
 export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
-  const [token, setToken] = useState<string | null>(localStorage.getItem("token"));
+  const [accessToken, setAccessToken] = useState<string | null>(
+    localStorage.getItem("accessToken")
+  );
+  const [refreshToken, setRefreshToken] = useState<string | null>(
+    localStorage.getItem("refreshToken")
+  );
+  const [role, setRole] = useState<string | null>(localStorage.getItem("role"));
   const [user, setUser] = useState<any>(null);
-  const [role, setRole] = useState<string | null>(localStorage.getItem("role")); // Ajout du rôle
 
   const parseJwt = (token: string): any => {
     try {
       return jwtDecode(token);
     } catch (e) {
-      console.log("Token is invalid");
+      console.log("Token invalide");
       return null;
     }
   };
 
   useEffect(() => {
-    if (token) {
-      const decodedUser = parseJwt(token);
-      if (decodedUser) {
-        setUser(decodedUser);
+    if (accessToken) {
+      const decoded = parseJwt(accessToken);
+      if (decoded) {
+        setUser(decoded);
       } else {
         logout();
       }
     }
-  }, [token]);
+  }, [accessToken]);
 
-  const login = (newToken: string) => {
-    const decodedUser = parseJwt(newToken);
-    const userRole = localStorage.getItem("role"); // Récupérer le rôle du localStorage
+  const login = (
+    newAccessToken: string,
+    newRefreshToken: string,
+    userRole: string
+  ) => {
+    const decoded = parseJwt(newAccessToken);
 
-    setToken(newToken);
-    setRole(userRole); // Mettre à jour le rôle dans le contexte
-    localStorage.setItem("token", newToken);
-    setUser(decodedUser);
+    setAccessToken(newAccessToken);
+    setRefreshToken(newRefreshToken);
+    setRole(userRole);
+    setUser(decoded);
+
+    localStorage.setItem("accessToken", newAccessToken);
+    localStorage.setItem("refreshToken", newRefreshToken);
+    localStorage.setItem("role", userRole);
   };
 
   const logout = () => {
-    setToken(null);
-    setRole(null); // Réinitialiser le rôle
-    localStorage.removeItem("token");
-    localStorage.removeItem("role"); // Supprimer le rôle du localStorage
+    setAccessToken(null);
+    setRefreshToken(null);
+    setRole(null);
     setUser(null);
+
+    localStorage.removeItem("accessToken");
+    localStorage.removeItem("refreshToken");
+    localStorage.removeItem("role");
   };
 
   return (
-    <AuthContext.Provider value={{ token, user, role, login, logout }}>
+    <AuthContext.Provider
+      value={{ accessToken, refreshToken, user, role, login, logout }}
+    >
       {children}
     </AuthContext.Provider>
   );

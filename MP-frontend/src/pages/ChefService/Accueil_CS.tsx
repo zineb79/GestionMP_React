@@ -1,6 +1,5 @@
 import { useEffect, useState } from 'react'
 import Sidebar from '../../components/Sidebar/Sidebar_CS'
-import '../Accueil_SEC.css'
 import { Marche } from '../../services/MarcheService';
 
 const statusMapping: { [key: string]: string } = {

@@ -6,12 +6,13 @@ import { Marche } from "./MarcheService";
     id_AO?: number;
     num_Ordre_AO: string;
     type_AO: string;
-    dateOuverturePli_AO: string; 
+    dateOuverturePli_AO: string;  
     heureOuverturePli_AO: string; 
     coutEstime_AO: number;
     cautionProvisoire_AO: number;
     statut_AO: string; 
-    marche: Marche;
+    marche_AO_obj?: Marche;
+    idMarche?: number;
   }
   
   export const getAppelsOffre = async (): Promise<AppelOffre[]> => {

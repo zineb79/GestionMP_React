@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { User, UserForm } from '../../services/UserService';
 import Sidebar from '../../components/Sidebar/Sidebar_CS';
-import '../Accueil_SEC.css'
+
 import {
   Table,
   TableBody,
@@ -29,7 +29,6 @@ const GestionComptes: React.FC = () => {
     email: '',
     password: '',
     role: '',
-    service: '',
   });
 
   useEffect(() => {
@@ -40,20 +39,16 @@ const GestionComptes: React.FC = () => {
         nom: 'Zineb',
         prenom: 'Salmi',
         email: 'zineb.salmi@example.com',
-        role: 'utilisateur',
-        service: 'SAG',
+        role: 'secrétaire',
         dateCreation: '2025-01-15',
-        status: 'actif',
       },
       {
         id: 2,
         nom: 'Asma',
         prenom: 'Marie',
         email: 'asma.marie@example.com',
-        role: 'superviseur',
-        service: 'Service Marche Public',
+        role: 'secrétaire',
         dateCreation: '2025-02-20',
-        status: 'actif',
       },
     ];
     setUsers(mockUsers);
@@ -68,7 +63,6 @@ const GestionComptes: React.FC = () => {
         email: user.email,
         password: '',
         role: user.role,
-        service: user.service,
       });
     } else {
       setFormData({
@@ -77,7 +71,6 @@ const GestionComptes: React.FC = () => {
         email: '',
         password: '',
         role: '',
-        service: '',
       });
     }
     setOpenDialog(true);
@@ -123,9 +116,7 @@ const GestionComptes: React.FC = () => {
               <TableCell>Prénom</TableCell>
               <TableCell>Email</TableCell>
               <TableCell>Rôle</TableCell>
-              <TableCell>Service</TableCell>
               <TableCell>Date de création</TableCell>
-              <TableCell>Status</TableCell>
               <TableCell>Actions</TableCell>
             </TableRow>
           </TableHead>
@@ -136,18 +127,7 @@ const GestionComptes: React.FC = () => {
                 <TableCell>{user.prenom}</TableCell>
                 <TableCell>{user.email}</TableCell>
                 <TableCell>{user.role}</TableCell>
-                <TableCell>{user.service}</TableCell>
                 <TableCell>{user.dateCreation}</TableCell>
-                <TableCell>
-                  <span
-                    style={{
-                      color: user.status === 'actif' ? 'green' : 'red',
-                      fontWeight: 'bold',
-                    }}
-                  >
-                    {user.status}
-                  </span>
-                </TableCell>
                 <TableCell>
                   <Button
                     variant="outlined"
@@ -215,15 +195,6 @@ const GestionComptes: React.FC = () => {
               label="Rôle"
               fullWidth
               value={formData.role}
-              onChange={handleInputChange}
-              required
-            />
-            <TextField
-              margin="dense"
-              name="service"
-              label="Service"
-              fullWidth
-              value={formData.service}
               onChange={handleInputChange}
               required
             />

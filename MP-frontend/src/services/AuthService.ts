@@ -4,7 +4,8 @@ import api from "../utils/axiosInstance";
 const API_URL = "https://localhost:8443/auth/login"; // Adjust this to match your backend URL
 
 interface LoginResponse {
-  token: string;
+  accessToken: string;
+  refreshToken: string;
   role: string;
   nom: string;
   prenom: string;
@@ -26,18 +27,19 @@ export const login = async (
       }
     );
 
-    const { token, role, nom, prenom } = response.data;
+    const { accessToken, refreshToken, role, nom, prenom } = response.data;
 
-    if (!token || !role || !nom || !prenom) {
-      throw new Error("Token or Role missing in response");
+    if (!accessToken || !refreshToken || !role || !nom || !prenom) {
+      throw new Error("Missing data in response");
     }
 
-    localStorage.setItem("token", token);
+    localStorage.setItem("accessToken", accessToken);
+    localStorage.setItem("refreshToken", refreshToken);
     localStorage.setItem("role", role);
     localStorage.setItem("nom", nom);
     localStorage.setItem("prenom", prenom);
 
-    return token;
+    return accessToken;
   } catch (error) {
     console.error("Login failed", error);
     throw error;

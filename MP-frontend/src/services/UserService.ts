@@ -4,9 +4,7 @@ export interface User {
   prenom: string;
   email: string;
   role: string;
-  service: string;
   dateCreation: string;
-  status: 'actif' | 'inactif';
 }
 
 export interface UserForm {
@@ -15,5 +13,4 @@ export interface UserForm {
   email: string;
   password: string;
   role: string;
-  service: string;
 }

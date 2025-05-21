@@ -1,5 +1,6 @@
 import api from "../utils/axiosInstance";
 import { Marche } from "./MarcheService";
+import { Societe } from "./SocieteService";
 
 export interface Notification {
   id_NOTIF?: number;
@@ -8,12 +9,14 @@ export interface Notification {
   dateApprobation_NOTIF: string;
   marche_NOTIF?: number;  // ID du marché dans la base de données
   marche_NOTIF_obj?: Marche;   // Objet Marché associé (pour l'affichage)
+  societe_NOTIF?: string;  // ID fiscal de la société
+  societe_NOTIF_obj?: Societe;  // Objet Société associé (pour l'affichage)
 };
 
 export const getNotificationsByMarche = async (idMarche: number): Promise<Notification[]> => {
   try {
     const response = await api.get(`/api/Notification/getByMarche/${idMarche}`);
-    return response.data;
+    return response.data as Notification[];
   } catch (error) {
     console.error("Erreur lors de la récupération des notifications pour le marché :", error);
     throw error;
@@ -23,7 +26,7 @@ export const getNotificationsByMarche = async (idMarche: number): Promise<Notifi
 export const getNotifications = async (): Promise<Notification[]> => {
   try {
     const response = await api.get("/api/Notification/get");
-    return response.data;
+    return response.data as Notification[];
   } catch (error) {
     console.error("Erreur lors de la récupération des notifications :", error);
     throw error;
@@ -37,7 +40,7 @@ export const createNotification = async (notification: Notification): Promise<No
       JSON.stringify(notification, null, 2)
     );
     const response = await api.post("/api/Notification/add", notification);
-    return response.data;
+    return response.data as Notification;
   } catch (error) {
     console.error("Erreur lors de la création de la notification :", error);
     throw error;
@@ -58,7 +61,7 @@ export const updateNotification = async (id: number, notification: Notification)
     console.log('Updating Notification with data:', notification);
     const response = await api.put(`/api/Notification/update/${id}`, notification);
     console.log('Backend response:', response.data);
-    return response.data;
+    return response.data as Notification;
   } catch (error: any) {
     console.error("Erreur lors de la mise à jour de la notification :", error);
     throw error;

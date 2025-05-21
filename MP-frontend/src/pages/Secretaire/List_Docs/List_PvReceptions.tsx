@@ -1,19 +1,39 @@
-import React, { useState, useEffect } from 'react';
-import { Table, Modal, FloatButton, Form, Select, message, DatePicker } from 'antd';
-import { EditOutlined, DeleteOutlined, PlusOutlined } from '@ant-design/icons';
-import { useNavigate } from 'react-router-dom';
-import { getPvReceptions, deletePvReception, updatePvReception, TypePvReception, PvReception } from '../../../services/PvReceptionService';
-import { Marche, getMarches } from '../../../services/MarcheService';
-import Sidebar from '../../../components/Sidebar/Sidebar_Sec';
-import '../PagesSec.css';
-import dayjs from 'dayjs';
+import React, { useState, useEffect } from "react";
+import { getNumOrdreMarche } from "../../../services/MarcheService";
+import {
+  Table,
+  Modal,
+  Input,
+  FloatButton,
+  Form,
+  DatePicker,
+  Select,
+  message,
+  App,
+  Tag,
+} from "antd";
+import {
+  EditOutlined,
+  DeleteOutlined,
+  PlusOutlined,
+  FileWordOutlined,
+} from "@ant-design/icons";
+import { useNavigate } from "react-router-dom";
+import { getMarches } from "../../../services/MarcheService";
+import Sidebar from "../../../components/Sidebar/Sidebar_Sec";
+import "../PagesSec.css";
+import dayjs from "dayjs";
+import { Marche } from "../../../services/MarcheService";
+import { DocumentService } from "../../../services/DocumentService";
+import { title } from "process";
+import { getPvReceptions, PvReception, PvReceptionWithNumOrdre, TypePvReception, updatePvReception } from "../../../services/PvReceptionService";
 
 const List_PvReceptions = () => {
   const [isEditing, setIsEditing] = useState(false);
-  const [editingPvReception, setEditingPvReception] = useState<PvReception | null>(null);
+  const [editingPV, setEditingPV] = useState<PvReception | null>(null);
   const [dataSource, setDataSource] = useState<PvReception[]>([]);
-  const [marches, setMarches] = useState<Marche[]>([]);
   const [loading, setLoading] = useState(true);
+  const [marches, setMarches] = useState<Marche[]>([]);
   const navigate = useNavigate();
   const [form] = Form.useForm();
 
@@ -21,226 +41,172 @@ const List_PvReceptions = () => {
     const fetchData = async () => {
       try {
         setLoading(true);
-        const [pvData, marcheData] = await Promise.all([
-          getPvReceptions(),
-          getMarches()
-        ]);
+        const pvData = await getPvReceptions();
+        console.log("Données reçues:", pvData);
         setDataSource(pvData);
-        setMarches(marcheData);
+        const marchesData = await getMarches();
+        setMarches(marchesData);
       } catch (error) {
-        console.error('Error fetching data:', error);
-        message.error('Erreur lors du chargement des données');
+        console.error("Error fetching data:", error);
+        message.error("Erreur de chargement des données");
       } finally {
         setLoading(false);
       }
     };
-
     fetchData();
   }, []);
 
-  const onDeletePvReception = async (record: PvReception) => {
-    Modal.confirm({
-      title: "Êtes-vous sûr de vouloir supprimer ce PV de réception ?",
-      okText: "Oui",
-      okType: "danger",
-      onOk: async () => {
-        if (!record.id_PVR) return;
-        try {
-          await deletePvReception(record.id_PVR);
-          setDataSource((pre) => pre.filter((pv) => pv.id_PVR !== record.id_PVR));
-          message.success("Le PV de réception a été supprimé avec succès");
-        } catch (error) {
-          message.error("Erreur lors de la suppression du PV de réception");
-          console.error('Error:', error);
-        }
-      },
-    });
-  };
 
-  const onEditPvReception = (record: PvReception) => {
+  const onEditPV = (record: PvReception) => {
     setIsEditing(true);
-    setEditingPvReception(record);
+    setEditingPV({ ...record });
     form.setFieldsValue({
       ...record,
-      type_PVR: record.type_PVR,
-      date_PVR: record.date_PVR ? dayjs(record.date_PVR) : null,
-      marche_PVR: record.marche_PVR
+      date_PVR: record.date_PVR ? dayjs(record.date_PVR, 'YYYY-MM-DD') : null,
     });
   };
 
-  const handleSave = async () => {
+  const handleSave = async (values: any) => {
+    if (!editingPV || !editingPV.id_PVR) {
+      message.error("ID de l'ordre de service manquant");
+      return;
+    }
     try {
-      const values = await form.validateFields();
-      
-      if (!editingPvReception) {
-        message.error("Aucun PV de réception sélectionné");
-        return;
-      }
-
-      const selectedMarche = marches.find(m => m.id_Marche === values.marche_PVR);
-      
-      if (!selectedMarche) {
-        message.error("Marché sélectionné introuvable");
-        return;
-      }
-
-      const updatedPv = {
-        ...editingPvReception,
+      const updatedPV = {
+        ...editingPV,
         ...values,
-        type_PVR: values.type_PVR,
-        date_PVR: values.date_PVR ? values.date_PVR.format('YYYY-MM-DD') : '',
-        marche_PVR: selectedMarche
+        date_PVR: values.date_PVR?.format('YYYY-MM-DD'), // Format ISO pour la base de données
       };
-
-      const updatedPvReception = await updatePvReception(updatedPv);
-      
-      setDataSource(dataSource.map(pv => 
-        pv.id_PVR === updatedPvReception.id_PVR ? updatedPvReception : pv
-      ));
-      
-      setIsEditing(false);
-      setEditingPvReception(null);
-      message.success("Le PV de réception a été mis à jour avec succès");
+  
+      await updatePvReception(updatedPV);
+      // ... reste du code
     } catch (error) {
-      message.error("Erreur lors de la mise à jour du PV de réception");
-      console.error('Error:', error);
+      console.error("Erreur lors de la mise à jour:", error);
+      message.error("Échec de la mise à jour de l'ordre de service");
     }
   };
 
   const resetEditing = () => {
     setIsEditing(false);
-    setEditingPvReception(null);
+    setEditingPV(null);
     form.resetFields();
   };
-
+  /*const generateDocument = async (ordreDeService: OrdreDeService) => {
+    try {
+      await DocumentService.generateOrdreDeServiceDocument(ordreDeService);
+      message.success('Document généré avec succès');
+    } catch (error) {
+      message.error('Erreur lors de la génération du document');
+    }
+  } */
   const columns = [
     {
-      title: 'ID',
-      dataIndex: 'id_PVR',
-      key: 'id_PVR',
+      title: "Numéro de Marché",
+      dataIndex: "numOrdreMarche",
+      key: "numOrdreMarche",
+      render: (text: string | undefined) => <Tag color="blue">{text || "N/A"}</Tag>,
+      sorter: (a: PvReceptionWithNumOrdre, b: PvReceptionWithNumOrdre) =>
+        (a.numOrdreMarche || "").localeCompare(b.numOrdreMarche || ""),
     },
     {
-      title: 'Type',
-      dataIndex: 'type_PVR',
-      key: 'type_PVR',
-      render: (type: TypePvReception) => {
-        switch (type) {
-          case TypePvReception.PROVISOIRE:
-            return 'Provisoire';
-          case TypePvReception.DEFINITIVE:
-            return 'Définitif';
-          default:
-            return type;
-        }
-      },
+      title: "Type",
+      dataIndex: "type_PVR",
+      key: "type_PVR",
+      sorter: (a: PvReception, b: PvReception) =>
+        (a.type_PVR || "").localeCompare(b.type_PVR || ""),
     },
     {
-      title: 'Date',
-      dataIndex: 'date_PVR',
-      key: 'date_PVR',
-      render: (date: string) => dayjs(date).format('DD/MM/YYYY'),
+      title: "Date",
+      dataIndex: "date_PVR",
+      key: "date_PVR",
+      render: (date: string) =>
+        date ? dayjs(date).format("DD/MM/YYYY") : "N/A",
+      sorter: (a: PvReception, b: PvReception) =>
+        (a.date_PVR || "").localeCompare(b.date_PVR || ""),
     },
     {
-      title: 'Marché',
-      dataIndex: ['marche_PVR', 'numOrdre'],
-      key: 'marche_PVR',
-    },
-    {
-      title: 'Actions',
-      render: (record: PvReception) => (
+      title: "Actions",
+      key: "actions",
+      render: (_: any, record: PvReception) => (
         <>
-          <EditOutlined 
-            onClick={() => onEditPvReception(record)} 
-            style={{ color: '#1890ff', cursor: 'pointer' }}
+          <EditOutlined
+            onClick={() => onEditPV(record)}
+            style={{ color: "#1890ff", cursor: "pointer" }}
           />
-          <DeleteOutlined
-            onClick={() => onDeletePvReception(record)}
-            style={{ color: 'red', marginLeft: 12, cursor: 'pointer' }}
-          />
+          <FileWordOutlined style={{ color: "purple", marginLeft: 14 }} />
         </>
       ),
     },
   ];
 
   return (
-    <div>
+    <App>
       <Sidebar>
         <div className="list-container">
-          <div className="list-header">
-            <h2 className="list-title">Liste des PV de Réception</h2>
-          </div>
-          <FloatButton 
-            icon={<PlusOutlined />} 
-            onClick={() => navigate("/AddPV")} 
-            tooltip="Ajouter un nouveau PV"
+          <FloatButton
+            icon={<PlusOutlined />}
+            onClick={() => navigate("/AddPv")}
+            tooltip="Ajouter une pvReception"
           />
+          <div className="list-header">
+            <h2 className="list-title">Liste des pvReceptions</h2>
+          </div>
           <Table
             columns={columns}
             dataSource={dataSource}
             rowKey="id_PVR"
             loading={loading}
             bordered
+            pagination={{ pageSize: 10 }}
           />
-
           <Modal
-            title="Modifier le PV de réception"
+            title="Modifier l'ordre de service"
             open={isEditing}
             onCancel={resetEditing}
-            onOk={handleSave}
-            okText="Enregistrer"
-            cancelText="Annuler"
+            onOk={() => form.submit()}
+            width={600}
+            destroyOnClose
           >
-            <Form
-              form={form}
-              layout="vertical"
-            >
-              <Form.Item
-                label="Type de PV"
-                name="type_PVR"
-                rules={[{ required: true, message: 'Veuillez sélectionner le type' }]}
-              >
-                <Select>
-                  <Select.Option value={TypePvReception.PROVISOIRE}>Provisoire</Select.Option>
-                  <Select.Option value={TypePvReception.DEFINITIVE}>Définitif</Select.Option>
-                </Select>
+            <Form form={form} layout="vertical" onFinish={handleSave}>
+              <Form.Item label="Numéro de marché">
+                <Input value={marches.find(m => m.id_Marche === editingPV?.idMarche_PVR)?.numOrdre || 'N/A'} disabled />
               </Form.Item>
-              
-              <Form.Item
-                label="Date de réception"
-                name="date_PVR"
-                rules={[{ required: true, message: 'Veuillez sélectionner la date' }]}
-              >
-                <DatePicker style={{ width: '100%' }} />
+              <Form.Item name="idMarche" hidden>
+                <Input />
               </Form.Item>
 
               <Form.Item
-                label="Marché"
-                name="marche_PVR"
-                rules={[{ required: true, message: 'Veuillez sélectionner le marché' }]}
+                name="type_PVR"
+                label="Type"
+                rules={[
+                  { required: true, message: "Veuillez sélectionner un type" },
+                ]}
               >
                 <Select
-                  showSearch
-                  optionFilterProp="children"
-                  filterOption={(input, option) =>
-                    (option?.label ?? '').toString().toLowerCase().includes(input.toLowerCase())
-                  }
-                >
-                  {marches.map((marche) => (
-                    <Select.Option 
-                      key={marche.id_Marche} 
-                      value={marche.id_Marche}
-                      label={marche.numOrdre}
-                    >
-                      {marche.numOrdre} - {marche.objet_marche}
-                    </Select.Option>
-                  ))}
-                </Select>
+                  style={{ width: "100%" }}
+                  options={[
+                    { value: TypePvReception.PROVISOIRE, label: "Provisoire" },
+                    { value: TypePvReception.DEFINITIVE, label: "Définitif" },
+                  ]}
+                />
+              </Form.Item>
+              <Form.Item
+                name="date_PVR"
+                label="Date de pvReception"
+                rules={[
+                  { required: true, message: "Veuillez sélectionner la date" },
+                ]}
+              >
+                <DatePicker
+                  style={{ width: "100%" }}
+                  format="DD/MM/YYYY"
+                />
               </Form.Item>
             </Form>
           </Modal>
         </div>
       </Sidebar>
-    </div>
+    </App>
   );
 };
 
