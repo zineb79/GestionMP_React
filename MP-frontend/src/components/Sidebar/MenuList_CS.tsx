@@ -69,6 +69,9 @@ const MenuList: React.FC<MenuListProps> = ({ darkTheme = false }) => {
     else if (key === "dashboard") {
       navigate("/Dashboard");
     }
+    else if (key === "notif") {
+      navigate("/notifications");
+    }
   };
 
   const items = [
@@ -89,7 +92,11 @@ const MenuList: React.FC<MenuListProps> = ({ darkTheme = false }) => {
     },
     {
       key: "notif",
-      icon: <Badge count={unreadCount} offset={[10, 0]}><BellOutlined /></Badge>,
+      icon: (
+        <Badge count={unreadCount} offset={[10, 0]}>
+          <BellOutlined />
+        </Badge>
+      ),
       label: "Notification",
     },
     { key: "setting", icon: <SettingOutlined />, label: "Paramètres" },

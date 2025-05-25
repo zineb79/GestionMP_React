@@ -9,12 +9,12 @@ import {
   FileDoneOutlined, FileSyncOutlined, FileProtectOutlined
 } from "@ant-design/icons";
 import { useNavigate } from "react-router-dom";
-import { getNotifications, deleteNotification, updateNotification } from "../../../services/NotificationService";
+import { getNotifications, deleteNotification, updateNotification } from "../../../services/NotifApprService";
 import { getMarches } from "../../../services/MarcheService";
 import { getSocietes } from "../../../services/SocieteService";
 import Sidebar from "../../../components/Sidebar/Sidebar_CS";
 import dayjs from "dayjs";
-import { Notification } from "../../../services/NotificationService";
+import { Notification } from "../../../services/NotifApprService";
 import { Marche } from "../../../services/MarcheService";
 import { Societe } from "../../../services/SocieteService";
 import { DocumentService } from "../../../services/DocumentService";

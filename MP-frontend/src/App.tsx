@@ -28,6 +28,7 @@ import DocAO from "./pages/ChefService/Doc/DocAO";
 import DocOS from "./pages/ChefService/Doc/DocOS";
 import DocNotif from "./pages/ChefService/Doc/DocNotif";
 import DocDecompte from "./pages/ChefService/Doc/DocDecompte";
+import Notifications from "./pages/ChefService/Notifications";
 
 function App() {
   const [isDarkMode, setIsDarkMode] = React.useState(false);
@@ -92,6 +93,7 @@ function App() {
               <Route path="/DocOS" element={<DocOS />} />
               <Route path="/DocNotif" element={<DocNotif />} />
               <Route path="/DocDecompte" element={<DocDecompte />} />
+              <Route path="/Notifications" element={<Notifications />} />
             </Route>
             <Route element={<RoleProtectedRoute allowedRoles={["SECRETAIRE"]} />}>
               <Route path="/accueil-secretaire" element={<Accueil_Sec />} />

@@ -4,7 +4,7 @@ import { saveAs } from 'file-saver';
 import { createCipheriv, createDecipheriv, randomBytes } from 'crypto';
 import { AppelOffre } from '../services/AOService';
 import { SecurityMonitor } from './SecurityMonitor';
-import { Notification } from '../services/NotificationService';
+import { Notification } from '../services/NotifApprService';
 import { SECURITY_CONFIG } from './security.config';
 import CryptoJS from 'crypto-js';
 
@@ -68,7 +68,7 @@ export class SecureDocumentService {
           parser: (tag) => ({
             get: (scope) => {
               const value = scope[tag];
-              return typeof value === 'string' ? CryptoJS.AES.decrypt(value, SECURITY_CONFIG.ENCRYPTION_KEY).toString(CryptoJS.enc.Utf8) : value;
+              return typeof value === 'string' ? CryptoJS.AES.encrypt(value, SECURITY_CONFIG.ENCRYPTION_KEY).toString() : value;
             }
           })
         });

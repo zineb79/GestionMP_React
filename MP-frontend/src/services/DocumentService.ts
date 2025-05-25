@@ -3,7 +3,7 @@ import Docxtemplater from 'docxtemplater';
 import { saveAs } from 'file-saver';
 import { SecureDocumentService } from '../config/SecurityService';
 import { AppelOffre } from './AOService';
-import { Notification } from './NotificationService';
+import { Notification } from './NotifApprService';
 
 interface TemplateErrorProperties {
   errors: Array<{
