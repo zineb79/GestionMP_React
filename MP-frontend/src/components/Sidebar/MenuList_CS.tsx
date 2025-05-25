@@ -10,7 +10,6 @@ import {
 } from "@ant-design/icons";
 import { useNavigate } from "react-router-dom";
 import { useEffect, useState } from "react";
-import { getUnreadNotificationsCount } from "../../services/MarcheDocumentNotificationService";
 import "./sidebar.css";
 import React from "react";
 
@@ -22,23 +21,7 @@ const MenuList: React.FC<MenuListProps> = ({ darkTheme = false }) => {
   const navigate = useNavigate();
   const [unreadCount, setUnreadCount] = useState(0);
 
-  useEffect(() => {
-    const fetchUnreadNotifications = async () => {
-      try {
-        const count = await getUnreadNotificationsCount();
-        setUnreadCount(count);
-      } catch (error) {
-        console.error("Error fetching unread notifications count:", error);
-      }
-    };
-
-    fetchUnreadNotifications();
-    // Refresh unread count every 30 seconds
-    const interval = setInterval(fetchUnreadNotifications, 30000);
-
-    return () => clearInterval(interval);
-  }, []);
-
+  
   const handleMenuClick = ({ key }: { key: string }) => {
     if (key === "deconnexion") {
       localStorage.removeItem('user');
