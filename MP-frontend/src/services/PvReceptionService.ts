@@ -9,7 +9,7 @@ export enum TypePvReception {
 export interface PvReception {
     id_PVR?: number;
     type_PVR: TypePvReception;
-    date_PVR?: string;
+    date?: string;
     idMarche_PVR?: number;
     marche_PVR_obj?: Marche;
 }
@@ -24,7 +24,7 @@ export const createPvReception = async (
     try {
       const payload = {
         type_PVR: pvReception.type_PVR,
-        date: pvReception.date_PVR,
+        date: pvReception.date,
         idMarche_PVR: pvReception.idMarche_PVR,
       };
       console.log(
@@ -58,7 +58,7 @@ export const createPvReception = async (
                 return {
                     id_PVR: pv.id_PVR,
                     type_PVR: pv.type_PVR,
-                    date_PVR: pv.date, // Remap ici
+                    date: pv.date, // Remap ici
                     idMarche_PVR: pv.idMarche_PVR,
                     numOrdreMarche: numOrdre ?? 'N/A'
                 } as PvReceptionWithNumOrdre;
@@ -88,7 +88,7 @@ export const updatePvReception = async (pvReception: Omit<PvReception, 'marche_P
         const payload = {
            id_PVR: pvReception.id_PVR,
            type_PVR: pvReception.type_PVR,
-           date: pvReception.date_PVR,
+           date: pvReception.date,
            idMarche_PVR: pvReception.idMarche_PVR,
         };
         console.log(

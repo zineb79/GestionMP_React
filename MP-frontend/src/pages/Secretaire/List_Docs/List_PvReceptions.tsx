@@ -24,8 +24,6 @@ import Sidebar from "../../../components/Sidebar/Sidebar_Sec";
 import "../PagesSec.css";
 import dayjs from "dayjs";
 import { Marche } from "../../../services/MarcheService";
-import { DocumentService } from "../../../services/DocumentService";
-import { title } from "process";
 import { getPvReceptions, PvReception, PvReceptionWithNumOrdre, TypePvReception, updatePvReception } from "../../../services/PvReceptionService";
 
 const List_PvReceptions = () => {
@@ -62,7 +60,7 @@ const List_PvReceptions = () => {
     setEditingPV({ ...record });
     form.setFieldsValue({
       ...record,
-      date_PVR: record.date_PVR ? dayjs(record.date_PVR, 'YYYY-MM-DD') : null,
+      date: record.date ? dayjs(record.date, 'YYYY-MM-DD') : null,
     });
   };
 
@@ -75,7 +73,7 @@ const List_PvReceptions = () => {
       const updatedPV = {
         ...editingPV,
         ...values,
-        date_PVR: values.date_PVR?.format('YYYY-MM-DD'), // Format ISO pour la base de données
+        date: values.date?.format('YYYY-MM-DD'), // Format ISO pour la base de données
       };
   
       await updatePvReception(updatedPV);
@@ -117,12 +115,12 @@ const List_PvReceptions = () => {
     },
     {
       title: "Date",
-      dataIndex: "date_PVR",
-      key: "date_PVR",
+      dataIndex: "date",
+      key: "date",
       render: (date: string) =>
         date ? dayjs(date).format("DD/MM/YYYY") : "N/A",
       sorter: (a: PvReception, b: PvReception) =>
-        (a.date_PVR || "").localeCompare(b.date_PVR || ""),
+        (a.date || "").localeCompare(b.date || ""),
     },
     {
       title: "Actions",
@@ -191,7 +189,7 @@ const List_PvReceptions = () => {
                 />
               </Form.Item>
               <Form.Item
-                name="date_PVR"
+                name="date"
                 label="Date de pvReception"
                 rules={[
                   { required: true, message: "Veuillez sélectionner la date" },

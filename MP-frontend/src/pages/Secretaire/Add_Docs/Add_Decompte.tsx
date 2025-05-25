@@ -1,11 +1,11 @@
 import React, { useState, useEffect } from 'react';
-import { Form, Input, Button, Select, DatePicker, message } from 'antd';
-import { data, useNavigate } from 'react-router-dom';
+import { Form, Input, Button, Select, message } from 'antd';
+import { useNavigate } from 'react-router-dom';
 import { createDecompte } from '../../../services/DecompteService';
 import Sidebar from '../../../components/Sidebar/Sidebar_Sec';
-import { getMarches, Marche } from "../../../services/MarcheService";
 import '../PagesSec.css';
 import { getSocietes, Societe } from '../../../services/SocieteService';
+import { getMarches, Marche } from '../../../services/MarcheService';
 
 const { Option } = Select;
 
@@ -14,6 +14,7 @@ const Add_Decompte = () => {
   const navigate = useNavigate();
   const [societes, setSocietes] = useState<Societe[]>([]);
   const [loading, setLoading] = useState(true);
+  const [marches, setMarches] = useState<Marche[]>([]);
 
   useEffect(() => {
     // Fetch societes and marches data
@@ -24,6 +25,10 @@ const Add_Decompte = () => {
         if (Array.isArray(dataSociete)) {
           setSocietes(dataSociete);
         } 
+        const dataMarche = await getMarches();
+        if (Array.isArray(dataMarche)) {
+          setMarches(dataMarche);
+        }
         setLoading(false);
       } catch (error) {
         console.error('Error fetching societes:', error);
@@ -39,8 +44,6 @@ const Add_Decompte = () => {
       // Formatage des dates avec gestion des valeurs null/undefined
       const payload = {
         ...values,
-        dateFait_D: values.dateFait_D.format('YYYY-MM-DD'),
-        datePaiement: values.datePaiement.format('YYYY-MM-DD')
       };
       await createDecompte(payload);
       message.success('Décompte ajouté avec succès');
@@ -88,19 +91,45 @@ const Add_Decompte = () => {
             </Form.Item>
 
             <Form.Item
-              name="dateFait_D"
-              label="Date de fait"
-              rules={[{ required: true, message: 'Veuillez sélectionner une date' }]}
+              name="idSociete"
+              label="Société"
+              rules={[{ required: true, message: 'Veuillez sélectionner une société' }]}
             >
-              <DatePicker />
+              <Select>
+                {societes.map((societe: any) => (
+                  <Option key={societe.id_SO} value={societe.id_SO}>
+                    {societe.raisonSociale}
+                  </Option>
+                ))}
+              </Select>
             </Form.Item>
 
             <Form.Item
-              name="datePaiement"
-              label="Date de paiement"
-              rules={[{ required: true, message: 'Veuillez sélectionner une date' }]}
+              name="idMarche"
+              label="Marché"
+              rules={[{ required: true, message: 'Veuillez sélectionner un marché' }]}
             >
-              <DatePicker />
+              <Select
+              placeholder="Sélectionner le marché"
+              loading={loading}
+              showSearch
+              optionFilterProp="label"
+              filterOption={(input, option) =>
+                String(option?.label ?? "")
+                  .toLowerCase()
+                  .includes(input.toLowerCase())
+              }
+              options={marches.map((m) => ({
+                value: m.id_Marche,
+                label: m.numOrdre,
+              }))}
+            >
+              {marches.map((marche) => (
+                <Select.Option key={marche.id_Marche} value={marche.id_Marche}>
+                  {`${marche.numOrdre} - ${marche.objet_marche}`}
+                </Select.Option>
+              ))}
+            </Select>
             </Form.Item>
 
             <Form.Item

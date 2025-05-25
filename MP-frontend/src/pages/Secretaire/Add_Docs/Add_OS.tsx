@@ -17,9 +17,13 @@ const Add_OS = () => {
   useEffect(() => {
     const fetchMarches = async () => {
       try {
-        const data = await getMarches();
-        setMarches(data);
-        setLoading(false);
+        const [marchesData] = await Promise.all([
+                  getMarches(),
+                ]);
+        
+                if (Array.isArray(marchesData)) setMarches(marchesData);
+        
+                setLoading(false);
       } catch (error) {
         console.error("Erreur lors de la récupération des marchés:", error);
         message.error("Erreur lors du chargement des marchés");
@@ -31,22 +35,29 @@ const Add_OS = () => {
 
   const onFinish = async (values: any) => {
     try {
-      const date_OS = values.date_OS ? values.date_OS.format("YYYY-MM-DD") : null;
-
       const payload = {
         ...values,
-        date_OS: date_OS
+        idMarche: values.idMarche,
+        date_OS: values.date_OS.format("YYYY-MM-DD"),
       };
-
-      console.log('Form values:', values);
-      console.log('Payload to backend:', payload);
-
-      await createOrdreDeService(payload);
+  await createOrdreDeService(payload);
       message.success("L'ordre de service a été ajouté avec succès");
-      navigate("/OrdreService");
-    } catch (error) {
+      navigate("/OrdreService");      navigate("/OrdreService");
+    } catch (error: any) {
       console.error("Erreur lors de l'ajout de l'ordre de service :", error);
-      message.error("Une erreur est survenue lors de l'ajout de l'ordre de service");
+      
+      // Display more specific error messages to the user
+      if (error.response && error.response.data) {
+        // If backend sent an error message, show it
+        const errorMessage = error.response.data.message || 'Une erreur est survenue lors de l\'ajout de l\'ordre de service';
+        message.error(errorMessage);
+      } else if (error.request) {
+        // The request was made but no response was received
+        message.error('Le serveur ne répond pas. Veuillez réessayer plus tard.');
+      } else {
+        // Something happened in setting up the request
+        message.error('Erreur lors de la configuration de la requête. Veuillez réessayer.');
+      }
     }
   };
 
@@ -62,31 +73,36 @@ const Add_OS = () => {
           onFinish={onFinish}
           onFinishFailed={(error) => {
             console.log("Failed:", error);
+            message.error("Veuillez corriger les erreurs dans le formulaire");
           }}
         >
           <Form.Item
-            name="marche_OS"
+            name="idMarche"
             label="Marché"
             rules={[
               { required: true, message: "Veuillez sélectionner un marché" },
             ]}
           >
-            <Select placeholder="Sélectionner le marché">
-              {marches && marches.length > 0 ? (
-                marches.map((marche) => (
-                  <Select.Option
-                    key={marche.id_Marche}
-                    value={marche.id_Marche}
-                    disabled={!marche.id_Marche}
-                  >
-                    {`${marche.numOrdre} - ${marche.objet_marche}`}
-                  </Select.Option>
-                ))
-              ) : (
-                <Select.Option value="" disabled>
-                  Aucun marché disponible
+            <Select
+              placeholder="Sélectionner le marché"
+              loading={loading}
+              showSearch
+              optionFilterProp="label"
+              filterOption={(input, option) =>
+                String(option?.label ?? "")
+                  .toLowerCase()
+                  .includes(input.toLowerCase())
+              }
+              options={marches.map((m) => ({
+                value: m.id_Marche,
+                label: m.numOrdre,
+              }))}
+            >
+              {marches.map((marche) => (
+                <Select.Option key={marche.id_Marche} value={marche.id_Marche}>
+                  {`${marche.numOrdre} - ${marche.objet_marche}`}
                 </Select.Option>
-              )}
+              ))}
             </Select>
           </Form.Item>
 

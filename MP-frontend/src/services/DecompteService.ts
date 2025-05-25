@@ -6,9 +6,7 @@ export interface Decompte {
     numOrdre_D: string;
     aCompte: number;
     somme_D: number;
-    dateFait_D: string;
-    datePaiement: string;
-    societe_D: number;
+    idSociete: number;
     societe_D_obj?: Societe;
     idMarche?: number;
     marche?: any;
