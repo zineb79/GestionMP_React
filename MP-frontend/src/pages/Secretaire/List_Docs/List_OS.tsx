@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { Table, Modal, Input, FloatButton, Form, DatePicker, Select, message } from "antd";
+import { Table, Modal, Input, FloatButton, Form, DatePicker, Select, message, Tag } from "antd";
 import { EditOutlined, DeleteOutlined, PlusOutlined, FileWordOutlined } from "@ant-design/icons";
 import { useNavigate } from 'react-router-dom';
 import { getOrdresDeService, deleteOrdreDeService, updateOrdreDeService, Type_OS } from '../../../services/OSService';
@@ -33,15 +33,15 @@ const List_Notification = () => {
 
                 // Associer les marchés aux notifications
                 const enrichedData = osData.map(os => {
-                    // Try to find the marche by matching numOrdre_NOTIF with marche's numOrdre
-                    const marche = marchesData.find(m => m.id_Marche === os.marche_OS);
-                    console.log(`Notification ${os.numOrdre_OS}: found marche =`, marche);
+                    const marche = marchesData.find(m => m.id_Marche === os.idMarche);
                     return {
                         ...os,
+                        idMarche_obj: marche,
                         marche_OS_obj: marche,
-                        marche_OS: marche?.id_Marche || os.marche_OS
+                        marche_OS: marche?.id_Marche || os.idMarche
                     };
-                });
+                }).filter(os => os.marche_OS_obj); // Retire ceux qui n'ont pas de marché trouvé
+                
 
                 setDataSource(enrichedData);
                 setMarches(marchesData);
@@ -104,12 +104,11 @@ const List_Notification = () => {
             const newData = await getOrdresDeService();
             const enrichedData = newData.map(os => {
                 // Try to find the marche by matching numOrdre_OS with marche's numOrdre
-                const marche = marches.find(m => m.id_Marche === os.marche_OS);
+                const marche = marches.find(m => m.id_Marche === os.idMarche);
                 console.log(`Ordre de service ${os.numOrdre_OS}: found marche =`, marche);
                 return {
                     ...os,
-                    marche_OS_obj: marche,
-                    marche_OS: marche?.id_Marche || os.marche_OS
+                    idMarche_obj: marche
                 };
             });
             setDataSource(enrichedData);
@@ -130,22 +129,24 @@ const List_Notification = () => {
         setEditingOS(null);
         form.resetFields();
     };
-  /*const generateDocument = async (ordreDeService: OrdreDeService) => {
+  const generateDocument = async (ordreDeService: OrdreDeService) => {
     try {
       await DocumentService.generateOrdreDeServiceDocument(ordreDeService);
       message.success('Document généré avec succès');
     } catch (error) {
       message.error('Erreur lors de la génération du document');
     }
-  } */
+  } 
     const columns = [
         {
             title: 'Numéro de Marché',
-            key: 'marche_OS',
-            render: (record: OrdreDeService) => record.marche_OS_obj?.numOrdre || 'N/A',
+            key: 'idMarche',
+            render: (text: string, record: OrdreDeService) => (
+                    <Tag color="blue">{record.idMarche_obj?.numOrdre || "N/A"}</Tag>
+            ),
             sorter: (a: OrdreDeService, b: OrdreDeService) => 
-                (a.marche_OS_obj?.numOrdre || '').localeCompare(b.marche_OS_obj?.numOrdre || '')
-        },
+                    (a.idMarche_obj?.numOrdre || "").localeCompare(b.idMarche_obj?.numOrdre || "")
+            },
         {
             title: 'Numéro d\'OS',
             key: 'numOrdre_OS',
@@ -176,13 +177,11 @@ const List_Notification = () => {
                         onClick={() => onEditOS(record)} 
                         style={{ color: '#1890ff', cursor: 'pointer' }}
                     />
-                    <DeleteOutlined
-                        onClick={() => onDeleteOS(record)}
-                        style={{ color: 'red', marginLeft: 12, cursor: 'pointer' }}
-                        />
-                        <FileWordOutlined 
-                          style={{ color: "purple", marginLeft: 14 }}
-                        />
+                    
+                    <FileWordOutlined 
+                        onClick={() => generateDocument(record)}
+                        style={{ color: "purple", marginLeft: 14 }}
+                    />
                     
                 </>
             ),

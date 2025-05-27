@@ -4,6 +4,9 @@ import { saveAs } from 'file-saver';
 import { SecureDocumentService } from '../config/SecurityService';
 import { AppelOffre } from './AOService';
 import { Notification } from './NotifApprService';
+import dayjs from 'dayjs';
+import { OrdreDeService } from './OSService';
+import {PvReception} from './PvReceptionService';
 
 interface TemplateErrorProperties {
   errors: Array<{
@@ -78,7 +81,7 @@ export class DocumentService {
         dateOuverturePli_AO: appelOffre.dateOuverturePli_AO || '',
         heureOuverturePli_AO: appelOffre.heureOuverturePli_AO || '',
         typeAO: appelOffre.type_AO.toUpperCase() || '',
-        idMarche: appelOffre.idMarche?.toString() || '',
+        idMarche: appelOffre.marche_AO_obj?.numOrdre || '',
         objetAO: appelOffre.marche_AO_obj?.objet_marche || '',
         coutEstimeAO: appelOffre.coutEstime_AO || 0,
         coutEstimeAOLetters: numberToWords(appelOffre.coutEstime_AO || 0),
@@ -111,22 +114,14 @@ export class DocumentService {
   //************************************ Notification **************************************** 
   static async generateNotificationDocument(notification: Notification): Promise<void> {
     try {
-      // Préparer les données pour le template
-      const marcheData = notification.marche_NOTIF_obj ? {
-        numOrdreMarche: notification.marche_NOTIF_obj?.numOrdre,
-        objetMarche: notification.marche_NOTIF_obj?.objet_marche,
-        typeMarche: notification.marche_NOTIF_obj?.type_Marche,
-        statutMarche: notification.marche_NOTIF_obj.statut,
-        delaisGarantieMarche: notification.marche_NOTIF_obj.delaisGarantie,
-        delaisMarche: notification.marche_NOTIF_obj.delaisMarche,
-        montantFinalMarche: notification.marche_NOTIF_obj.montantFinal
-      } : null;
-
       const data = {
-        numOrdreNOTIF: notification.numOrdre_NOTIF,
-        dateVisa_NOTIF: notification.dateVisa_NOTIF,
-        dateApprobation_NOTIF: notification.dateApprobation_NOTIF,
+        numOrdreNOTIF: notification.numOrdre_NOTIF || '',
+        numOrdreMarche: notification.marche_NOTIF_obj?.numOrdre || '',
+        dateVisa_NOTIF: dayjs(notification.dateVisa_NOTIF).format('DD/MM/YYYY'),
+        dateApprobation_NOTIF: dayjs(notification.dateApprobation_NOTIF).format('DD/MM/YYYY'),
+        objetMarche: notification.marche_NOTIF_obj?.objet_marche || '',
         montantFinal: notification.marche_NOTIF_obj?.montantFinal,
+        societe: notification.marche_NOTIF_obj?.societe_obj?.raisonSociale || '',
         delaisMarche: notification.marche_NOTIF_obj?.delaisMarche,
         montantFinalLetters: numberToWords(notification.marche_NOTIF_obj?.montantFinal || 0),
         montantFinalNumeric: (notification.marche_NOTIF_obj?.montantFinal || 0).toLocaleString('fr-FR', {
@@ -147,4 +142,59 @@ export class DocumentService {
       SecureDocumentService.handleSecurityError(error);
     }
   }
+
+//************************************ Ordre De Service **************************************** 
+static async generateOrdreDeServiceDocument(ordreDeService: OrdreDeService): Promise<void> {
+  try {
+    const data = {
+      numOrdreOS: ordreDeService.numOrdre_OS || '',
+      idMarche: ordreDeService.idMarche_obj?.numOrdre || '',
+      objetMarche: ordreDeService.idMarche_obj?.objet_marche || '',
+      type_OS: ordreDeService.type_OS || '',
+      nomSociete: ordreDeService.idMarche_obj?.societe_obj?.raisonSociale || '',
+      adresse: ordreDeService.idMarche_obj?.societe_obj?.adresse,
+      date_OS: dayjs(ordreDeService.date_OS).format('DD/MM/YYYY'),
+    };
+
+    // Générer le document sécurisé avec le template sécurisé
+    await SecureDocumentService.generateSecureDocument(
+      '/templates/OrdreDeService.docx',
+      data,
+      `OrdreDeService_${ordreDeService.type_OS}_${ordreDeService.numOrdre_OS}`
+    );
+
+  } catch (error) {
+    // Gestion des erreurs sécurisées
+    SecureDocumentService.handleSecurityError(error);
+  }
+}
+
+//************************************ PV De reception **************************************** 
+static async generatePVDeReceptionDocument(PVDeReception: PvReception): Promise<void> {
+  try {
+    const data = {
+      numOrdrePV: PVDeReception.id_PVR || '',
+      objetMarche: PVDeReception.marche_PVR_obj?.objet_marche || '',
+      idMarche: PVDeReception.marche_PVR_obj?.numOrdre || '',
+      nomSociete: PVDeReception.marche_PVR_obj?.societe_obj?.raisonSociale || '',
+      type_PVR: PVDeReception.type_PVR || '',
+      chefDeProjet: PVDeReception.marche_PVR_obj?.chefServiceConcerne || '',
+      serviceConcerne: PVDeReception.marche_PVR_obj?.serviceConcerne || '',
+      date_PVR: dayjs(PVDeReception.date).format('DD/MM/YYYY')
+      
+    };
+    console.log("Data envoyé au template :", data);
+
+    // Générer le document sécurisé avec le template sécurisé
+    await SecureDocumentService.generateSecureDocument(
+      '/templates/PVR_DEFINITIF.docx',
+      data,
+      `PVDeReception_${PVDeReception.type_PVR}_${PVDeReception.id_PVR}`
+    );
+
+  } catch (error) {
+    // Gestion des erreurs sécurisées
+    SecureDocumentService.handleSecurityError(error);
+  }
+}
 }

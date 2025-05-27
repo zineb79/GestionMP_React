@@ -73,7 +73,6 @@ const Login = () => {
                 required
               />
             </div>
-            <span>J’ai oublié mon mot de passe</span>
             <div className="btn">
               <button type="submit" className="btn btn-primary btn-lg">
                 Se connecter

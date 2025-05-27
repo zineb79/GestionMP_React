@@ -24,6 +24,7 @@ import Sidebar from "../../../components/Sidebar/Sidebar_Sec";
 import "../PagesSec.css";
 import dayjs from "dayjs";
 import { Marche } from "../../../services/MarcheService";
+import { DocumentService } from '../../../services/DocumentService';
 import { getPvReceptions, PvReception, PvReceptionWithNumOrdre, TypePvReception, updatePvReception } from "../../../services/PvReceptionService";
 
 const List_PvReceptions = () => {
@@ -89,14 +90,14 @@ const List_PvReceptions = () => {
     setEditingPV(null);
     form.resetFields();
   };
-  /*const generateDocument = async (ordreDeService: OrdreDeService) => {
+  const generateDocument = async (PVR: PvReception) => {
     try {
-      await DocumentService.generateOrdreDeServiceDocument(ordreDeService);
+      await DocumentService.generatePVDeReceptionDocument(PVR);
       message.success('Document généré avec succès');
     } catch (error) {
       message.error('Erreur lors de la génération du document');
     }
-  } */
+  } 
   const columns = [
     {
       title: "Numéro de Marché",
@@ -131,7 +132,9 @@ const List_PvReceptions = () => {
             onClick={() => onEditPV(record)}
             style={{ color: "#1890ff", cursor: "pointer" }}
           />
-          <FileWordOutlined style={{ color: "purple", marginLeft: 14 }} />
+          <FileWordOutlined 
+            onClick={() => generateDocument(record)}
+            style={{ color: "purple", marginLeft: 14 }} />
         </>
       ),
     },

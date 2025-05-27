@@ -68,7 +68,7 @@ export class SecureDocumentService {
           parser: (tag) => ({
             get: (scope) => {
               const value = scope[tag];
-              return typeof value === 'string' ? CryptoJS.AES.encrypt(value, SECURITY_CONFIG.ENCRYPTION_KEY).toString() : value;
+              return typeof value === 'string' ? CryptoJS.AES.decrypt(value, SECURITY_CONFIG.ENCRYPTION_KEY).toString(CryptoJS.enc.Utf8) : value;
             }
           })
         });

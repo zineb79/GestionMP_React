@@ -107,17 +107,18 @@ const typeMapping: { [key: string]: string } = {
 
   // Préparation des données pour les graphiques
   const typeMarcheData = {
-    labels: Object.values(TypeMarche).map((type: any) => typeMapping[type]),
+    labels: ['TRAVAUX', 'FOURNITURE', 'PRESTATION_SERVICE'],
     datasets: [{
       label: 'Nombre de marchés',
       data: [
-        marches.filter(m => typeMapping[m.type_Marche] === typeMapping[TypeMarche.TRAVAUX]).length,
-        marches.filter(m => typeMapping[m.type_Marche] === typeMapping[TypeMarche.FOURNITURE]).length,
-        marches.filter(m => typeMapping[m.type_Marche] === typeMapping[TypeMarche.PRESTATION_SERVICE]).length,
+        marches.filter(m => m.type_Marche === 'TRAVAUX').length,
+        marches.filter(m => m.type_Marche === 'FOURNITURE').length,
+        marches.filter(m => m.type_Marche === 'PRESTATION_SERVICE').length
       ],
       backgroundColor: ['#36A2EB', '#FF6384', '#4BC0C0']
     }]
   };
+  
 
   const statutMarcheData = {
     labels: Object.values(StatutMarche).map((statut: any) => statusMapping[statut]),
@@ -158,7 +159,7 @@ const typeMapping: { [key: string]: string } = {
       key: 'count',
     },
     {
-      title: 'Montant total (€)',
+      title: 'Montant total (MAD)',
       dataIndex: 'montantTotal',
       key: 'montantTotal',
       render: (value: number) => value.toLocaleString(),
@@ -184,7 +185,7 @@ const typeMapping: { [key: string]: string } = {
           </Col>
           <Col span={6}>
             <Card title="Montant total" bordered={false}>
-              <AntTitle level={2}>{totalMontant.toLocaleString()} €</AntTitle>
+              <AntTitle level={2}>{totalMontant.toLocaleString()} MAD</AntTitle>
             </Card>
           </Col>
           <Col span={6}>

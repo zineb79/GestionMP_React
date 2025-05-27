@@ -2,10 +2,11 @@ import api from "../utils/axiosInstance";
 import { Societe } from "./SocieteService";
 
 export enum TypeMarche {
-  TRAVAUX,
-  FOURNITURE,
-  PRESTATION_SERVICE
+  TRAVAUX = "TRAVAUX",
+  FOURNITURE = "FOURNITURE",
+  PRESTATION_SERVICE = "PRESTATION_SERVICE"
 }
+
 
 export enum StatutMarche {
   EnCoursTraitement,

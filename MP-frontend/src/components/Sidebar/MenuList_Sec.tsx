@@ -57,8 +57,6 @@ const MenuList = () => {
       icon: <TeamOutlined />,
       label: "Sociétés"
     },
-    { key: "notif", icon: <BellOutlined />, label: "Notification" },
-    { key: "setting", icon: <SettingOutlined />, label: "Paramètres" },
     { key: "deconnexion", icon: <LogoutOutlined />, label: "Se déconnecter" },
   ];
 

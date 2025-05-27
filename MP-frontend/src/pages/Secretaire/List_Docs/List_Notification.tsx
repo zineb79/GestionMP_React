@@ -133,7 +133,7 @@ const List_Notification = () => {
           ...notification,
           marche_NOTIF_obj: marche
         };
-      });
+      }).filter(notifications => notifications.marche_NOTIF_obj);
   
       setDataSource(enrichedData);
       setIsEditing(false);

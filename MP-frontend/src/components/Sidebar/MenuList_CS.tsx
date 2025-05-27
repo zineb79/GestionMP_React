@@ -31,6 +31,9 @@ const MenuList: React.FC<MenuListProps> = ({ darkTheme = false }) => {
     else if (key === "Home") {
       navigate("/accueil-chef");
     }
+    else if (key === "marche") {
+      navigate("/DocMarche");
+    }
     else if (key === "membre") {
       navigate("/gestionComptes");
     }
@@ -82,7 +85,7 @@ const MenuList: React.FC<MenuListProps> = ({ darkTheme = false }) => {
       ),
       label: "Notification",
     },
-    { key: "setting", icon: <SettingOutlined />, label: "Paramètres" },
+    /*{ key: "setting", icon: <SettingOutlined />, label: "Paramètres" },*/
     { key: "membre", icon: <TeamOutlined />, label: "Comptes secrétaires" },
     { key: "deconnexion", icon: <LogoutOutlined />, label: "Se déconnecter" },
   ];

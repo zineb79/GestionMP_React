@@ -65,7 +65,7 @@ useEffect(() => {
           marche_AO_obj: marche,
           idMarche: marche?.id_Marche || appel.idMarche,
         } as AppelOffre;
-      });
+      }).filter(appel => appel.marche_AO_obj);
 
       setDataSource(enrichedData);
       setMarches(marchesData);

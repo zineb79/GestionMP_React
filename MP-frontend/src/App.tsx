@@ -29,6 +29,7 @@ import DocOS from "./pages/ChefService/Doc/DocOS";
 import DocNotif from "./pages/ChefService/Doc/DocNotif";
 import DocDecompte from "./pages/ChefService/Doc/DocDecompte";
 import Notifications from "./pages/ChefService/Notifications";
+import DocMarche from "./pages/ChefService/Doc/DocMarche";
 
 function App() {
   const [isDarkMode, setIsDarkMode] = React.useState(false);
@@ -87,6 +88,7 @@ function App() {
             <Route path="/unauthorized" element={<Unauthorized />} />
             <Route element={<RoleProtectedRoute allowedRoles={["CHEF_DE_SERVICE"]} />}>
               <Route path="/accueil-chef" element={<Accueil_CS />} />
+              <Route path="/DocMarche" element={<DocMarche />} />
               <Route path="/gestionComptes" element={<GestionComptes />} />
               <Route path="/dashboard" element={<Dashboard />} />
               <Route path="/DocAO" element={<DocAO />} />

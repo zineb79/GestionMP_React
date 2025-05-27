@@ -50,7 +50,7 @@ const Add_Marche = () => {
                 message: "Le numéro de marché est obligatoire"
               },
               {
-                pattern: /^[a-zA-Z0-9-_/]+$/,
+                pattern: /^[a-zA-Z0-9-_/ ]+$/,
                 message: "Le numéro de marché ne doit contenir que des lettres, chiffres, tirets et underscores"
               }
             ]}
