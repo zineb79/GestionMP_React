@@ -109,14 +109,35 @@ const List_Marche = () => {
       key: "4",
       title: "Délais du marché",
       dataIndex: "delaisMarche",
+      render: (date: string) => {
+        // Si la date est déjà au format DD/MM/YYYY, on l'affiche directement
+        if (date && date.match(/^\d{2}\/\d{2}\/\d{4}$/)) {
+          return date;
+        }
+        // Sinon, on la formate avec dayjs
+        return date ? dayjs(date).format('DD/MM/YYYY') : 'N/A';
+      }
     },
     {
       key: "5",
       title : "Service concerné",
       dataIndex: "serviceConcerne",
+      render : (serviceConcerne : string) => {
+        if (serviceConcerne === 'Service_AdministrationGeneral') {
+          return 'Service Administration Générale';
+        } else if (serviceConcerne === 'Service_SuiviTravaux') {
+          return 'Service Suivi Travaux';
+        } else if (serviceConcerne === 'Service_GestionCourrier') {
+          return 'Service Gestion Courrier';
+        } else if (serviceConcerne === 'Service_MarchePublic') {
+          return 'Service Marché Public';
+        } else {
+          return '-';
+        }
+      }
     },
     {
-      key: "5",
+      key: "6",
       title: "Statut",
       dataIndex: "statut",
       render : (statut : string) => {
@@ -157,10 +178,49 @@ const List_Marche = () => {
         }
         return <Tag color={color}>{statut}</Tag>;
       },
-      filters: loading ? [] : statuts.map(statut => ({
-        text: statut,
-        value: statut
-      }))
+      filters: [
+        {
+          text: 'EnCoursTraitement',
+          value: 'EnCoursTraitement',
+        },
+        {
+          text: 'Adjuge',
+          value: 'Adjuge',
+        },
+        {
+          text: 'EnCoursApprobation',
+          value: 'EnCoursApprobation',
+        },
+        {
+          text: 'EnArret',
+          value: 'EnArret',
+        },
+        {
+          text: 'Notifie',
+          value: 'Notifie',
+        },
+        {
+          text: 'EnCoursDeVisa',
+          value: 'EnCoursDeVisa',
+        },
+        {
+          text: 'EnCoursDExecution',
+          value: 'EnCoursDExecution',
+        },
+        {
+          text: 'HorsDelaisMarche',
+          value: 'HorsDelaisMarche',
+        },
+        {
+          text: 'Acheve',
+          value: 'Acheve',
+        },
+        {
+          text: 'Cloture',
+          value: 'Cloture',
+        },
+      ],
+      onFilter: (value: any, record: Marche) => record.statut === value,
     },
     {
       key: "6",
@@ -241,7 +301,7 @@ const List_Marche = () => {
               rules={[{ required: true, message: "Champ obligatoire" }]}
             >
               <DatePicker
-                format="YYYY-MM-DD"
+                format="DD/MM/YYYY"
                 placeholder="Sélectionner la date du délai du marché"
                 className="date-picker-container"
                 value={form.getFieldValue('delaisMarche') ? dayjs(form.getFieldValue('delaisMarche')) : null}

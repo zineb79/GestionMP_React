@@ -1,215 +1,182 @@
 import React, { useState, useEffect } from "react";
-import {
-  Table,
-  Modal,
-  Input,
-  FloatButton,
-  Form,
-  DatePicker,
-  Select,
-  message,
-  Tag,
-  InputNumber,
+import { 
+  Table, Modal, Input, FloatButton, Form, DatePicker, Select, 
+  message, Tag, Card, Statistic, Row, Col, App 
 } from "antd";
-import { EditOutlined, DeleteOutlined, PlusOutlined } from "@ant-design/icons";
+import { 
+  EditOutlined, PlusOutlined, FileWordOutlined,
+  FileDoneOutlined, FileSyncOutlined, SearchOutlined 
+} from "@ant-design/icons";
 import { useNavigate } from "react-router-dom";
-import {
-  getDecomptes,
-  deleteDecompte,
-  updateDecompte,
-} from "../../../services/DecompteService";
-import Sidebar from "../../../components/Sidebar/Sidebar_Sec";
-
-import dayjs from "dayjs";
-import { getSocietes, Societe } from "../../../services/SocieteService";
 import { getMarches, Marche } from "../../../services/MarcheService";
-import { Decompte } from "../../../services/DecompteService";
+import Sidebar from "../../../components/Sidebar/Sidebar_Sec";
+import "../PagesSec.css";
+import dayjs from "dayjs";
+import { DocumentService } from '../../../services/DocumentService';
+import { 
+  getPvReceptions, PvReception, TypePvReception, updatePvReception 
+} from "../../../services/PvReceptionService";
 
-const List_Decomptes = () => {
+const DocPV = () => {
   const [isEditing, setIsEditing] = useState(false);
-  const [editingDecompte, setEditingDecompte] = useState<Decompte | null>(null);
-  const [dataSource, setDataSource] = useState<Decompte[]>([]);
+  const [editingPV, setEditingPV] = useState<PvReception | null>(null);
+  const [dataSource, setDataSource] = useState<PvReception[]>([]);
   const [loading, setLoading] = useState(true);
+  const [marches, setMarches] = useState<Marche[]>([]);
+  const [searchText, setSearchText] = useState('');
   const navigate = useNavigate();
   const [form] = Form.useForm();
-  const [societes, setSocietes] = useState<Societe[]>([]);
-  const [marches, setMarches] = useState<Marche[]>([]);
 
   useEffect(() => {
-    const fetchDecomptes = async () => {
+    const fetchData = async () => {
       try {
         setLoading(true);
-        const [decomptesData, societesData, marchesData] = await Promise.all([
-          getDecomptes(),
-          getSocietes(),
-          getMarches(),
+        const [pvData, marchesData] = await Promise.all([
+          getPvReceptions(),
+          getMarches()
         ]);
-        
-        // Associer les marchés avec leurs sociétés
-        const marchesWithSocietes = marchesData.map(marche => {
-          const societe = societesData.find(s => s.id_SO === marche.idSociete);
+
+        // Enrichir les données avec les numéros de marché
+        const enrichedData = pvData.map(pv => {
+          const marche = marchesData.find(m => m.id_Marche === pv.idMarche_PVR);
           return {
-            ...marche,
-            societe_obj: societe
-          };
-        });
-        
-        // Enrichir les décomptes avec les marchés complets (incluant les sociétés)
-        const enrichedData = decomptesData.map(decompte => {
-          const marche = marchesWithSocietes.find(m => m.id_Marche === decompte.idMarche);
-          return {
-            ...decompte,
+            ...pv,
+            numOrdreMarche: marche?.numOrdre || "N/A",
             marche_obj: marche
           };
         });
-        
+
         setDataSource(enrichedData);
-        setMarches(marchesWithSocietes);
-        setSocietes(societesData);
+        setMarches(marchesData);
       } catch (error) {
-        console.error("Erreur lors du chargement:", error);
+        console.error("Error fetching data:", error);
         message.error("Erreur de chargement des données");
       } finally {
         setLoading(false);
       }
     };
-    fetchDecomptes();
+    fetchData();
   }, []);
 
-  const onDeleteDecompte = async (record: Decompte) => {
-    Modal.confirm({
-      title: "Êtes-vous sûr de vouloir supprimer ce décompte ?",
-      okText: "Oui",
-      okType: "danger",
-      onOk: async () => {
-        try {
-          await deleteDecompte(record.id_D!);
-          setDataSource((pre) => pre.filter((dec) => dec.id_D !== record.id_D));
-          message.success("Le décompte a été supprimé avec succès");
-        } catch (error) {
-          message.error("Erreur lors de la suppression du décompte");
-          console.error("Error:", error);
-        }
-      },
-    });
-  };
+  // Calcul des statistiques
+  const totalPV = dataSource.length;
+  const provisoirePV = dataSource.filter(pv => pv.type_PVR === TypePvReception.PROVISOIRE).length;
+  const definitifPV = dataSource.filter(pv => pv.type_PVR === TypePvReception.DEFINITIVE).length;
 
-  const onEditDecompte = (record: Decompte) => {
+  const filteredData = dataSource.filter(item => 
+    item.idMarche_PVR?.toString().includes(searchText.toLowerCase()) ||
+    item.type_PVR?.toLowerCase().includes(searchText.toLowerCase())
+  );
+
+  const onEditPV = (record: PvReception) => {
     setIsEditing(true);
-    setEditingDecompte({ ...record });
+    setEditingPV({ ...record });
     form.setFieldsValue({
       ...record,
-      numOrdre_D: record.numOrdre_D,
-      aCompte: record.aCompte,
-      somme_D: record.somme_D,
+      date: record.date ? dayjs(record.date, 'YYYY-MM-DD') : null,
     });
   };
 
   const handleSave = async (values: any) => {
-    if (!editingDecompte) return;
-  
+    if (!editingPV || !editingPV.id_PVR) {
+      message.error("ID du PV de réception manquant");
+      return;
+    }
     try {
-      if (!editingDecompte.id_D) {
-        message.error("ID du décompte manquant");
-        return;
-      }
-  
-      const updatedDecompte = {
-        ...editingDecompte,
+      const updatedPV = {
+        ...editingPV,
         ...values,
+        date: values.date?.format('YYYY-MM-DD'),
       };
-  
-      await updateDecompte(updatedDecompte);
-  
-      // Rafraîchir les données avec les associations de marché
-      const [newDecomptes, newMarches] = await Promise.all([
-        getDecomptes(),
+
+      await updatePvReception(updatedPV);
+      
+      // Rafraîchir les données
+      const [newData, updatedMarches] = await Promise.all([
+        getPvReceptions(),
         getMarches()
       ]);
-      
-      const marchesWithSocietes = newMarches.map(marche => {
-        const societe = societes.find(s => s.id_SO === marche.idSociete);
-        return { ...marche, societe_obj: societe };
+
+      const enrichedData = newData.map(pv => {
+        const marche = updatedMarches.find(m => m.id_Marche === pv.idMarche_PVR);
+        return {
+          ...pv,
+          numOrdreMarche: marche?.numOrdre || "N/A",
+          marche_obj: marche
+        };
       });
-      
-      const enrichedData = newDecomptes.map(decompte => {
-        const marche = marchesWithSocietes.find(m => m.id_Marche === decompte.idMarche);
-        return { ...decompte, marche_obj: marche };
-      });
-      
+
       setDataSource(enrichedData);
-      setMarches(marchesWithSocietes);
-  
+      setMarches(updatedMarches);
+      
+      setEditingPV(null);
       setIsEditing(false);
-      setEditingDecompte(null);
-      message.success("Le décompte a été mis à jour avec succès");
+      message.success("PV de réception mis à jour avec succès");
     } catch (error) {
-      message.error("Erreur lors de la mise à jour du décompte");
-      console.error("Error:", error);
+      console.error("Erreur lors de la mise à jour:", error);
+      message.error("Échec de la mise à jour du PV de réception");
     }
   };
 
   const resetEditing = () => {
     setIsEditing(false);
-    setEditingDecompte(null);
+    setEditingPV(null);
     form.resetFields();
+  };
+
+  const generateDocument = async (PVR: PvReception) => {
+    try {
+      await DocumentService.generatePVDeReceptionDocument(PVR);
+      message.success('Document généré avec succès');
+    } catch (error) {
+      message.error('Erreur lors de la génération du document');
+    }
   };
 
   const columns = [
     {
       title: "Numéro de Marché",
-      dataIndex: ["marche_obj", "numOrdre"],
-      key: "marche",
-      render: (text: string, record: Decompte) => (
-        <Tag color="blue">{record.marche_obj?.numOrdre || "N/A"}</Tag>
-      ),
-      sorter: (a: Decompte, b: Decompte) => 
-        (a.marche_obj?.numOrdre || "").localeCompare(b.marche_obj?.numOrdre || "")
+      dataIndex: "idMarche_PVR",
+      key: "idMarche_PVR",
+      render: (text: string) => <Tag color="blue">{text}</Tag>,
+      sorter: (a: PvReception, b: PvReception) =>
+        (a.idMarche_PVR || "").toString().localeCompare((b.idMarche_PVR || "").toString()),
     },
     {
-      title: "Numéro d'ordre",
-      dataIndex: "numOrdre_D",
-      key: "numOrdre_D",
-      sorter: (a: Decompte, b: Decompte) =>
-        (a.numOrdre_D || "").localeCompare(b.numOrdre_D || ""),
+      title: "Type",
+      dataIndex: "type_PVR",
+      key: "type_PVR",
+      render: (type: TypePvReception) => {
+        let color = type === TypePvReception.PROVISOIRE ? 'orange' : 'green';
+        let text = type === TypePvReception.PROVISOIRE ? 'PROVISOIRE' : 'DEFINITIF';
+        return <Tag color={color}>{text}</Tag>;
+      },
+      filters: [
+        { text: 'PROVISOIRE', value: TypePvReception.PROVISOIRE },
+        { text: 'DEFINITIF', value: TypePvReception.DEFINITIVE },
+      ],
+      onFilter: (value: TypePvReception, record: PvReception) => record.type_PVR === value,
     },
     {
-      title: "Acompte",
-      dataIndex: "aCompte",
-      key: "aCompte",
-      render: (value: number) => `${value} €`,
-      sorter: (a: Decompte, b: Decompte) => a.aCompte - b.aCompte,
-    },
-    {
-      title: "Somme",
-      dataIndex: "somme_D",
-      key: "somme_D",
-      render: (value: number) => `${value} €`,
-      sorter: (a: Decompte, b: Decompte) => a.somme_D - b.somme_D,
-    },
-    {
-      title: "Société",
-      key: "societe",
-      render: (record: Decompte) => (
-        record.marche_obj?.societe_obj?.raisonSociale || "N/A"
-      ),
-      sorter: (a: Decompte, b: Decompte) => 
-        (a.marche_obj?.societe_obj?.raisonSociale || "").localeCompare(
-          b.marche_obj?.societe_obj?.raisonSociale || ""
-        )
+      title: "Date",
+      dataIndex: "date",
+      key: "date",
+      render: (date: string) => date ? dayjs(date).format("DD/MM/YYYY") : "N/A",
+      sorter: (a: PvReception, b: PvReception) =>
+        (a.date || "").localeCompare(b.date || ""),
     },
     {
       title: "Actions",
       key: "actions",
-      render: (_: any, record: Decompte) => (
+      render: (_: any, record: PvReception) => (
         <>
-          <EditOutlined 
-            onClick={() => onEditDecompte(record)}
-            style={{ color: "#1890ff", cursor: "pointer" }}
+          <EditOutlined
+            onClick={() => onEditPV(record)}
+            style={{ color: "green", marginRight: 12, cursor: "pointer" }}
           />
-          <DeleteOutlined
-            onClick={() => onDeleteDecompte(record)}
-            style={{ color: "red", marginLeft: 12, cursor: "pointer" }}
+          <FileWordOutlined 
+            onClick={() => generateDocument(record)}
+            style={{ color: "blue", marginLeft: 12, cursor: "pointer" }} 
           />
         </>
       ),
@@ -217,87 +184,126 @@ const List_Decomptes = () => {
   ];
 
   return (
-    <div>
+    <App>
       <Sidebar>
-        <div className="list-container">
-          <div className="list-header">
-            <h2 className="list-title">Liste des Décomptes</h2>
-          </div>
-          <FloatButton
-            icon={<PlusOutlined />}
-            onClick={() => navigate("/AddDecompte")}
-            tooltip="Ajouter un décompte"
-          />
-          <Table
-            columns={columns}
-            dataSource={dataSource}
-            rowKey="id_D"
-            loading={loading}
-            pagination={{ pageSize: 10 }}
-            bordered
-          />
+        <div className="list-container" style={{ padding: '20px' }}>
+          <Card 
+            title="PV de Réception" 
+            style={{ marginBottom: '20px' }}
+            headStyle={{ backgroundColor: '#edfabf', borderBottom: '1px solid #d9d9d9' }}
+          >
+            {/* Cartes de statistiques */}
+            <Row gutter={16} style={{ marginBottom: '20px' }}>
+              <Col span={8}>
+                <Card bordered={false}>
+                  <Statistic
+                    title="Total PV"
+                    value={totalPV}
+                    prefix={<FileDoneOutlined />}
+                  />
+                </Card>
+              </Col>
+              <Col span={8}>
+                <Card bordered={false}>
+                  <Statistic
+                    title="PV Provisoires"
+                    value={provisoirePV}
+                    prefix={<FileSyncOutlined />}
+                    valueStyle={{ color: '#faad14' }}
+                  />
+                </Card>
+              </Col>
+              <Col span={8}>
+                <Card bordered={false}>
+                  <Statistic
+                    title="PV Définitifs"
+                    value={definitifPV}
+                    prefix={<FileDoneOutlined />}
+                    valueStyle={{ color: '#52c41a' }}
+                  />
+                </Card>
+              </Col>
+            </Row>
+
+            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '20px' }}>
+              <Input 
+                placeholder="Rechercher par numéro de marché ou type" 
+                prefix={<SearchOutlined />} 
+                style={{ width: '300px' }}
+                value={searchText}
+                onChange={(e) => setSearchText(e.target.value)}
+              />
+              <FloatButton
+                icon={<PlusOutlined />}
+                onClick={() => navigate("/AddPv")}
+                tooltip="Ajouter un PV de réception"
+                type="primary"
+              />
+            </div>
+
+            <Table
+              columns={columns}
+              dataSource={filteredData}
+              rowKey="id_PVR"
+              loading={loading}
+              style={{ marginTop: '20px' }}
+              bordered
+              pagination={{ pageSize: 10 }}
+            />
+          </Card>
 
           <Modal
-            title="Modifier le décompte"
+            title="Modifier le PV de réception"
             open={isEditing}
             onCancel={resetEditing}
             onOk={() => form.submit()}
             width={600}
+            destroyOnClose
           >
             <Form form={form} layout="vertical" onFinish={handleSave}>
-              <Form.Item label="Marché associé">
+              <Form.Item label="Numéro de marché">
                 <Input 
-                  value={editingDecompte?.marche_obj?.numOrdre || "N/A"} 
+                  value={marches.find(m => m.id_Marche === editingPV?.idMarche_PVR)?.numOrdre || 'N/A'} 
                   disabled 
                 />
               </Form.Item>
-              
-              <Form.Item label="Société">
-                <Input 
-                  value={editingDecompte?.marche_obj?.societe_obj?.raisonSociale || "N/A"} 
-                  disabled 
+              <Form.Item name="idMarche_PVR" hidden>
+                <Input />
+              </Form.Item>
+
+              <Form.Item
+                name="type_PVR"
+                label="Type"
+                rules={[
+                  { required: true, message: "Veuillez sélectionner un type" },
+                ]}
+              >
+                <Select
+                  style={{ width: "100%" }}
+                  options={[
+                    { value: TypePvReception.PROVISOIRE, label: "Provisoire" },
+                    { value: TypePvReception.DEFINITIVE, label: "Définitif" },
+                  ]}
                 />
               </Form.Item>
-
               <Form.Item
-                label="Numéro d'ordre"
-                name="numOrdre_D"
-                rules={[{ required: true, message: 'Ce champ est obligatoire' }]}
+                name="date"
+                label="Date de réception"
+                rules={[
+                  { required: true, message: "Veuillez sélectionner la date" },
+                ]}
               >
-                <Input disabled />
-              </Form.Item>
-
-              <Form.Item
-                label="Acompte (€)"
-                name="aCompte"
-                rules={[{ required: true, message: 'Ce champ est obligatoire' }]}
-              >
-                <InputNumber 
-                  style={{ width: '100%' }} 
-                  min={0}
-                  step={0.01}
-                  formatter={value => `${value}`.replace(/\B(?=(\d{3})+(?!\d))/g, ' ')}
-                />
-              </Form.Item>
-
-              <Form.Item
-                label="Somme (€)"
-                name="somme_D"
-                rules={[{ required: true, message: 'Ce champ est obligatoire' }]}
-              >
-                <InputNumber 
-                  style={{ width: '100%' }} 
-                  min={0}
-                  step={0.01}
-                  formatter={value => `${value}`.replace(/\B(?=(\d{3})+(?!\d))/g, ' ')}
+                <DatePicker
+                  style={{ width: "100%" }}
+                  format="DD/MM/YYYY"
                 />
               </Form.Item>
             </Form>
           </Modal>
         </div>
       </Sidebar>
-    </div>
+    </App>
   );
 };
 
-export default List_Decomptes;
+export default DocPV;

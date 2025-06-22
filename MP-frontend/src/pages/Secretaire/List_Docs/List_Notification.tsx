@@ -49,7 +49,7 @@ const List_Notification = () => {
             ...notification,
             marche_NOTIF_obj: marche
           };
-        });
+        }).filter(notification => notification.marche_NOTIF_obj);
 
         setDataSource(enrichedData);
         setMarches(marchesWithSocietes);
@@ -110,7 +110,6 @@ const List_Notification = () => {
   
       await updateNotification(editingNotification.id_NOTIF, updatedNotification);
       
-      // >>> Correction ici <<<
       const [notifications, marchesData, societesData] = await Promise.all([
         getNotifications(),
         getMarches(),
@@ -164,8 +163,11 @@ const List_Notification = () => {
       render: (text: string, record: Notification) => (
         <Tag color="blue">{record.marche_NOTIF_obj?.numOrdre || "N/A"}</Tag>
       ),
-      sorter: (a: Notification, b: Notification) => 
-        (a.marche_NOTIF_obj?.numOrdre || "").localeCompare(b.marche_NOTIF_obj?.numOrdre || "")
+    },
+    {
+      title: "Numéro de Notification",
+      dataIndex: "numOrdre_NOTIF",
+      key: "numOrdre",
     },
     {
       title: "Société",
@@ -173,16 +175,6 @@ const List_Notification = () => {
       render: (record: Notification) => (
         record.marche_NOTIF_obj?.societe_obj?.raisonSociale || "N/A"
       ),
-      sorter: (a: Notification, b: Notification) => 
-        (a.marche_NOTIF_obj?.societe_obj?.raisonSociale || "").localeCompare(
-          b.marche_NOTIF_obj?.societe_obj?.raisonSociale || ""
-        )
-    },
-    {
-      title: "Numéro de Notification",
-      dataIndex: "numOrdre_NOTIF",
-      key: "numOrdre",
-      sorter: (a: Notification, b: Notification) => a.numOrdre_NOTIF.localeCompare(b.numOrdre_NOTIF)
     },
     {
       title: "Date de Visa",
@@ -256,14 +248,14 @@ const List_Notification = () => {
               <Input disabled />
             </Form.Item>
             
-            <Form.Item label="Marché associé">
+            <Form.Item label="Numéro de marché">
               <Input 
                 value={editingNotification?.marche_NOTIF_obj?.numOrdre || "N/A"} 
                 disabled 
               />
             </Form.Item>
             
-            <Form.Item label="Société associée">
+            <Form.Item label="Société">
               <Input 
                 value={editingNotification?.marche_NOTIF_obj?.societe_obj?.raisonSociale || "N/A"} 
                 disabled 

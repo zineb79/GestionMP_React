@@ -50,7 +50,7 @@ const DocNotif = () => {
         const enrichedData = notificationsData.map(notification => {
           const marche = marchesWithSocietes.find(m => m.id_Marche === notification.marche_NOTIF);
           return { ...notification, marche_NOTIF_obj: marche };
-        });
+        }).filter(notification => notification.marche_NOTIF_obj);
 
         setDataSource(enrichedData);
         setMarches(marchesWithSocietes);
@@ -138,12 +138,12 @@ const notificationsApproved = dataSource.filter(n =>
       const marchesWithSocietes = marchesData.map(marche => {
         const societe = societesData.find(s => s.id_SO === marche.idSociete);
         return { ...marche, societe_obj: societe };
-      });
+      }).filter(marche => marche.societe_obj);
   
       const enrichedData = notifications.map(notification => {
         const marche = marchesWithSocietes.find(m => m.id_Marche === notification.marche_NOTIF);
         return { ...notification, marche_NOTIF_obj: marche };
-      });
+      }).filter(notification => notification.marche_NOTIF_obj);
   
       setDataSource(enrichedData);
       setIsEditing(false);

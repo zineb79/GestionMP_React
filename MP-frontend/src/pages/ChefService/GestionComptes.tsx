@@ -1,7 +1,11 @@
 import React, { useState, useEffect } from 'react';
-import { User, UserForm } from '../../services/UserService';
+import {
+  getUsers,
+  createUser,
+  getUserActif,
+  User
+} from '../../services/UserService';
 import Sidebar from '../../components/Sidebar/Sidebar_CS';
-
 import {
   Table,
   TableBody,
@@ -21,9 +25,11 @@ import {
 
 const GestionComptes: React.FC = () => {
   const [users, setUsers] = useState<User[]>([]);
+  const [utilisateursActifs, setUtilisateursActifs] = useState<User[]>([]);
   const [openDialog, setOpenDialog] = useState(false);
   const [selectedUser, setSelectedUser] = useState<User | null>(null);
-  const [formData, setFormData] = useState<UserForm>({
+  const [formData, setFormData] = useState<User>({
+    id_user: 0,
     nom: '',
     prenom: '',
     email: '',
@@ -31,41 +37,48 @@ const GestionComptes: React.FC = () => {
     role: '',
   });
 
+  const fetchUsers = async () => {
+    try {
+      const data = await getUsers();
+      setUsers(data);
+    } catch (error) {
+      console.error("Erreur lors du chargement des utilisateurs :", error);
+    }
+  };
+  const fetchUserActif = async () => {
+    try {
+      const actif = await getUserActif();
+      setUtilisateursActifs(actif);
+    } catch (error) {
+      console.error("Erreur utilisateur actif :", error);
+    }
+  };
+  
   useEffect(() => {
-    // Simuler la récupération des utilisateurs
-    const mockUsers: User[] = [
-      {
-        id: 1,
-        nom: 'Zineb',
-        prenom: 'Salmi',
-        email: 'zineb.salmi@example.com',
-        role: 'secrétaire',
-        dateCreation: '2025-01-15',
-      },
-      {
-        id: 2,
-        nom: 'Asma',
-        prenom: 'Marie',
-        email: 'asma.marie@example.com',
-        role: 'secrétaire',
-        dateCreation: '2025-02-20',
-      },
-    ];
-    setUsers(mockUsers);
+    fetchUsers();
+    fetchActifs();
   }, []);
+  
+  const fetchActifs = async () => {
+    try {
+      const actifs = await getUserActif();
+      setUtilisateursActifs(actifs);
+    } catch (error) {
+      console.error("Erreur utilisateurs actifs :", error);
+    }
+  };
+  
 
   const handleOpenDialog = (user: User | null) => {
     setSelectedUser(user);
     if (user) {
       setFormData({
-        nom: user.nom,
-        prenom: user.prenom,
-        email: user.email,
-        password: '',
-        role: user.role,
+        ...user,
+        password: '', // Ne jamais pré-remplir le mot de passe
       });
     } else {
       setFormData({
+        id_user: 0,
         nom: '',
         prenom: '',
         email: '',
@@ -88,129 +101,178 @@ const GestionComptes: React.FC = () => {
     }));
   };
 
-  const handleSubmit = (e: React.FormEvent) => {
+  /*const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    // Ici, vous pouvez ajouter la logique pour sauvegarder les modifications
-    handleCloseDialog();
+    try {
+      if (selectedUser) {
+        await updateUser(selectedUser.id_user, formData);
+      } else {
+        await createUser(formData);
+      }
+      await fetchUsers();
+      handleCloseDialog();
+    } catch (error) {
+      console.error("Erreur lors de l'enregistrement :", error);
+    }
   };
+
+  const handleDelete = async (id: number) => {
+    if (window.confirm("Voulez-vous vraiment supprimer ce compte ?")) {
+      try {
+        await deleteUser(id);
+        await fetchUsers();
+      } catch (error) {
+        console.error("Erreur lors de la suppression :", error);
+      }
+    }
+  };*/
 
   return (
     <Sidebar>
-    <Box sx={{ p: 3 }}>
-      <Box sx={{ display: 'flex', justifyContent: 'space-between', mb: 3 }}>
-        <h2>Gestion des Comptes</h2>
-        <Button
-          variant="contained"
-          color="primary"
-          onClick={() => handleOpenDialog(null)}
-        >
-          Ajouter un compte
-        </Button>
-      </Box>
+      <Box sx={{ p: 3 }}>
+        <Box sx={{ display: 'flex', justifyContent: 'space-between', mb: 3 }}>
+          <h2>Gestion des Comptes</h2>
+          <Button variant="contained" color="primary" onClick={() => handleOpenDialog(null)}>
+            Ajouter un compte
+          </Button>
+        </Box>
 
-      <TableContainer component={Paper}>
-        <Table>
-          <TableHead>
-            <TableRow>
-              <TableCell>Nom</TableCell>
-              <TableCell>Prénom</TableCell>
-              <TableCell>Email</TableCell>
-              <TableCell>Rôle</TableCell>
-              <TableCell>Date de création</TableCell>
-              <TableCell>Actions</TableCell>
-            </TableRow>
-          </TableHead>
-          <TableBody>
-            {users.map((user) => (
-              <TableRow key={user.id}>
-                <TableCell>{user.nom}</TableCell>
-                <TableCell>{user.prenom}</TableCell>
-                <TableCell>{user.email}</TableCell>
-                <TableCell>{user.role}</TableCell>
-                <TableCell>{user.dateCreation}</TableCell>
-                <TableCell>
-                  <Button
-                    variant="outlined"
-                    size="small"
-                    onClick={() => handleOpenDialog(user)}
-                  >
-                    Voir/Modifier
-                  </Button>
-                </TableCell>
+        <TableContainer component={Paper}>
+          <Table>
+            <TableHead>
+              <TableRow>
+              <TableCell></TableCell>
+                <TableCell>Nom</TableCell>
+                <TableCell>Prénom</TableCell>
+                <TableCell>Email</TableCell>
+                <TableCell>Rôle</TableCell>
+                <TableCell>Actions</TableCell>
               </TableRow>
-            ))}
-          </TableBody>
-        </Table>
-      </TableContainer>
+            </TableHead>
+            <TableBody>
+              {users.map((user) => (
+                <TableRow key={user.id_user}>
+                  <TableCell>
+  <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
+    <Box
+      sx={{
+        width: 36,
+        height: 36,
+        bgcolor: 'primary.main',
+        color: 'white',
+        borderRadius: '50%',
+        display: 'flex',
+        alignItems: 'center',
+        justifyContent: 'center',
+        fontWeight: 'bold',
+        fontSize: 16,
+        position: 'relative',
+      }}
+    >
+      {user.prenom.charAt(0).toUpperCase()}
+        <Box
+          sx={{
+            position: 'absolute',
+            bottom: 0,
+            right: 0,
+            width: 10,
+            height: 10,
+            bgcolor: 'green',
+            borderRadius: '50%',
+            border: '2px solid white',
+          }}
+        />
+    </Box>
+    <span>{user.nom}</span>
+  </Box>
+</TableCell>
 
-      <Dialog open={openDialog} onClose={handleCloseDialog} maxWidth="sm" fullWidth>
-        <DialogTitle>
-          {selectedUser ? 'Modifier le compte' : 'Créer un nouveau compte'}
-        </DialogTitle>
-        <form onSubmit={handleSubmit}>
-          <DialogContent>
-            <TextField
-              margin="dense"
-              name="nom"
-              label="Nom"
-              fullWidth
-              value={formData.nom}
-              onChange={handleInputChange}
-              required
-            />
-            <TextField
-              margin="dense"
-              name="prenom"
-              label="Prénom"
-              fullWidth
-              value={formData.prenom}
-              onChange={handleInputChange}
-              required
-            />
-            <TextField
-              margin="dense"
-              name="email"
-              label="Email"
-              fullWidth
-              type="email"
-              value={formData.email}
-              onChange={handleInputChange}
-              required
-            />
-            {!selectedUser && (
+                  <TableCell>{user.nom}</TableCell>
+                  <TableCell>{user.prenom}</TableCell>
+                  <TableCell>{user.email}</TableCell>
+                  <TableCell>{user.role}</TableCell>
+                  <TableCell>
+                    <Button variant="outlined" size="small" onClick={() => handleOpenDialog(user)}>
+                      Modifier
+                    </Button>{' '}
+                    <Button variant="outlined" color="error" size="small">
+                      Supprimer
+                    </Button>
+                  </TableCell>
+                </TableRow>
+              ))}
+            </TableBody>
+
+          </Table>
+        </TableContainer>
+
+        <Dialog open={openDialog} onClose={handleCloseDialog} maxWidth="sm" fullWidth>
+          <DialogTitle>
+            {selectedUser ? 'Modifier le compte' : 'Créer un nouveau compte'}
+          </DialogTitle>
+          <form >
+            <DialogContent>
               <TextField
                 margin="dense"
-                name="password"
-                label="Mot de passe"
+                name="nom"
+                label="Nom"
                 fullWidth
-                type="password"
-                value={formData.password}
+                value={formData.nom}
                 onChange={handleInputChange}
                 required
               />
-            )}
-            <TextField
-              margin="dense"
-              name="role"
-              label="Rôle"
-              fullWidth
-              value={formData.role}
-              onChange={handleInputChange}
-              required
-            />
-          </DialogContent>
-          <DialogActions>
-            <Button onClick={handleCloseDialog}>Annuler</Button>
-            <Button type="submit" variant="contained" color="primary">
-              {selectedUser ? 'Modifier' : 'Créer'}
-            </Button>
-          </DialogActions>
-        </form>
-      </Dialog>
-    </Box>
+              <TextField
+                margin="dense"
+                name="prenom"
+                label="Prénom"
+                fullWidth
+                value={formData.prenom}
+                onChange={handleInputChange}
+                required
+              />
+              <TextField
+                margin="dense"
+                name="email"
+                label="Email"
+                fullWidth
+                type="email"
+                value={formData.email}
+                onChange={handleInputChange}
+                required
+              />
+              {!selectedUser && (
+                <TextField
+                  margin="dense"
+                  name="password"
+                  label="Mot de passe"
+                  fullWidth
+                  type="password"
+                  value={formData.password}
+                  onChange={handleInputChange}
+                  required
+                />
+              )}
+              <TextField
+                margin="dense"
+                name="role"
+                label="Rôle"
+                fullWidth
+                value={formData.role}
+                onChange={handleInputChange}
+                required
+              />
+            </DialogContent>
+            <DialogActions>
+              <Button onClick={handleCloseDialog}>Annuler</Button>
+              <Button type="submit" variant="contained" color="primary">
+                {selectedUser ? 'Modifier' : 'Créer'}
+              </Button>
+            </DialogActions>
+          </form>
+        </Dialog>
+      </Box>
     </Sidebar>
   );
 };
-
 
 export default GestionComptes;

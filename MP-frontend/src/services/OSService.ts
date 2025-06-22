@@ -1,5 +1,6 @@
 import api from "../utils/axiosInstance";
 import { Marche } from "./MarcheService";
+import { Societe } from "./SocieteService";
 
 export enum Type_OS {
   COMMENCEMENT = "COMMENCEMENT",
@@ -15,6 +16,8 @@ export interface OrdreDeService {
   date_OS: string;
   idMarche?: number;
   idMarche_obj? : Marche;
+  idSociete?: number;
+  societe_obj?: Societe;
 }
 
 export const getOrdresDeService = async (): Promise<OrdreDeService[]> => {

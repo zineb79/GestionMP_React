@@ -1,71 +1,57 @@
-import React, { useState, useEffect } from "react";
-import {
-  Table,
-  Modal,
-  Input,
-  FloatButton,
-  Form,
-  DatePicker,
-  Select,
-  message,
-  Tag,
-  InputNumber,
+import React, { useState, useEffect } from 'react';
+import { 
+  Table, Modal, Input, FloatButton, Form, DatePicker, Select, 
+  message, Tag, Card, Statistic, Row, Col 
 } from "antd";
-import { EditOutlined, DeleteOutlined, PlusOutlined } from "@ant-design/icons";
-import { useNavigate } from "react-router-dom";
-import {
-  getDecomptes,
-  deleteDecompte,
-  updateDecompte,
-} from "../../../services/DecompteService";
-import Sidebar from "../../../components/Sidebar/Sidebar_Sec";
+import { 
+  EditOutlined, PlusOutlined, FileWordOutlined,
+  FileDoneOutlined, FileSyncOutlined, FileProtectOutlined, SearchOutlined 
+} from "@ant-design/icons";
+import { useNavigate } from 'react-router-dom';
+import { getOrdresDeService, updateOrdreDeService, Type_OS } from '../../../services/OSService';
+import { getMarches, Marche } from '../../../services/MarcheService';
+import { getSocietes, Societe } from '../../../services/SocieteService';
+import Sidebar from '../../../components/Sidebar/Sidebar_CS';
+import dayjs from 'dayjs';
+import { OrdreDeService } from '../../../services/OSService';
+import { DocumentService } from '../../../services/DocumentService';
 
-import dayjs from "dayjs";
-import { getSocietes, Societe } from "../../../services/SocieteService";
-import { getMarches, Marche } from "../../../services/MarcheService";
-import { Decompte } from "../../../services/DecompteService";
-
-const List_Decomptes = () => {
+const DocOS = () => {
   const [isEditing, setIsEditing] = useState(false);
-  const [editingDecompte, setEditingDecompte] = useState<Decompte | null>(null);
-  const [dataSource, setDataSource] = useState<Decompte[]>([]);
+  const [editingOS, setEditingOS] = useState<OrdreDeService | null>(null);
+  const [dataSource, setDataSource] = useState<OrdreDeService[]>([]);
   const [loading, setLoading] = useState(true);
+  const [marches, setMarches] = useState<Marche[]>([]);
+  const [societes, setSociete] = useState<Societe[]>([]);
+  const [searchText, setSearchText] = useState('');
   const navigate = useNavigate();
   const [form] = Form.useForm();
-  const [societes, setSocietes] = useState<Societe[]>([]);
-  const [marches, setMarches] = useState<Marche[]>([]);
 
   useEffect(() => {
-    const fetchDecomptes = async () => {
+    const fetchData = async () => {
       try {
         setLoading(true);
-        const [decomptesData, societesData, marchesData] = await Promise.all([
-          getDecomptes(),
-          getSocietes(),
+        const [osData, marchesData, societesData] = await Promise.all([
+          getOrdresDeService(),
           getMarches(),
+          getSocietes()
         ]);
-        
-        // Associer les marchés avec leurs sociétés
-        const marchesWithSocietes = marchesData.map(marche => {
-          const societe = societesData.find(s => s.id_SO === marche.idSociete);
+
+        const enrichedData = osData.map(os => {
+          const marche = marchesData.find(m => m.id_Marche === os.idMarche);
+          const societe = societesData.find(m => m.id_SO === marche?.idSociete);
           return {
-            ...marche,
-            societe_obj: societe
+            ...os,
+            idMarche_obj: marche,
+            marche_OS_obj: marche,
+            marche_OS: marche?.id_Marche || os.idMarche,
+            societe_obj: societe,
           };
-        });
-        
-        // Enrichir les décomptes avec les marchés complets (incluant les sociétés)
-        const enrichedData = decomptesData.map(decompte => {
-          const marche = marchesWithSocietes.find(m => m.id_Marche === decompte.idMarche);
-          return {
-            ...decompte,
-            marche_obj: marche
-          };
-        });
-        
+        }).filter(os => os.idMarche_obj); 
+
         setDataSource(enrichedData);
-        setMarches(marchesWithSocietes);
-        setSocietes(societesData);
+        setMarches(marchesData);
+        setSociete(societesData);
       } catch (error) {
         console.error("Erreur lors du chargement:", error);
         message.error("Erreur de chargement des données");
@@ -73,231 +59,290 @@ const List_Decomptes = () => {
         setLoading(false);
       }
     };
-    fetchDecomptes();
+    fetchData();
   }, []);
 
-  const onDeleteDecompte = async (record: Decompte) => {
-    Modal.confirm({
-      title: "Êtes-vous sûr de vouloir supprimer ce décompte ?",
-      okText: "Oui",
-      okType: "danger",
-      onOk: async () => {
-        try {
-          await deleteDecompte(record.id_D!);
-          setDataSource((pre) => pre.filter((dec) => dec.id_D !== record.id_D));
-          message.success("Le décompte a été supprimé avec succès");
-        } catch (error) {
-          message.error("Erreur lors de la suppression du décompte");
-          console.error("Error:", error);
-        }
-      },
-    });
-  };
+  // Calcul des statistiques
+  const totalOS = dataSource.length;
+  const commencementOS = dataSource.filter(os => os.type_OS === 'COMMENCEMENT').length;
+  const arretOS = dataSource.filter(os => os.type_OS === 'ARRET').length;
 
-  const onEditDecompte = (record: Decompte) => {
+  const filteredData = dataSource.filter(item => 
+    item.numOrdre_OS?.toLowerCase().includes(searchText.toLowerCase()) ||
+    (item.idMarche_obj?.numOrdre && item.idMarche_obj.numOrdre.toLowerCase().includes(searchText.toLowerCase()))
+  );
+
+  const onEditOS = (record: OrdreDeService) => {
     setIsEditing(true);
-    setEditingDecompte({ ...record });
+    setEditingOS({ ...record });
     form.setFieldsValue({
       ...record,
-      numOrdre_D: record.numOrdre_D,
-      aCompte: record.aCompte,
-      somme_D: record.somme_D,
+      date_OS: record.date_OS ? dayjs(record.date_OS) : null
     });
   };
 
   const handleSave = async (values: any) => {
-    if (!editingDecompte) return;
-  
+    if (!editingOS || !editingOS.id_OS) {
+      message.error("ID de l'ordre de service manquant");
+      return;
+    }
     try {
-      if (!editingDecompte.id_D) {
-        message.error("ID du décompte manquant");
-        return;
-      }
-  
-      const updatedDecompte = {
-        ...editingDecompte,
+      const updatedOS = {
+        ...editingOS,
         ...values,
+        date_OS: values.date_OS?.format('YYYY-MM-DD')
       };
-  
-      await updateDecompte(updatedDecompte);
-  
-      // Rafraîchir les données avec les associations de marché
-      const [newDecomptes, newMarches] = await Promise.all([
-        getDecomptes(),
-        getMarches()
+
+      await updateOrdreDeService(editingOS.id_OS, updatedOS);
+      
+      const [newData, updatedMarches, updatedSocietes] = await Promise.all([
+        getOrdresDeService(),
+        getMarches(),
+        getSocietes()
       ]);
       
-      const marchesWithSocietes = newMarches.map(marche => {
-        const societe = societes.find(s => s.id_SO === marche.idSociete);
-        return { ...marche, societe_obj: societe };
-      });
-      
-      const enrichedData = newDecomptes.map(decompte => {
-        const marche = marchesWithSocietes.find(m => m.id_Marche === decompte.idMarche);
-        return { ...decompte, marche_obj: marche };
-      });
+      const enrichedData = newData.map(os => {
+        const marche = updatedMarches.find(m => m.id_Marche === os.idMarche);
+        const societe = updatedSocietes.find(m => m.id_SO === marche?.idSociete);
+        return {
+          ...os,
+          idMarche_obj: marche,
+          societe_obj: societe,
+          marche_OS_obj: marche,
+          marche_OS: marche?.id_Marche || os.idMarche,
+        };
+      }).filter(os => os.idMarche_obj);
       
       setDataSource(enrichedData);
-      setMarches(marchesWithSocietes);
-  
+      setMarches(updatedMarches);
+      setSociete(updatedSocietes);
+      
+      setEditingOS(null);
       setIsEditing(false);
-      setEditingDecompte(null);
-      message.success("Le décompte a été mis à jour avec succès");
+      message.success("Ordre de service mis à jour avec succès");
     } catch (error) {
-      message.error("Erreur lors de la mise à jour du décompte");
-      console.error("Error:", error);
+      console.error("Erreur lors de la mise à jour:", error);
+      message.error("Échec de la mise à jour de l'ordre de service");
     }
   };
 
   const resetEditing = () => {
     setIsEditing(false);
-    setEditingDecompte(null);
+    setEditingOS(null);
     form.resetFields();
+  };
+  
+  const generateDocument = async (ordreDeService: OrdreDeService) => {
+    try {
+      await DocumentService.generateOrdreDeServiceDocument(ordreDeService);
+      message.success('Document généré avec succès');
+    } catch (error) {
+      message.error('Erreur lors de la génération du document');
+    }
   };
 
   const columns = [
     {
-      title: "Numéro de Marché",
-      dataIndex: ["marche_obj", "numOrdre"],
-      key: "marche",
-      render: (text: string, record: Decompte) => (
-        <Tag color="blue">{record.marche_obj?.numOrdre || "N/A"}</Tag>
+      title: 'Numéro de Marché',
+      key: 'idMarche',
+      render: (record: OrdreDeService) => (
+        <Tag color="blue">{record.idMarche_obj?.numOrdre || "-"}</Tag>
       ),
-      sorter: (a: Decompte, b: Decompte) => 
-        (a.marche_obj?.numOrdre || "").localeCompare(b.marche_obj?.numOrdre || "")
+      sorter: (a: OrdreDeService, b: OrdreDeService) => 
+        (a.idMarche_obj?.numOrdre || "").localeCompare(b.idMarche_obj?.numOrdre || "")
     },
     {
-      title: "Numéro d'ordre",
-      dataIndex: "numOrdre_D",
-      key: "numOrdre_D",
-      sorter: (a: Decompte, b: Decompte) =>
-        (a.numOrdre_D || "").localeCompare(b.numOrdre_D || ""),
+      title: "Numéro d'OS",
+      dataIndex: "numOrdre_OS",
     },
     {
-      title: "Acompte",
-      dataIndex: "aCompte",
-      key: "aCompte",
-      render: (value: number) => `${value} €`,
-      sorter: (a: Decompte, b: Decompte) => a.aCompte - b.aCompte,
+      title: 'Société',
+      key: 'societe',
+      render: (record: OrdreDeService) => record.societe_obj?.raisonSociale || "-",
     },
     {
-      title: "Somme",
-      dataIndex: "somme_D",
-      key: "somme_D",
-      render: (value: number) => `${value} €`,
-      sorter: (a: Decompte, b: Decompte) => a.somme_D - b.somme_D,
+      title: 'Type',
+      key: 'type_OS',
+      render: (record: OrdreDeService) => {
+        let color = 'default';
+        let text = '-';
+        
+        switch(record.type_OS) {
+          case 'COMMENCEMENT':
+            color = 'green';
+            text = 'COMMENCEMENT';
+            break;
+          case 'ARRET':
+            color = 'red';
+            text = 'ARRÊT';
+            break;
+          case 'REPRISE':
+            color = 'orange';
+            text = 'REPRISE';
+            break;
+          case 'CESSION':
+            color = 'purple';
+            text = 'CESSION';
+            break;
+        }
+        
+        return <Tag color={color}>{text}</Tag>;
+      },
+      filters: [
+        { text: 'COMMENCEMENT', value: 'COMMENCEMENT' },
+        { text: 'ARRÊT', value: 'ARRET' },
+        { text: 'REPRISE', value: 'REPRISE' },
+        { text: 'CESSION', value: 'CESSION' },
+      ],
+      onFilter: (value: any, record: OrdreDeService) => record.type_OS === value,
     },
     {
-      title: "Société",
-      key: "societe",
-      render: (record: Decompte) => (
-        record.marche_obj?.societe_obj?.raisonSociale || "N/A"
-      ),
-      sorter: (a: Decompte, b: Decompte) => 
-        (a.marche_obj?.societe_obj?.raisonSociale || "").localeCompare(
-          b.marche_obj?.societe_obj?.raisonSociale || ""
-        )
+      title: 'Date',
+      key: 'date_OS',
+      render: (record: OrdreDeService) => record.date_OS ? dayjs(record.date_OS).format('DD/MM/YYYY') : '-',
+      sorter: (a: OrdreDeService, b: OrdreDeService) => 
+        (a.date_OS || '').localeCompare(b.date_OS || '')
     },
     {
       title: "Actions",
       key: "actions",
-      render: (_: any, record: Decompte) => (
+      render: (record: OrdreDeService) => (
         <>
           <EditOutlined 
-            onClick={() => onEditDecompte(record)}
-            style={{ color: "#1890ff", cursor: "pointer" }}
+            onClick={() => onEditOS(record)} 
+            style={{ color: "green", marginRight: 12, cursor: 'pointer' }}
           />
-          <DeleteOutlined
-            onClick={() => onDeleteDecompte(record)}
-            style={{ color: "red", marginLeft: 12, cursor: "pointer" }}
+          <FileWordOutlined 
+            onClick={() => generateDocument(record)}
+            style={{ color: "blue", marginLeft: 12, cursor: 'pointer' }}
           />
         </>
       ),
-    },
+    }
   ];
 
   return (
-    <div>
-      <Sidebar>
-        <div className="list-container">
-          <div className="list-header">
-            <h2 className="list-title">Liste des Décomptes</h2>
+    <Sidebar>
+      <div className="list-container" style={{ padding: '20px' }}>
+        <Card 
+          title="Ordres de Service" 
+          style={{ marginBottom: '20px' }}
+          headStyle={{ backgroundColor: '#edfabf', borderBottom: '1px solid #d9d9d9' }}
+        >
+          {/* Cartes de statistiques */}
+          <Row gutter={16} style={{ marginBottom: '20px' }}>
+            <Col span={8}>
+              <Card bordered={false}>
+                <Statistic
+                  title="Total Ordres de Service"
+                  value={totalOS}
+                  prefix={<FileProtectOutlined />}
+                />
+              </Card>
+            </Col>
+            <Col span={8}>
+              <Card bordered={false}>
+                <Statistic
+                  title="Commencements"
+                  value={commencementOS}
+                  prefix={<FileDoneOutlined />}
+                  valueStyle={{ 
+                    color: 'var(--success-color)',
+                    fontSize: '24px'
+                  }}
+                />
+              </Card>
+            </Col>
+            <Col span={8}>
+              <Card bordered={false}>
+                <Statistic
+                  title="Arrêts"
+                  value={arretOS}
+                  prefix={<FileSyncOutlined />}
+                  valueStyle={{ color: '#ff4d4f' }}
+                />
+              </Card>
+            </Col>
+          </Row>
+
+          <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '20px' }}>
+            <Input 
+              placeholder="Rechercher par numéro de marché ou d'OS" 
+              prefix={<SearchOutlined />} 
+              style={{ width: '300px' }}
+              value={searchText}
+              onChange={(e) => setSearchText(e.target.value)}
+            />
           </div>
-          <FloatButton
-            icon={<PlusOutlined />}
-            onClick={() => navigate("/AddDecompte")}
-            tooltip="Ajouter un décompte"
-          />
+
           <Table
             columns={columns}
-            dataSource={dataSource}
-            rowKey="id_D"
+            dataSource={filteredData}
+            rowKey="id_OS"
             loading={loading}
-            pagination={{ pageSize: 10 }}
+            style={{ marginTop: '20px' }}
             bordered
           />
+        </Card>
 
-          <Modal
-            title="Modifier le décompte"
-            open={isEditing}
-            onCancel={resetEditing}
-            onOk={() => form.submit()}
-            width={600}
+        <Modal 
+          title="Modifier l'ordre de service" 
+          open={isEditing} 
+          onCancel={resetEditing} 
+          onOk={() => form.submit()}
+          width={600}
+          destroyOnClose
+        >
+          <Form 
+            form={form}
+            layout="vertical"
+            onFinish={handleSave}
           >
-            <Form form={form} layout="vertical" onFinish={handleSave}>
-              <Form.Item label="Marché associé">
-                <Input 
-                  value={editingDecompte?.marche_obj?.numOrdre || "N/A"} 
-                  disabled 
-                />
-              </Form.Item>
-              
-              <Form.Item label="Société">
-                <Input 
-                  value={editingDecompte?.marche_obj?.societe_obj?.raisonSociale || "N/A"} 
-                  disabled 
-                />
-              </Form.Item>
+            <Form.Item
+              name="numOrdre_OS"
+              label="Numéro d'ordre de service"
+            >
+              <Input disabled />
+            </Form.Item>
 
-              <Form.Item
-                label="Numéro d'ordre"
-                name="numOrdre_D"
-                rules={[{ required: true, message: 'Ce champ est obligatoire' }]}
-              >
-                <Input disabled />
-              </Form.Item>
+            <Form.Item
+              name="marche_OS"
+              label="Marché"
+            >
+              <Input value={editingOS?.idMarche_obj?.numOrdre || "N/A"} disabled />
+            </Form.Item>
 
-              <Form.Item
-                label="Acompte (€)"
-                name="aCompte"
-                rules={[{ required: true, message: 'Ce champ est obligatoire' }]}
-              >
-                <InputNumber 
-                  style={{ width: '100%' }} 
-                  min={0}
-                  step={0.01}
-                  formatter={value => `${value}`.replace(/\B(?=(\d{3})+(?!\d))/g, ' ')}
-                />
-              </Form.Item>
-
-              <Form.Item
-                label="Somme (€)"
-                name="somme_D"
-                rules={[{ required: true, message: 'Ce champ est obligatoire' }]}
-              >
-                <InputNumber 
-                  style={{ width: '100%' }} 
-                  min={0}
-                  step={0.01}
-                  formatter={value => `${value}`.replace(/\B(?=(\d{3})+(?!\d))/g, ' ')}
-                />
-              </Form.Item>
-            </Form>
-          </Modal>
-        </div>
-      </Sidebar>
-    </div>
+            <Form.Item 
+              name="type_OS"
+              label="Type"
+              rules={[{ required: true, message: 'Veuillez sélectionner un type' }]}
+            >
+              <Select
+                style={{ width: '100%' }}
+                options={[
+                  { value: Type_OS.COMMENCEMENT, label: 'Commencement' },
+                  { value: Type_OS.ARRET, label: 'Arret' },
+                  { value: Type_OS.REPRISE, label: 'Reprise' },
+                  { value: Type_OS.CESSION, label: 'Cession' }
+                ]}
+              />
+            </Form.Item>
+            <Form.Item
+              name="date_OS"
+              label="Date d'ordre de service"
+              rules={[{ required: true, message: 'Veuillez sélectionner la date' }]}
+            >
+              <DatePicker 
+                style={{ width: '100%' }} 
+                format="DD/MM/YYYY"
+                disabledDate={current => current && current > dayjs().endOf('day')}
+              />
+            </Form.Item>
+          </Form>
+        </Modal>
+      </div>
+    </Sidebar>
   );
 };
 
-export default List_Decomptes;
+export default DocOS;

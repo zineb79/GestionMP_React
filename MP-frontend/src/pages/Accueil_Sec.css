@@ -202,3 +202,13 @@ body[data-theme='dark'] .status-filter option {
 .marche-card {
   animation: fadeIn 0.5s ease-out;
 }
+
+/* Pour centrer les en-têtes du tableau */
+.ant-table-thead > tr > th {
+  text-align: center !important;
+}
+
+/* Pour centrer le contenu des cellules */
+.ant-table-tbody > tr > td {
+  text-align: center !important;
+}

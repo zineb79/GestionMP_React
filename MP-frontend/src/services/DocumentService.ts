@@ -7,6 +7,7 @@ import { Notification } from './NotifApprService';
 import dayjs from 'dayjs';
 import { OrdreDeService } from './OSService';
 import {PvReception} from './PvReceptionService';
+import api from '../utils/axiosInstance';
 
 interface TemplateErrorProperties {
   errors: Array<{
@@ -56,7 +57,7 @@ const numberToWords = (number: number): string => {
   while (integerPart > 0) {
     const thousandsPart = integerPart % 1000;
     if (thousandsPart > 0) {
-      result = convertHundreds(thousandsPart) + ' ' + thousands[i] + (result ? ' ' + result : '');
+      result = convertHundreds(thousandsPart) + ' ' + thousands[i] + (result ? ' ' + result : ' dirhams');
     }
     integerPart = Math.floor(integerPart / 1000);
     i++;
@@ -78,9 +79,14 @@ export class DocumentService {
       // Préparer les données pour le template
       const data = {
         numOrdreAO: appelOffre.num_Ordre_AO || '',
-        dateOuverturePli_AO: appelOffre.dateOuverturePli_AO || '',
-        heureOuverturePli_AO: appelOffre.heureOuverturePli_AO || '',
-        typeAO: appelOffre.type_AO.toUpperCase() || '',
+        dateOuverturePli_AO: dayjs(appelOffre.dateOuverturePli_AO || '').format('DD/MM/YYYY'),
+        heureOuverturePli_AO: appelOffre.heureOuverturePli_AO
+        ? dayjs(appelOffre.heureOuverturePli_AO, 'HH:mm').isValid()
+          ? dayjs(appelOffre.heureOuverturePli_AO, 'HH:mm').format('HH[h]mm')
+          : 'Heure invalide'
+        : 'Non spécifiée',        
+        TypeAO: appelOffre.type_AO.toUpperCase() || '',
+        typeAO: appelOffre.type_AO.toLowerCase() || '',
         idMarche: appelOffre.marche_AO_obj?.numOrdre || '',
         objetAO: appelOffre.marche_AO_obj?.objet_marche || '',
         coutEstimeAO: appelOffre.coutEstime_AO || 0,
@@ -121,7 +127,7 @@ export class DocumentService {
         dateApprobation_NOTIF: dayjs(notification.dateApprobation_NOTIF).format('DD/MM/YYYY'),
         objetMarche: notification.marche_NOTIF_obj?.objet_marche || '',
         montantFinal: notification.marche_NOTIF_obj?.montantFinal,
-        societe: notification.marche_NOTIF_obj?.societe_obj?.raisonSociale || '',
+        societe: notification.marche_NOTIF_obj?.societe_obj?.raisonSociale.toUpperCase() || '',
         delaisMarche: notification.marche_NOTIF_obj?.delaisMarche,
         montantFinalLetters: numberToWords(notification.marche_NOTIF_obj?.montantFinal || 0),
         montantFinalNumeric: (notification.marche_NOTIF_obj?.montantFinal || 0).toLocaleString('fr-FR', {
@@ -146,16 +152,17 @@ export class DocumentService {
 //************************************ Ordre De Service **************************************** 
 static async generateOrdreDeServiceDocument(ordreDeService: OrdreDeService): Promise<void> {
   try {
+
     const data = {
       numOrdreOS: ordreDeService.numOrdre_OS || '',
       idMarche: ordreDeService.idMarche_obj?.numOrdre || '',
       objetMarche: ordreDeService.idMarche_obj?.objet_marche || '',
       type_OS: ordreDeService.type_OS || '',
-      nomSociete: ordreDeService.idMarche_obj?.societe_obj?.raisonSociale || '',
-      adresse: ordreDeService.idMarche_obj?.societe_obj?.adresse,
+      nomSociete: ordreDeService.societe_obj?.raisonSociale || '',
+      adresseSociete: ordreDeService.societe_obj?.adresse || '',
       date_OS: dayjs(ordreDeService.date_OS).format('DD/MM/YYYY'),
     };
-
+    
     // Générer le document sécurisé avec le template sécurisé
     await SecureDocumentService.generateSecureDocument(
       '/templates/OrdreDeService.docx',

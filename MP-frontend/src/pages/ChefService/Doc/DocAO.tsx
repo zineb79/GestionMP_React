@@ -48,7 +48,7 @@ const DocAO = () => {
             ...appel,
             marche_AO_obj: marche
           };
-        });
+        }).filter(appel => appel.marche_AO_obj);
 
         setDataSource(enrichedData);
         setMarches(marchesData);
@@ -139,7 +139,7 @@ const DocAO = () => {
           ...appel,
           marche_AO_obj: marche
         };
-      });
+      }).filter(appel => appel.marche_AO_obj);
       
       setDataSource(enrichedData);
       setMarches(marchesData);

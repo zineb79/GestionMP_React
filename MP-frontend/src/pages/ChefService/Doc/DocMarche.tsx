@@ -1,11 +1,12 @@
 import React, { useState, useEffect } from 'react';
-import { Table, Modal, Input, FloatButton, Form, Select, message, DatePicker, Tag } from "antd";
+import { Table, Modal, Input, FloatButton, Form, Select, DatePicker, Tag } from "antd";
 import { EditOutlined, DeleteOutlined, PlusOutlined } from "@ant-design/icons";
 import { useNavigate } from "react-router-dom";
 import { Marche } from '../../../services/MarcheService';
 import dayjs from 'dayjs'; 
 import Sidebar from '../../../components/Sidebar/Sidebar_CS';
 import { getMarches, updateMarche } from '../../../services/MarcheService';
+import { App } from 'antd';
 
 const DocMarche = () => {
   const [isEditing, setIsEditing] = useState(false);
@@ -15,6 +16,7 @@ const DocMarche = () => {
   const [form] = Form.useForm();
   const navigate = useNavigate();
   const [statuts, setStatuts] = useState<string[]>([]);
+  const { message } = App.useApp();
 
   // Charger les marchés depuis l'API
   useEffect(() => {
@@ -23,7 +25,6 @@ const DocMarche = () => {
         const data = await getMarches();
         setDataSource(data as Marche[]);
       } catch (error) {
-        console.error("Erreur lors de la récupération des marchés :", error);
       } finally {
         setLoading(false);
       }
@@ -82,7 +83,6 @@ const DocMarche = () => {
       setEditingMarche(null);
       message.success('Marché mis à jour avec succès');
     } catch (error) {
-      console.error('Erreur lors de la mise à jour du marché:', error);
       message.error('Erreur lors de la mise à jour du marché');
     }
   };
@@ -107,6 +107,14 @@ const DocMarche = () => {
       key: "4",
       title: "Délais du marché",
       dataIndex: "delaisMarche",
+      render: (date: string) => {
+        // Si la date est déjà au format DD/MM/YYYY, on l'affiche directement
+        if (date && date.match(/^\d{2}\/\d{2}\/\d{4}$/)) {
+          return date;
+        }
+        // Sinon, on la formate avec dayjs
+        return date ? dayjs(date).format('DD/MM/YYYY') : 'N/A';
+      }
     },
     {
       key: "5",
@@ -239,10 +247,9 @@ const DocMarche = () => {
               rules={[{ required: true, message: "Champ obligatoire" }]}
             >
               <DatePicker
-                format="YYYY-MM-DD"
+                format="DD/MM/YYYY"
                 placeholder="Sélectionner la date du délai du marché"
                 className="date-picker-container"
-                value={form.getFieldValue('delaisMarche') ? dayjs(form.getFieldValue('delaisMarche')) : null}
               />
             </Form.Item>
 

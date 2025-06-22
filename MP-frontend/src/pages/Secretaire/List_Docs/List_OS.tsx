@@ -4,21 +4,22 @@ import { EditOutlined, DeleteOutlined, PlusOutlined, FileWordOutlined } from "@a
 import { useNavigate } from 'react-router-dom';
 import { getOrdresDeService, deleteOrdreDeService, updateOrdreDeService, Type_OS } from '../../../services/OSService';
 import { getMarches } from '../../../services/MarcheService';
+import { getSocietes, Societe } from '../../../services/SocieteService';
 import Sidebar from '../../../components/Sidebar/Sidebar_Sec';
 import '../PagesSec.css';
 import dayjs from 'dayjs';
 import { OrdreDeService } from '../../../services/OSService';
 import { Marche } from '../../../services/MarcheService';
 import { DocumentService } from '../../../services/DocumentService';
-import { title } from 'process';
 
 
-const List_Notification = () => {
+const List_OS = () => {
     const [isEditing, setIsEditing] = useState(false);
     const [editingOS, setEditingOS] = useState<OrdreDeService | null>(null);
     const [dataSource, setDataSource] = useState<OrdreDeService[]>([]);
     const [loading, setLoading] = useState(true);
     const [marches, setMarches] = useState<Marche[]>([]);
+    const [societes, setSociete] = useState<Societe[]>([]);
     const navigate = useNavigate();
     const [form] = Form.useForm();
 
@@ -26,21 +27,24 @@ const List_Notification = () => {
         const fetchData = async () => {
             try {
                 setLoading(true);
-                const [osData, marchesData] = await Promise.all([
+                const [osData, marchesData, societesData] = await Promise.all([
                     getOrdresDeService(),
-                    getMarches()
+                    getMarches(),
+                    getSocietes()
                 ]);
 
                 // Associer les marchés aux notifications
                 const enrichedData = osData.map(os => {
                     const marche = marchesData.find(m => m.id_Marche === os.idMarche);
+                    const societe = societesData.find(m => m.id_SO === marche?.idSociete);
                     return {
                         ...os,
                         idMarche_obj: marche,
                         marche_OS_obj: marche,
-                        marche_OS: marche?.id_Marche || os.idMarche
+                        marche_OS: marche?.id_Marche || os.idMarche,
+                        societe_obj: societe,
                     };
-                }).filter(os => os.marche_OS_obj); // Retire ceux qui n'ont pas de marché trouvé
+                }).filter(os => os.marche_OS_obj); 
                 
 
                 setDataSource(enrichedData);
@@ -59,7 +63,7 @@ const List_Notification = () => {
         fetchData();
     }, []);
 
-    const onDeleteOS = async (record: OrdreDeService) => {
+    /*const onDeleteOS = async (record: OrdreDeService) => {
         Modal.confirm({
             title: "Êtes-vous sûr de vouloir supprimer cet ordre de service ?",
             okText: "Oui",
@@ -76,7 +80,7 @@ const List_Notification = () => {
                 }
             },
         });
-    };
+    };*/
 
     const onEditOS = (record: OrdreDeService) => {
         setIsEditing(true);
@@ -101,18 +105,28 @@ const List_Notification = () => {
 
             const response = await updateOrdreDeService(editingOS.id_OS, updatedOS);
             
-            const newData = await getOrdresDeService();
+            const [newData, updatedMarches, updatedSocietes] = await Promise.all([
+                getOrdresDeService(),
+                getMarches(),
+                getSocietes()
+            ]);
+            
             const enrichedData = newData.map(os => {
-                // Try to find the marche by matching numOrdre_OS with marche's numOrdre
-                const marche = marches.find(m => m.id_Marche === os.idMarche);
-                console.log(`Ordre de service ${os.numOrdre_OS}: found marche =`, marche);
+                const marche = updatedMarches.find(m => m.id_Marche === os.idMarche);
+                const societe = updatedSocietes.find(m => m.id_SO === marche?.idSociete);
                 return {
                     ...os,
-                    idMarche_obj: marche
+                    idMarche_obj: marche,
+                    societe_obj: societe,
+                    marche_OS_obj: marche,
+                    marche_OS: marche?.id_Marche || os.idMarche,
                 };
-            });
-            setDataSource(enrichedData);
+            }).filter(os => os.idMarche_obj);
             
+            setDataSource(enrichedData);
+            setMarches(updatedMarches); // 🔥 très important !
+            
+
             setEditingOS(null);
             setIsEditing(false);
             console.log("Données enrichies:", updatedOS);
@@ -129,6 +143,7 @@ const List_Notification = () => {
         setEditingOS(null);
         form.resetFields();
     };
+    
   const generateDocument = async (ordreDeService: OrdreDeService) => {
     try {
       await DocumentService.generateOrdreDeServiceDocument(ordreDeService);
@@ -137,12 +152,13 @@ const List_Notification = () => {
       message.error('Erreur lors de la génération du document');
     }
   } 
+  
     const columns = [
         {
             title: 'Numéro de Marché',
             key: 'idMarche',
-            render: (text: string, record: OrdreDeService) => (
-                    <Tag color="blue">{record.idMarche_obj?.numOrdre || "N/A"}</Tag>
+            render: (record: OrdreDeService) => (
+                    <Tag color="blue">{record.idMarche_obj?.numOrdre || "-"}</Tag>
             ),
             sorter: (a: OrdreDeService, b: OrdreDeService) => 
                     (a.idMarche_obj?.numOrdre || "").localeCompare(b.idMarche_obj?.numOrdre || "")
@@ -151,15 +167,35 @@ const List_Notification = () => {
             title: 'Numéro d\'OS',
             key: 'numOrdre_OS',
             render: (record: OrdreDeService) => record.numOrdre_OS,
-            sorter: (a: OrdreDeService, b: OrdreDeService) => 
-                (a.numOrdre_OS || '').localeCompare(b.numOrdre_OS || '')
+        },
+        {
+            title: 'Société',
+            key: 'societe',
+            render: (record: OrdreDeService) => record.societe_obj?.raisonSociale || "-",
         },
         {
             title: 'Type',
             key: 'type_OS',
-            render: (record: OrdreDeService) => record.type_OS,
-            sorter: (a: OrdreDeService, b: OrdreDeService) => 
-                (a.type_OS || '').localeCompare(b.type_OS || '')
+            render: (record: OrdreDeService) => {
+            if (record.type_OS === 'COMMENCEMENT') {
+                return 'COMMENCEMENT';
+            } else if (record.type_OS === 'ARRET') {
+                return 'ARRÊT';
+            } else if (record.type_OS === 'REPRISE') {
+                return 'REPRISE';
+            } else if (record.type_OS === 'CESSION') {
+                return 'CESSION';
+            } else {
+                return '-';
+            }
+            },
+            filters: [
+                { text: 'COMMENCEMENT', value: 'COMMENCEMENT' },
+                { text: 'ARRÊT', value: 'ARRET' },
+                { text: 'REPRISE', value: 'REPRISE' },
+                { text: 'CESSION', value: 'CESSION' },
+            ],
+            onFilter: (value: any, record: OrdreDeService) => record.type_OS === value,
         },
         {
             title: 'Date',
@@ -229,9 +265,9 @@ const List_Notification = () => {
                         <Form.Item
                             name="marche_OS"
                             label="Marché"
-                            rules={[{ required: true, message: 'Veuillez sélectionner un marché' }]}
                         >
-                            <Input disabled />
+                            <Input value={editingOS?.idMarche_obj?.numOrdre || "N/A"}  
+                            disabled />
                         </Form.Item>
 
                         <Form.Item 
@@ -267,4 +303,4 @@ const List_Notification = () => {
     );
 };
 
-export default List_Notification;
+export default List_OS;

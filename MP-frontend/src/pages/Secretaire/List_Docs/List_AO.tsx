@@ -57,7 +57,7 @@ useEffect(() => {
       // Associer les marchés aux appels d'offre
       const enrichedData = appelsData.map((appel) => {
         const marche = marchesData.find(
-          (m) => m.id_Marche === appel.idMarche // Utilisez idMarche au lieu de idMarche_AO
+          (m) => m.id_Marche === appel.idMarche 
         );
         
         return {
@@ -70,7 +70,6 @@ useEffect(() => {
       setDataSource(enrichedData);
       setMarches(marchesData);
     } catch (error) {
-      console.error("Erreur lors du chargement:", error);
       message.error("Erreur de chargement des données");
     } finally {
       setLoading(false);
@@ -147,7 +146,7 @@ useEffect(() => {
       const enrichedData = newData.map((appel) => {
         const marche = marches.find(m => m.id_Marche === appel.idMarche);
         return { ...appel, marche_AO_obj: marche, idMarche: marche?.id_Marche || appel.idMarche };
-      });
+      }).filter(appel => appel.marche_AO_obj);
   
       setDataSource(enrichedData);
   
@@ -156,7 +155,6 @@ useEffect(() => {
       setIsEditModalVisible(false);
       message.success("Appel d'offre mis à jour avec succès");
     } catch (error) {
-      console.error("Erreur lors de la mise à jour de l'appel d'offre :", error);
       message.error("Erreur lors de la mise à jour de l'appel d'offre");
     }
   };
@@ -177,7 +175,6 @@ useEffect(() => {
       title: "Numéro de marché",
       render: (record: AppelOffre) => {
         if (!record.marche_AO_obj) {
-          console.warn("Marché non trouvé pour l'AO ${record.id_AO} avec idMarche=${record.idMarche}");
           return '-';
         }
         return <Tag color="blue">{record.marche_AO_obj.numOrdre || record.idMarche || '-'}</Tag>;
@@ -192,10 +189,14 @@ useEffect(() => {
       key: "2",
       title: "Type d'appel d'offre",
       dataIndex: "type_AO",
-      filters: [
-        { text: "National", value: "National" },
-        { text: "International", value: "International" },
-      ],
+      filters: dataSource
+        ? [...new Set(dataSource.map(item => item.type_AO))]
+          .filter(type => type) // Filtrer les valeurs nulles/undefined
+          .map(type => ({
+            text: type.charAt(0).toUpperCase() + type.slice(1), // Capitaliser la première lettre
+            value: type
+          }))
+        : [],
       onFilter: (value: any, record: AppelOffre) => record.type_AO === value,
     },
     {
@@ -256,12 +257,11 @@ useEffect(() => {
         }
         return <Tag color={color}>{statut}</Tag>;
       },
-      filters: loadingStatuts
-        ? []
-        : statuts.map((statut) => ({
-            text: statut,
-            value: statut,
-          })),
+      filters: [
+        { text: "ENCOURS", value: "ENCOURS" },
+        { text: "VALIDE", value: "VALIDE" },
+        { text: "INFRUTUEUSE", value: "INFRUTUEUSE" },
+      ],
       onFilter: (value: any, record: AppelOffre) => record.statut_AO === value,
     },
     {
