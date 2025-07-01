@@ -1,7 +1,7 @@
 import React, { useEffect } from "react";
-import { BrowserRouter as Router, Route, Routes } from "react-router-dom";
-import { ConfigProvider, theme, Button, Input } from 'antd';
-import { HiOutlineSun , HiOutlineMoon } from 'react-icons/hi';
+import { BrowserRouter as Router, Route, Routes, useLocation } from "react-router-dom";
+import { ConfigProvider, theme, Button } from 'antd';
+import { HiOutlineSun, HiOutlineMoon } from 'react-icons/hi';
 import './styles/theme.css';
 import Login from "./pages/Login";
 import Accueil_CS from "./pages/ChefService/Accueil_CS";
@@ -31,16 +31,15 @@ import DocDecompte from "./pages/ChefService/Doc/DocDecompte";
 import Notifications from "./pages/ChefService/Notifications";
 import DocMarche from "./pages/ChefService/Doc/DocMarche";
 
-function App() {
+function AppContent() {
   const [isDarkMode, setIsDarkMode] = React.useState(false);
-  const [searchQuery, setSearchQuery] = React.useState('');
+
+  const location = useLocation();
+  const isLoginPage = location.pathname === "/" || location.pathname === "/login";
 
   useEffect(() => {
-    // Check system preference
     const darkModeQuery = window.matchMedia('(prefers-color-scheme: dark)');
     setIsDarkMode(darkModeQuery.matches);
-
-    // Listen for changes
     const listener = (e: MediaQueryListEvent) => setIsDarkMode(e.matches);
     darkModeQuery.addEventListener('change', listener);
     return () => darkModeQuery.removeEventListener('change', listener);
@@ -62,63 +61,67 @@ function App() {
       }}
     >
       <div className={`app-container ${isDarkMode ? 'theme-dark' : 'theme-light'}`}>
-        <div style={{
-          position: 'fixed',
-          top: '70px',
-          right: '20px',
-          zIndex: 1000,
-          display: 'flex',
-          gap: '10px',
-          alignItems: 'center'
-        }}>
-          
-          <Button
-            type="text"
-            icon={isDarkMode ? <HiOutlineSun  /> : <HiOutlineMoon  />}
-            onClick={toggleTheme}
-            style={{
-              color: isDarkMode ? '#fff' : '#000'
-            }}
-          />
-        </div>
-        <Router>
-          <Routes>
-            <Route path="/" element={<Login />} />
-            <Route path="/login" element={<Login />} />
-            <Route path="/unauthorized" element={<Unauthorized />} />
-            <Route element={<RoleProtectedRoute allowedRoles={["CHEF_DE_SERVICE"]} />}>
-              <Route path="/accueil-chef" element={<Accueil_CS />} />
-              <Route path="/DocMarche" element={<DocMarche />} />
-              <Route path="/gestionComptes" element={<GestionComptes />} />
-              <Route path="/dashboard" element={<Dashboard />} />
-              <Route path="/DocAO" element={<DocAO />} />
-              <Route path="/DocOS" element={<DocOS />} />
-              <Route path="/DocNotif" element={<DocNotif />} />
-              <Route path="/DocDecompte" element={<DocDecompte />} />
-              <Route path="/Notifications" element={<Notifications />} />
-            </Route>
-            <Route element={<RoleProtectedRoute allowedRoles={["SECRETAIRE"]} />}>
-              <Route path="/accueil-secretaire" element={<Accueil_Sec />} />
-              <Route path="/AddAO" element={<Add_AO />} />
-              <Route path="/AO" element={<List_AO />} />
-              <Route path="/AddMarche" element={<Add_Marche />} />
-              <Route path="/Marche" element={<List_Marche />} />
-              <Route path="/AddOs" element={<Add_OS />} />
-              <Route path="/OrdreService" element={<List_OS />} />
-              <Route path="/AddNotification" element={<Add_Notification />} />
-              <Route path="/Notification" element={<List_Notification />} />
-              <Route path="/AddPV" element={<Add_PV />} />
-              <Route path="/PV" element={<List_PV />} />
-              <Route path="/AddDecompte" element={<Add_Decompte />} />
-              <Route path="/Decompte" element={<List_Decompte />} />
-              <Route path="/AddSociete" element={<Add_Societe />} />
-              <Route path="/Societe" element={<List_Societe />} />
-            </Route>
-          </Routes>
-        </Router>
+        {!isLoginPage && (
+          <div style={{
+            position: 'fixed',
+            top: '70px',
+            right: '20px',
+            zIndex: 1000,
+            display: 'flex',
+            gap: '10px',
+            alignItems: 'center'
+          }}>
+            <Button
+              type="text"
+              icon={isDarkMode ? <HiOutlineSun /> : <HiOutlineMoon />}
+              onClick={toggleTheme}
+              style={{ color: isDarkMode ? '#fff' : '#000' }}
+            />
+          </div>
+        )}
+        <Routes>
+          <Route path="/" element={<Login />} />
+          <Route path="/login" element={<Login />} />
+          <Route path="/unauthorized" element={<Unauthorized />} />
+          <Route element={<RoleProtectedRoute allowedRoles={["CHEF_DE_SERVICE"]} />}>
+            <Route path="/accueil-chef" element={<Accueil_CS />} />
+            <Route path="/DocMarche" element={<DocMarche />} />
+            <Route path="/gestionComptes" element={<GestionComptes />} />
+            <Route path="/dashboard" element={<Dashboard />} />
+            <Route path="/DocAO" element={<DocAO />} />
+            <Route path="/DocOS" element={<DocOS />} />
+            <Route path="/DocNotif" element={<DocNotif />} />
+            <Route path="/DocDecompte" element={<DocDecompte />} />
+            <Route path="/Notifications" element={<Notifications />} />
+          </Route>
+          <Route element={<RoleProtectedRoute allowedRoles={["SECRETAIRE"]} />}>
+            <Route path="/accueil-secretaire" element={<Accueil_Sec />} />
+            <Route path="/AddAO" element={<Add_AO />} />
+            <Route path="/AO" element={<List_AO />} />
+            <Route path="/AddMarche" element={<Add_Marche />} />
+            <Route path="/Marche" element={<List_Marche />} />
+            <Route path="/AddOs" element={<Add_OS />} />
+            <Route path="/OrdreService" element={<List_OS />} />
+            <Route path="/AddNotification" element={<Add_Notification />} />
+            <Route path="/Notification" element={<List_Notification />} />
+            <Route path="/AddPV" element={<Add_PV />} />
+            <Route path="/PV" element={<List_PV />} />
+            <Route path="/AddDecompte" element={<Add_Decompte />} />
+            <Route path="/Decompte" element={<List_Decompte />} />
+            <Route path="/AddSociete" element={<Add_Societe />} />
+            <Route path="/Societe" element={<List_Societe />} />
+          </Route>
+        </Routes>
       </div>
     </ConfigProvider>
+  );
+}
 
+function App() {
+  return (
+    <Router>
+      <AppContent />
+    </Router>
   );
 }
 

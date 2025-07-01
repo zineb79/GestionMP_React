@@ -1,3 +1,4 @@
+import { useState } from 'react';
 import { Menu } from "antd";
 import {
   HomeOutlined,
@@ -8,14 +9,33 @@ import {
   BankOutlined,
   TeamOutlined,
 } from "@ant-design/icons";
-import { useNavigate } from "react-router-dom"; // Importer useNavigate
+import { useNavigate, useLocation } from "react-router-dom";
 import "./sidebar.css";
 
-const MenuList = () => {
-  const navigate = useNavigate(); // Initialiser la navigation
+interface MenuListProps {
+  darkTheme?: boolean;
+}
 
-  // Gestionnaire de clic
+const MenuList: React.FC<MenuListProps> = ({ darkTheme = false }) => {
+  const navigate = useNavigate();
+  const location = useLocation();
+  const [selectedKey, setSelectedKey] = useState<string>(() => {
+    // Détermine l'item sélectionné en fonction de la route actuelle
+    const path = location.pathname;
+    if (path.includes("accueil-secretaire")) return "Home";
+    if (path.includes("AO")) return "AO";
+    if (path.includes("Marche")) return "marche";
+    if (path.includes("OrdreService")) return "OS";
+    if (path.includes("Notification")) return "NOT";
+    if (path.includes("PV")) return "PV";
+    if (path.includes("Decompte")) return "Decompte";
+    if (path.includes("Societe")) return "Societe";
+    return "Home";
+  });
+
   const handleMenuClick = ({ key }: { key: string }) => {
+    setSelectedKey(key);
+    
     if (key === "deconnexion") {
       navigate("/login"); 
     } else if (key === "Home") {
@@ -62,10 +82,12 @@ const MenuList = () => {
 
   return (
     <Menu
-      onClick={handleMenuClick}
+      theme={darkTheme ? "dark" : "light"}
       mode="inline"
+      className="menubar"
       items={items}
-      style={{background: '#c6c6c6'}}
+      onClick={handleMenuClick}
+      selectedKeys={[selectedKey]}
     />
   );
 };

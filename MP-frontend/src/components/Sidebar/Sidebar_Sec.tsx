@@ -4,7 +4,7 @@ import './sidebar.css';
 import Logo from './Logo';
 import MenuList from './MenuList_Sec';
 import { MenuUnfoldOutlined, MenuFoldOutlined } from '@ant-design/icons';
-
+import { Avatar } from 'antd';
 const { Header, Sider, Content } = Layout;
 
 import { ReactNode } from 'react';
@@ -17,6 +17,7 @@ const Sidebare = ({ children }: { children: ReactNode }) => {
 
     const nom = localStorage.getItem("nom") || "Utilisateur";
     const prenom = localStorage.getItem("prenom") || "";
+    const initiale = prenom ? prenom[0].toUpperCase() : "?"; 
 
     return (
         <Layout>
@@ -43,7 +44,15 @@ const Sidebare = ({ children }: { children: ReactNode }) => {
                         onClick={() => setCollapsed(!collapsed)}
                         icon={collapsed ? <MenuUnfoldOutlined /> : <MenuFoldOutlined />}
                     />
-                    <span style={{ fontWeight: 'bold' }}>{nom} {prenom}</span>
+                    <div style={{ display: 'flex', paddingTop: 25, alignItems: 'center', flexDirection: 'column', marginRight: 25 }}>
+                    <Avatar
+                        style={{ backgroundColor: '#1677ff'}}
+                        size="large"
+                    >
+                        {initiale}
+                    </Avatar>
+                    <span style={{ fontWeight: 'bold', marginTop: -20}}>{nom} {prenom}</span>
+                    </div>
                 </Header>
 
                 {/* Contenu sous le header */}

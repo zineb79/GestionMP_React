@@ -42,7 +42,7 @@ const Dashboard: React.FC = () => {
     fetchData();
   }, []);
 
-  if (loading) return <div>Chargement...</div>;
+  if (loading) return <Sidebare><div>Chargement...</div></Sidebare>;
   if (error) return <div>{error}</div>;
 
    

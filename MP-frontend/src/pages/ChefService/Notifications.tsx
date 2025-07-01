@@ -11,19 +11,20 @@ interface Notification {
   vue: boolean;
 }
 
-const MessageInterface: React.FC = () => {
+const Notification: React.FC = () => {
   const [notifications, setNotifications] = useState<Notification[]>([]);
   const [selectedNotification, setSelectedNotification] = useState<Notification | null>(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState('');
+  const [filtre, setFiltre] = useState<'toutes' | 'lues' | 'non-lues'>('non-lues');
 
   useEffect(() => {
     const fetchNotifications = async () => {
       try {
         const userData = JSON.parse(localStorage.getItem('user') || '{}');
         const destinataireId = userData.id || 1;
-        
-        const response = await api.get(`/api/notifications/non-vues?destinataire=${destinataireId}`);
+
+        const response = await api.get(`/api/MarcheNotification/getUnread?destinataire=${destinataireId}`);
         setNotifications(response.data);
         setLoading(false);
       } catch (err) {
@@ -37,10 +38,12 @@ const MessageInterface: React.FC = () => {
 
   const markAsRead = async (notification: Notification) => {
     try {
-      await api.post('/api/notifications/marquer-vue', [notification.id]);
-      setNotifications(prev => prev.map(n => 
-        n.id === notification.id ? { ...n, vue: true } : n
-      ));
+      await api.post('/api/MarcheNotification/marquer-vue', [notification.id]);
+      setNotifications(prev =>
+        prev.map(n =>
+          n.id === notification.id ? { ...n, vue: true } : n
+        )
+      );
     } catch (err) {
       setError('Erreur lors du marquage comme lu');
     }
@@ -79,31 +82,58 @@ const MessageInterface: React.FC = () => {
             >
               ← Retour à la liste
             </button>
-            
             <div className="message-header">
               <h2>Mise à jour marché: {selectedNotification.nomMarche}</h2>
               <div className="message-meta">
                 <span>Reçu le: {formatDate(selectedNotification.dateEnvoi)}</span>
               </div>
             </div>
-            
             <div className="message-content">
-              <p>
-                <strong>Nouveau statut:</strong> {selectedNotification.statut}
-              </p>
+              <p><strong>Nouveau statut:</strong> {selectedNotification.statut}</p>
             </div>
           </div>
         ) : (
           <div className="message-list">
             <h1>Boîte de réception</h1>
-            
-            {notifications.length === 0 ? (
+
+            {/* Boutons de filtre */}
+            <div className="filter-buttons">
+              <button 
+                onClick={() => setFiltre('toutes')} 
+                className={`filter-btn ${filtre === 'toutes' ? 'selected' : ''}`}
+              >
+                Toutes
+              </button>
+              <button 
+                onClick={() => setFiltre('non-lues')} 
+                className={`filter-btn ${filtre === 'non-lues' ? 'selected' : ''}`}
+              >
+                Non lues
+              </button>
+              <button 
+                onClick={() => setFiltre('lues')} 
+                className={`filter-btn ${filtre === 'lues' ? 'selected' : ''}`}
+              >
+                Lues
+              </button>
+            </div>
+
+            {/* Liste filtrée */}
+            {notifications.filter(n => {
+              if (filtre === 'non-lues') return !n.vue;
+              if (filtre === 'lues') return n.vue;
+              return true; // toutes
+            }).length === 0 ? (
               <div className="text-center">
-                <p>Aucune nouvelle notification</p>
+                <p>Aucune notification {filtre === 'lues' ? 'lue' : filtre === 'non-lues' ? 'non lue' : ''}</p>
               </div>
             ) : (
               <ul>
-                {notifications.map(notification => (
+                {notifications.filter(n => {
+                  if (filtre === 'non-lues') return !n.vue;
+                  if (filtre === 'lues') return n.vue;
+                  return true;
+                }).map(notification => (
                   <li
                     key={notification.id}
                     onClick={() => handleNotificationClick(notification)}
@@ -114,9 +144,7 @@ const MessageInterface: React.FC = () => {
                       <p className="sender">{notification.statut}</p>
                       <p className="date">{formatDate(notification.dateEnvoi)}</p>
                     </div>
-                    {!notification.vue && (
-                      <div className="unread-badge">Nouveau</div>
-                    )}
+                    {!notification.vue && <div className="unread-badge">Nouveau</div>}
                   </li>
                 ))}
               </ul>
@@ -128,4 +156,4 @@ const MessageInterface: React.FC = () => {
   );
 };
 
-export default MessageInterface;
+export default Notification;

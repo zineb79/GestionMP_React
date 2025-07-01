@@ -130,3 +130,48 @@
     color: #333;
     font-size: 15px;
   }
+
+  /* Conteneur des boutons de filtre */
+.filter-buttons {
+  display: flex;
+  gap: 8px;
+  margin-bottom: 20px;
+  flex-wrap: wrap;
+}
+
+/* Style de base des boutons */
+.filter-btn {
+  padding: 8px 16px;
+  border-radius: 20px;
+  border: 1px solid #e0e0e0;
+  background-color: #f8f9fa;
+  color: #495057;
+  font-size: 14px;
+  font-weight: 500;
+  cursor: pointer;
+  transition: all 0.3s ease;
+  outline: none;
+}
+
+/* Style au survol */
+.filter-btn:hover {
+  background-color: #e9ecef;
+  border-color: #d0d7de;
+}
+
+/* Style pour le bouton sélectionné */
+.filter-btn.selected {
+  background-color: #3a5a78;
+  border-color: #3a5a78;
+  color: white;
+}
+
+/* Style actif (au clic) */
+.filter-btn:active {
+  transform: scale(0.98);
+}
+
+/* Style focus pour l'accessibilité */
+.filter-btn:focus-visible {
+  box-shadow: 0 0 0 3px rgba(58, 90, 120, 0.3);
+}

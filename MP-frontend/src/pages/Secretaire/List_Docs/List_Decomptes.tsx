@@ -133,7 +133,7 @@ const List_Decomptes = () => {
       dataIndex: 'somme_D',
       key: 'somme_D',
     },
-    {
+   /* {
       title: 'Société',
       dataIndex: 'societe_D',
       key: 'societe_D',
@@ -144,7 +144,7 @@ const List_Decomptes = () => {
       dataIndex: 'marche_D',
       key: 'marche_D',
       render: (marche: any) => marche?.numOrdre_M,
-    },
+    },*/
     {
       title: 'Actions',
       render: (record: Decompte) => (
