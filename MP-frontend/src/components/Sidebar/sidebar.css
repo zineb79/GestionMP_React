@@ -68,15 +68,15 @@
 /* Style sélectionné compact */
 .menubar .ant-menu-item-selected,
 .menubar .ant-menu-submenu-title-selected {
-    background-color: #005ebc !important;
+    background-color: #0a5095 !important;
     color: #ffffff !important;
-    border-radius: 0 !important; /* Supprime les bordures arrondies */
 }
 
 /* Style hover compact */
 .menubar .ant-menu-item:hover,
 .menubar .ant-menu-submenu-title:hover {
-    background-color: #8a8a8a !important;
+    background-color: #6a9ad8 !important;
+    color: #ffffff !important;
 }
 
 /* Logo compact */

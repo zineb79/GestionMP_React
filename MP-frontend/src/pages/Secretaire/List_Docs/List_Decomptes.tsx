@@ -1,73 +1,83 @@
-import React, { useState, useEffect } from 'react';
-import { Table, Modal, Input, FloatButton, Form, DatePicker, Select, message } from 'antd';
-import { EditOutlined, DeleteOutlined, PlusOutlined } from '@ant-design/icons';
-import { useNavigate } from 'react-router-dom';
-import { getDecomptes, deleteDecompte, updateDecompte } from '../../../services/DecompteService';
-import Sidebar from '../../../components/Sidebar/Sidebar_Sec';
-import '../PagesSec.css';
-import dayjs from 'dayjs';
-import { getSocietes, Societe } from '../../../services/SocieteService';
-import { Decompte } from '../../../services/DecompteService';
+import React, { useState, useEffect } from "react";
+import { Table, Modal, Input, FloatButton, Form, DatePicker, message, Tag } from "antd";
+import { EditOutlined, PlusOutlined, FileWordOutlined } from "@ant-design/icons";
+import { useNavigate } from "react-router-dom";
+import { getDecomptes, deleteDecompte, updateDecompte } from "../../../services/DecompteService";
+import { getMarches } from "../../../services/MarcheService";
+import { getSocietes } from "../../../services/SocieteService";
+import Sidebar from "../../../components/Sidebar/Sidebar_Sec";
+import "../PagesSec.css";
+import dayjs from "dayjs";
+import { Decompte } from "../../../services/DecompteService";
+import { Marche } from "../../../services/MarcheService";
+import { Societe } from "../../../services/SocieteService";
+import { DocumentService } from "../../../services/DocumentService";
 
 const List_Decomptes = () => {
   const [isEditing, setIsEditing] = useState(false);
   const [editingDecompte, setEditingDecompte] = useState<Decompte | null>(null);
   const [dataSource, setDataSource] = useState<Decompte[]>([]);
   const [loading, setLoading] = useState(true);
+  const [marches, setMarches] = useState<Marche[]>([]);
+  const [societes, setSocietes] = useState<Societe[]>([]);
   const navigate = useNavigate();
   const [form] = Form.useForm();
-  const [societes, setSocietes] = useState<Societe[]>([]);
 
   useEffect(() => {
-    const fetchDecomptes = async () => {
+    const fetchData = async () => {
       try {
         setLoading(true);
-        const [decomptesData, societesData] = await Promise.all([
+        const [decomptesData, marchesData, societesData] = await Promise.all([
           getDecomptes(),
+          getMarches(),
           getSocietes()
         ]);
-      
-        // Associer les societes aux decomptes
-        const enrichedData = decomptesData.map(decompte => {
-          const societe = societesData.find(s => s.id_SO === decompte.societe_D);
-          const marche = societesData.find(s => s.id_SO === decompte.idMarche);
-          console.log(`Decompte ${decompte.numOrdre_D}: societe_D = ${decompte.societe_D}, found societe =`, societe);
+
+        // Associer les marchés avec leurs sociétés
+        const marchesWithSocietes = marchesData.map(marche => {
+          const societe = societesData.find(s => s.id_SO === marche.idSociete);
           return {
-            ...decompte,
-            societe_D: societe?.id_SO || 0,
-            idMarche: marche?.id_SO || 0
+            ...marche,
+            societe_obj: societe
           };
         });
-      
+
+        // Enrichir les notifications avec les marchés complets (incluant les sociétés)
+        const enrichedData = decomptesData.map(decompte => {
+          const marche = marchesWithSocietes.find(m => m.id_Marche === decompte.idMarche);
+          return {
+            ...decompte,
+            marche: marche
+          };
+        }).filter(decompte => decompte.marche);
+
         setDataSource(enrichedData);
-        console.log("Décomptes chargés:", enrichedData);
-        console.log("Marchés chargés:", societesData);
-        console.log("Données enrichies:", enrichedData);
-        console.log("Marchés IDs:", societesData.map(s => s.id_SO));
+        setMarches(marchesWithSocietes);
+        setSocietes(societesData);
       } catch (error) {
-                      console.error("Erreur lors du chargement:", error);
-                      message.error("Erreur de chargement des données");
-                  } finally {
-                      setLoading(false);
-                  }
-              };
-      
-    fetchDecomptes();
+        message.error("Erreur de chargement des données");
+      } finally {
+        setLoading(false);
+      }
+    };
+    fetchData();
   }, []);
 
   const onDeleteDecompte = async (record: Decompte) => {
+    if (!record.id_D) return;
+    
     Modal.confirm({
-      title: "Êtes-vous sûr de vouloir supprimer ce décompte ?",
+      title: "Êtes-vous sûr de vouloir supprimer ce decompte ?",
       okText: "Oui",
       okType: "danger",
       onOk: async () => {
         try {
           await deleteDecompte(record.id_D!);
-          setDataSource((pre) => pre.filter((dec) => dec.id_D !== record.id_D));
-          message.success("Le décompte a été supprimé avec succès");
+          setDataSource(prev => prev.filter(item => item.id_D !== record.id_D));
+          message.success("Decompte supprimé avec succès");
         } catch (error) {
-          message.error("Erreur lors de la suppression du décompte");
-          console.error('Error:', error);
+          console.error("Erreur lors de la suppression:", error);
+          message.error("Échec de la suppression");
         }
       },
     });
@@ -75,154 +85,178 @@ const List_Decomptes = () => {
 
   const onEditDecompte = (record: Decompte) => {
     setIsEditing(true);
-    setEditingDecompte({ ...record });
+    setEditingDecompte(record);
+    form.setFieldsValue({
+      ...record
+    });
   };
 
-  const handleSave = async () => {
-    if (!editingDecompte) return;
-
+  const handleSave = async (values: any) => {
+    if (!editingDecompte?.id_D) {
+      message.error("ID du decompte manquant");
+      return;
+    }
+  
     try {
-      if (!editingDecompte.id_D) {
-        message.error("ID du décompte manquant");
-        return;
-      }
-
-      const updatedDecompte = await updateDecompte(editingDecompte);
+      const updatedDecompte = {
+        ...editingDecompte,
+        ...values
+      };
+  
+      await updateDecompte(updatedDecompte);
       
-      // Refresh the list
-      const newData = await getDecomptes();
-      setDataSource(newData);
-      
+      const [decomptesData, marchesData, societesData] = await Promise.all([
+        getDecomptes(),
+        getMarches(),
+        getSocietes()
+      ]);
+  
+      // Associer marches avec societes
+      const marchesWithSocietes = marchesData.map(marche => {
+        const societe = societesData.find(s => s.id_SO === marche.idSociete);
+        return {
+          ...marche,
+          societe_obj: societe
+        };
+      });
+  
+      // Associer decompte -> marche (qui contient societe)
+      const enrichedData = decomptesData.map(decompte => {
+        const marche = marchesWithSocietes.find(m => m.id_Marche === decompte.idMarche);
+        return {
+          ...decompte,
+          marche: marche
+        };
+      }).filter(decomptes => decomptes.marche);
+  
+      setDataSource(enrichedData);
       setIsEditing(false);
       setEditingDecompte(null);
-      message.success("Le décompte a été mis à jour avec succès");
+      message.success("Decompte mise à jour avec succès");
     } catch (error) {
-      message.error("Erreur lors de la mise à jour du décompte");
-      console.error('Error:', error);
+      console.error("Erreur lors de la mise à jour:", error);
+      message.error("Échec de la mise à jour");
     }
   };
-
-  const resetEditing = () => {
-    setIsEditing(false);
-    setEditingDecompte(null);
-  };
+  
 
   const columns = [
     {
-      title: 'ID',
-      dataIndex: 'id_D',
-      key: 'id_D',
-    },
-    {
-      title: 'Nom',
-      dataIndex: 'nom_D',
-      key: 'nom_D',
-    },
-    {
-      title: 'Numéro d\'ordre',
-      dataIndex: 'numOrdre_D',
-      key: 'numOrdre_D',
-    },
-    {
-      title: 'Acompte',
-      dataIndex: 'aCompte',
-      key: 'aCompte',
-    },
-    {
-      title: 'Somme',
-      dataIndex: 'somme_D',
-      key: 'somme_D',
-    },
-   /* {
-      title: 'Société',
-      dataIndex: 'societe_D',
-      key: 'societe_D',
-      render: (societe: any) => societe?.nom_S,
-    },
-    {
-      title: 'Marché',
-      dataIndex: 'marche_D',
-      key: 'marche_D',
-      render: (marche: any) => marche?.numOrdre_M,
-    },*/
-    {
-      title: 'Actions',
-      render: (record: Decompte) => (
-        <>
-          <EditOutlined onClick={() => onEditDecompte(record)} />
-          <DeleteOutlined
-            onClick={() => onDeleteDecompte(record)}
-            style={{ color: 'red', marginLeft: 8 }}
-          />
-        </>
+      title: "Numéro de Marché",
+      dataIndex: ["marche", "numOrdre"],
+      key: "marche",
+      render: (text: string, record: Decompte) => (
+        <Tag color="blue">{record.marche?.numOrdre || "N/A"}</Tag>
       ),
     },
+    {
+      title: "Numéro de Decompte",
+      dataIndex: "numOrdre_D",
+      key: "numOrdre",
+    },
+    {
+      title: "Société",
+      key: "societe",
+      render: (record: Decompte) => (
+        record.marche?.societe_obj?.raisonSociale || "N/A"
+      ),
+    },
+    {
+      title: "Acompte",
+      dataIndex: "aCompte",
+      key: "aCompte",
+    },
+    {
+      title: "Somme Decompte",
+      dataIndex: "somme_D",
+      key: "somme_D",
+    },
+    {
+      title: "Actions",
+      key: "actions",
+      render: (record: Decompte) => (
+        <div style={{ display: "flex", gap: "12px" }}>
+          <EditOutlined 
+            onClick={() => onEditDecompte(record)} 
+            style={{ color: "#1890ff", cursor: "pointer" }} 
+          />
+        </div>
+      )
+    }
   ];
 
   return (
-    <div>
-      <Sidebar>
-        <div className="list-container">
-          <div className="list-header">
-            <h2 className="list-title">Liste des Décomptes</h2>
-          </div>
-          <FloatButton icon={<PlusOutlined />} onClick={() => navigate("/AddDecompte")} />
-          <Table
-            columns={columns}
-            dataSource={dataSource}
-            rowKey="id_D"
-            loading={loading}
-          />
-
-          {isEditing && (
-            <Modal
-              title="Modifier le décompte"
-              open={isEditing}
-              onCancel={resetEditing}
-              footer={null}
-            >
-              <Form
-                form={form}
-                layout="vertical"
-                onFinish={handleSave}
-              >
-                <Form.Item
-                  label="Nom"
-                  name="nom_D"
-                  initialValue={editingDecompte?.numOrdre_D}
-                >
-                  <Input />
-                </Form.Item>
-
-                <Form.Item
-                  label="Numéro d'ordre"
-                  name="numOrdre_D"
-                  initialValue={editingDecompte?.numOrdre_D}
-                >
-                  <Input />
-                </Form.Item>
-
-                <Form.Item
-                  label="Acompte"
-                  name="aCompte"
-                  initialValue={editingDecompte?.aCompte}
-                >
-                  <Input type="number" />
-                </Form.Item>
-
-                <Form.Item
-                  label="Somme"
-                  name="somme_D"
-                  initialValue={editingDecompte?.somme_D}
-                >
-                  <Input type="number" />
-                </Form.Item>
-              </Form>
-            </Modal>
-          )}
+    <Sidebar>
+      <div className="list-container">
+        <FloatButton
+          icon={<PlusOutlined />}
+          onClick={() => navigate("/AddDecompte")}
+          tooltip="Ajouter un decompte"
+        />
+        
+        <div className="list-header">
+          <h2 className="list-title">Liste des Decomptes</h2>
         </div>
-      </Sidebar>
-    </div>
+        
+        <Table
+          columns={columns}
+          dataSource={dataSource}
+          rowKey="id_D"
+          loading={loading}
+          bordered
+          pagination={{ pageSize: 10 }}
+        />
+        
+        <Modal
+          title="Modifier le décompte"
+          open={isEditing}
+          onCancel={() => {
+            setIsEditing(false);
+            setEditingDecompte(null);
+          }}
+          onOk={() => form.submit()}
+          width={600}
+          destroyOnClose
+        >
+          <Form form={form} layout="vertical" onFinish={handleSave}>
+            <Form.Item label="Numéro de Décompte" name="numOrdre_D">
+              <Input disabled />
+            </Form.Item>
+
+            <Form.Item label="Numéro de Marché">
+              <Input 
+                value={editingDecompte?.marche?.numOrdre || "N/A"} 
+                disabled 
+              />
+            </Form.Item>
+
+            <Form.Item label="Société">
+              <Input 
+                value={editingDecompte?.marche?.societe_obj?.raisonSociale || "N/A"} 
+                disabled 
+              />
+            </Form.Item>
+
+            <Form.Item
+              label="Acompte"
+              name="aCompte"
+              rules={[{ required: true, message: "Veuillez saisir l'acompte" }]}
+            >
+              <Input type="number" />
+            </Form.Item>
+
+            <Form.Item
+              label="Somme Décompte"
+              name="somme_D"
+              rules={[{ required: true, message: "Veuillez saisir la somme" }]}
+            >
+              <Input type="number" />
+            </Form.Item>
+          </Form>
+        </Modal>
+
+      </div>
+    </Sidebar>
   );
 };
 

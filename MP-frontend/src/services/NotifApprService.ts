@@ -7,10 +7,10 @@ export interface Notification {
   numOrdre_NOTIF: string;
   dateVisa_NOTIF: string;
   dateApprobation_NOTIF: string;
-  marche_NOTIF?: number;  // ID du marché dans la base de données
-  marche_NOTIF_obj?: Marche;   // Objet Marché associé (pour l'affichage)
-  societe_NOTIF?: string;  // ID fiscal de la société
-  societe_NOTIF_obj?: Societe;  // Objet Société associé (pour l'affichage)
+  marche_NOTIF?: number;  
+  marche_NOTIF_obj?: Marche;   
+  societe_NOTIF?: number;  
+  societe_NOTIF_obj?: Societe;  
 };
 
 export const getNotificationsByMarche = async (idMarche: number): Promise<Notification[]> => {

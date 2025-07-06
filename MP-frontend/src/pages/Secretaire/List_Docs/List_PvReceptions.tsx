@@ -104,22 +104,18 @@ const List_PvReceptions = () => {
       dataIndex: "numOrdreMarche",
       key: "numOrdreMarche",
       render: (text: string | undefined) => <Tag color="blue">{text || "N/A"}</Tag>,
-      sorter: (a: PvReceptionWithNumOrdre, b: PvReceptionWithNumOrdre) =>
-        (a.numOrdreMarche || "").localeCompare(b.numOrdreMarche || ""),
     },
     {
       title: "Type",
       dataIndex: "type_PVR",
       key: "type_PVR",
-      sorter: (a: PvReception, b: PvReception) =>
-        (a.type_PVR || "").localeCompare(b.type_PVR || ""),
     },
     {
       title: "Date",
       dataIndex: "date",
       key: "date",
       render: (date: string) =>
-        date ? dayjs(date).format("DD/MM/YYYY") : "N/A",
+        date ? dayjs(date).format("DD/MM/YYYY") : "-",
       sorter: (a: PvReception, b: PvReception) =>
         (a.date || "").localeCompare(b.date || ""),
     },

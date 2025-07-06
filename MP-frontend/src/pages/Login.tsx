@@ -6,34 +6,41 @@ import "./login.css";
 import email_icon from "../components/images/icon/mail.png";
 import password_icon from "../components/images/icon/password.png";
 import logo from "../components/images/img4.png";
+import { IconButton, InputAdornment, TextField } from "@mui/material";
+import { Visibility, VisibilityOff } from "@mui/icons-material";
 
 const Login = () => {
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
+  const [showPassword, setShowPassword] = useState(false);
   const authContext = useContext(AuthContext);
   const navigate = useNavigate();
+
+  const handleClickShowPassword = () => {
+    setShowPassword(!showPassword);
+  };
+
+  const handleMouseDownPassword = (event: React.MouseEvent<HTMLButtonElement>) => {
+    event.preventDefault();
+  };
 
   const handleLogin = async (e: React.FormEvent) => {
     e.preventDefault();
     try {
       const token = await login(email, password);
-      console.log("Token reçu:", token); // Debug 1
-  
+
       if (authContext) {
         const refreshToken = localStorage.getItem("refreshToken");
         const role = localStorage.getItem("role");
-        console.log("Rôle:", role); // Debug 2
         authContext.login(token, refreshToken || "", role || "");
       }
-  
+
       const role = localStorage.getItem("role");
-      console.log("Redirection vers:", role); // Debug 3
-  
+
       if (role === "CHEF_DE_SERVICE") navigate("/accueil-chef");
       else if (role === "SECRETAIRE") navigate("/accueil-secretaire");
       else navigate("/unauthorized");
     } catch (error) {
-      console.error("Erreur de connexion:", error); // Debug 4
       alert("Email ou mot de passe invalide");
     }
   };
@@ -55,22 +62,73 @@ const Login = () => {
           <form onSubmit={handleLogin} className="inputs">
             <div className="input">
               <img src={email_icon} alt="" />
-              <input
+              <TextField
+                fullWidth
                 type="email"
                 placeholder="Email"
                 value={email}
                 onChange={(e) => setEmail(e.target.value)}
                 required
+                variant="outlined"
+                sx={{
+                  '& .MuiOutlinedInput-root': {
+                    '& fieldset': {
+                      borderColor: 'transparent',
+                    },
+                    '&:hover fieldset': {
+                      borderColor: 'transparent',
+                    },
+                    '&.Mui-focused fieldset': {
+                      borderColor: 'transparent',
+                    },
+                  },
+                }}
               />
             </div>
             <div className="input">
               <img src={password_icon} alt="" />
-              <input
-                type="password"
+              <TextField
+                fullWidth
+                type={showPassword ? "text" : "password"}
                 placeholder="Mot de Passe"
                 value={password}
                 onChange={(e) => setPassword(e.target.value)}
                 required
+                variant="outlined"
+                InputProps={{
+                  endAdornment: (
+                    <InputAdornment position="end">
+                      <IconButton
+                        aria-label="toggle password visibility"
+                        onClick={handleClickShowPassword}
+                        onMouseDown={handleMouseDownPassword}
+                        edge="end"
+                        sx={{ 
+                          padding: '8px',
+                          position: 'absolute',
+                          right: '8px',
+                          top: '50%',
+                          transform: 'translateY(-50%)'
+                        }}
+                      >
+                        {showPassword ? <VisibilityOff /> : <Visibility />}
+                      </IconButton>
+                    </InputAdornment>
+                  ),
+                }}
+                sx={{
+                  '& .MuiOutlinedInput-root': {
+                    '& fieldset': {
+                      borderColor: 'transparent',
+                    },
+                    '&:hover fieldset': {
+                      borderColor: 'transparent',
+                    },
+                    '&.Mui-focused fieldset': {
+                      borderColor: 'transparent',
+                    },
+                  },
+                }}
               />
             </div>
             <div className="btn">

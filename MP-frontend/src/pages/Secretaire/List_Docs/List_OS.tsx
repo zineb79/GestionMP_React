@@ -100,7 +100,7 @@ const List_OS = () => {
             const updatedOS = {
                 ...editingOS,
                 ...values,
-                date_OS: values.date_OS?.format('YYYY-MM-DD')
+                date_OS: values.date_OS?.format('DD/MM/YYYY')
             };
 
             const response = await updateOrdreDeService(editingOS.id_OS, updatedOS);
@@ -200,7 +200,7 @@ const List_OS = () => {
         {
             title: 'Date',
             key: 'date_OS',
-            render: (record: OrdreDeService) => record.date_OS,
+            render: (record: OrdreDeService) => record.date_OS ? dayjs(record.date_OS).format("DD/MM/YYYY") : "N/A",
             sorter: (a: OrdreDeService, b: OrdreDeService) => 
                 (a.date_OS || '').localeCompare(b.date_OS || '')
         },

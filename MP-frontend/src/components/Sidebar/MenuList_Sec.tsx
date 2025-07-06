@@ -30,7 +30,7 @@ const MenuList: React.FC<MenuListProps> = ({ darkTheme = false }) => {
     if (path.includes("PV")) return "PV";
     if (path.includes("Decompte")) return "Decompte";
     if (path.includes("Societe")) return "Societe";
-    return "Home";
+    return "Doc";
   });
 
   const handleMenuClick = ({ key }: { key: string }) => {

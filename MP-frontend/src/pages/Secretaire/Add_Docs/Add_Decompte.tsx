@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { Form, Input, Button, Select, message } from 'antd';
+import { Form, Input, Button, Select, message, InputNumber } from 'antd';
 import { useNavigate } from 'react-router-dom';
 import { createDecompte } from '../../../services/DecompteService';
 import Sidebar from '../../../components/Sidebar/Sidebar_Sec';
@@ -75,34 +75,18 @@ const Add_Decompte = () => {
             </Form.Item>
 
             <Form.Item
-              name="aCompte"
-              label="Acompte"
-              rules={[{ required: true, message: 'Veuillez entrer l\'acompte' }]}
-            >
-              <Input type="number" />
-            </Form.Item>
+  name="aCompte"
+  label="Acompte"
+  rules={[{ required: true, message: "Veuillez entrer l'acompte" }]}>
+  <InputNumber style={{ width: '100%' }} />
+</Form.Item>
 
-            <Form.Item
-              name="somme_D"
-              label="Somme"
-              rules={[{ required: true, message: 'Veuillez entrer la somme' }]}
-            >
-              <Input type="number" />
-            </Form.Item>
-
-            <Form.Item
-              name="idSociete"
-              label="Société"
-              rules={[{ required: true, message: 'Veuillez sélectionner une société' }]}
-            >
-              <Select>
-                {societes.map((societe: any) => (
-                  <Option key={societe.id_SO} value={societe.id_SO}>
-                    {societe.raisonSociale}
-                  </Option>
-                ))}
-              </Select>
-            </Form.Item>
+<Form.Item
+  name="somme_D"
+  label="Somme"
+  rules={[{ required: true, message: "Veuillez entrer la somme" }]}>
+  <InputNumber style={{ width: '100%' }} />
+</Form.Item>
 
             <Form.Item
               name="idMarche"
@@ -133,7 +117,7 @@ const Add_Decompte = () => {
             </Form.Item>
 
             <Form.Item
-              name="societe_D"
+              name="idSociete"
               label="Société"
               rules={[{ required: true, message: 'Veuillez sélectionner une société' }]}
             >

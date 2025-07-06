@@ -9,7 +9,7 @@ import {
   FileDoneOutlined, FileSyncOutlined, FileProtectOutlined
 } from "@ant-design/icons";
 import { useNavigate } from "react-router-dom";
-import Sidebar from "../../../components/Sidebar/Sidebar_Sec";
+import Sidebar from "../../../components/Sidebar/Sidebar_CS";
 import {
   getDecomptes, deleteDecompte, updateDecompte
 } from "../../../services/DecompteService";
@@ -31,36 +31,43 @@ const DocDecompte = () => {
   const [searchText, setSearchText] = useState('');
 
   useEffect(() => {
-    const fetchDecomptes = async () => {
+    const fetchData = async () => {
       try {
         setLoading(true);
-        const [decomptesData, societesData, marchesData] = await Promise.all([
+        const [decomptesData, marchesData, societesData] = await Promise.all([
           getDecomptes(),
-          getSocietes(),
           getMarches(),
+          getSocietes()
         ]);
 
+        // Associer les marchés avec leurs sociétés
         const marchesWithSocietes = marchesData.map(marche => {
           const societe = societesData.find(s => s.id_SO === marche.idSociete);
-          return { ...marche, societe_obj: societe };
+          return {
+            ...marche,
+            societe_obj: societe
+          };
         });
 
+        // Enrichir les décomptes avec les marchés complets (incluant les sociétés)
         const enrichedData = decomptesData.map(decompte => {
           const marche = marchesWithSocietes.find(m => m.id_Marche === decompte.idMarche);
-          return { ...decompte, marche_obj: marche };
-        });
+          return {
+            ...decompte,
+            marche: marche
+          };
+        }).filter(decompte => decompte.marche);
 
         setDataSource(enrichedData);
         setMarches(marchesWithSocietes);
         setSocietes(societesData);
       } catch (error) {
-        console.error("Erreur lors du chargement:", error);
         message.error("Erreur de chargement des données");
       } finally {
         setLoading(false);
       }
     };
-    fetchDecomptes();
+    fetchData();
   }, []);
 
   // Calcul des statistiques
@@ -70,22 +77,24 @@ const DocDecompte = () => {
 
   const filteredData = dataSource.filter(item =>
     item.numOrdre_D?.toLowerCase().includes(searchText.toLowerCase()) ||
-    (item.marche_obj?.numOrdre && item.marche_obj.numOrdre.toLowerCase().includes(searchText.toLowerCase()))
+    (item.marche?.numOrdre && item.marche.numOrdre.toLowerCase().includes(searchText.toLowerCase()))
   );
 
   const onDeleteDecompte = async (record: Decompte) => {
+    if (!record.id_D) return;
+    
     Modal.confirm({
-      title: "Êtes-vous sûr de vouloir supprimer ce décompte ?",
+      title: "Êtes-vous sûr de vouloir supprimer ce decompte ?",
       okText: "Oui",
       okType: "danger",
       onOk: async () => {
         try {
           await deleteDecompte(record.id_D!);
-          setDataSource((pre) => pre.filter((dec) => dec.id_D !== record.id_D));
-          message.success("Le décompte a été supprimé avec succès");
+          setDataSource(prev => prev.filter(item => item.id_D !== record.id_D));
+          message.success("Decompte supprimé avec succès");
         } catch (error) {
-          message.error("Erreur lors de la suppression du décompte");
-          console.error("Error:", error);
+          console.error("Erreur lors de la suppression:", error);
+          message.error("Échec de la suppression");
         }
       },
     });
@@ -93,70 +102,59 @@ const DocDecompte = () => {
 
   const onEditDecompte = (record: Decompte) => {
     setIsEditing(true);
-    setEditingDecompte({ ...record });
+    setEditingDecompte(record);
     form.setFieldsValue({
-      numOrdre_D: record.numOrdre_D,
-      aCompte: record.aCompte,
-      somme_D: record.somme_D,
+      ...record
     });
   };
 
   const handleSave = async (values: any) => {
-    if (!editingDecompte) return;
-
+    if (!editingDecompte?.id_D) {
+      message.error("ID du decompte manquant");
+      return;
+    }
+  
     try {
-      if (!editingDecompte.id_D) {
-        message.error("ID du décompte manquant");
-        return;
-      }
-
       const updatedDecompte = {
         ...editingDecompte,
-        numOrdre_D: values.numOrdre_D,
-        aCompte: values.aCompte,
-        somme_D: values.somme_D,
+        ...values
       };
-
+  
       await updateDecompte(updatedDecompte);
-
-      // Refresh data
-      const [newData, marchesData, societesData] = await Promise.all([
+      
+      const [decomptesData, marchesData, societesData] = await Promise.all([
         getDecomptes(),
         getMarches(),
         getSocietes()
       ]);
-
+  
+      // Associer marches avec societes
       const marchesWithSocietes = marchesData.map(marche => {
         const societe = societesData.find(s => s.id_SO === marche.idSociete);
-        return { ...marche, societe_obj: societe };
+        return {
+          ...marche,
+          societe_obj: societe
+        };
       });
-
-      const enrichedData = newData.map(decompte => {
+  
+      // Associer decompte -> marche (qui contient societe)
+      const enrichedData = decomptesData.map(decompte => {
         const marche = marchesWithSocietes.find(m => m.id_Marche === decompte.idMarche);
-        return { ...decompte, marche_obj: marche };
-      });
-
+        return {
+          ...decompte,
+          marche: marche
+        };
+      }).filter(decomptes => decomptes.marche);
+  
       setDataSource(enrichedData);
-      setMarches(marchesWithSocietes);
-      setSocietes(societesData);
-
       setIsEditing(false);
       setEditingDecompte(null);
-      message.success("Le décompte a été mis à jour avec succès");
+      message.success("Decompte mise à jour avec succès");
     } catch (error) {
-      message.error("Erreur lors de la mise à jour du décompte");
-      console.error("Error:", error);
+      console.error("Erreur lors de la mise à jour:", error);
+      message.error("Échec de la mise à jour");
     }
   };
-
-  /*const generateDocument = async (decompte: Decompte) => {
-    try {
-      await DocumentService.generateDecompteDocument(decompte);
-      message.success('Document généré avec succès');
-    } catch (error) {
-      message.error('Erreur lors de la génération du document');
-    }
-  };*/
 
   const resetEditing = () => {
     setIsEditing(false);
@@ -166,57 +164,58 @@ const DocDecompte = () => {
   const columns = [
     {
       title: "Numéro de Marché",
-      dataIndex: ["marche_obj", "numOrdre"],
+      dataIndex: ["marche", "numOrdre"],
       key: "marche",
       render: (text: string, record: Decompte) => (
-        <Tag color="blue">{record.marche_obj?.numOrdre || "N/A"}</Tag>
+        <Tag color="blue">{record.marche?.numOrdre || "N/A"}</Tag>
       ),
       sorter: (a: Decompte, b: Decompte) =>
-        (a.marche_obj?.numOrdre || "").localeCompare(b.marche_obj?.numOrdre || "")
+        (a.marche?.numOrdre || "").localeCompare(b.marche?.numOrdre || "")
     },
     {
-      title: "Numéro d'ordre",
+      title: "Numéro de Decompte",
       dataIndex: "numOrdre_D",
       key: "numOrdre_D",
-    },
-    {
-      title: "Acompte",
-      dataIndex: "aCompte",
-      key: "aCompte",
-      render: (value: number) => `${value?.toLocaleString()} €` || "N/A",
-    },
-    {
-      title: "Somme",
-      dataIndex: "somme_D",
-      key: "somme_D",
-      render: (value: number) => `${value?.toLocaleString()} €` || "N/A",
     },
     {
       title: "Société",
       key: "societe",
       render: (record: Decompte) => (
-        record.marche_obj?.societe_obj?.raisonSociale || "N/A"
+        record.marche?.societe_obj?.raisonSociale || "N/A"
       ),
       sorter: (a: Decompte, b: Decompte) =>
-        (a.marche_obj?.societe_obj?.raisonSociale || "").localeCompare(
-          b.marche_obj?.societe_obj?.raisonSociale || ""
+        (a.marche?.societe_obj?.raisonSociale || "").localeCompare(
+          b.marche?.societe_obj?.raisonSociale || ""
         )
     },
     {
-      title: "Actions",
-      render: (record: Decompte) => (
-        <>
-          <EditOutlined
-            onClick={() => onEditDecompte(record)}
-            style={{ color: "green", marginRight: 12, cursor: "pointer" }}
-          />
-          <DeleteOutlined
-            onClick={() => onDeleteDecompte(record)}
-            style={{ color: "red", marginLeft: 12, cursor: "pointer" }}
-          />
-        </>
-      ),
+      title: "Acompte",
+      dataIndex: "aCompte",
+      key: "aCompte",
+      render: (value: number) => `${value?.toLocaleString()} ` || "-",
     },
+    {
+      title: "Somme Decompte",
+      dataIndex: "somme_D",
+      key: "somme_D",
+      render: (value: number) => `${value?.toLocaleString()} ` || "-",
+    },
+    {
+      title: "Actions",
+      key: "actions",
+      render: (record: Decompte) => (
+        <div style={{ display: "flex", gap: "12px" }}>
+          <EditOutlined 
+            onClick={() => onEditDecompte(record)} 
+            style={{ color: "green", cursor: "pointer" }} 
+          />
+          <DeleteOutlined 
+            onClick={() => onDeleteDecompte(record)} 
+            style={{ color: "red", cursor: "pointer" }} 
+          />
+        </div>
+      )
+    }
   ];
 
   return (
@@ -262,7 +261,7 @@ const DocDecompte = () => {
 
           <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '20px' }}>
             <Input
-              placeholder="Rechercher par numéro de marché ou d'ordre"
+              placeholder="Rechercher par numéro de marché ou décompte"
               prefix={<SearchOutlined />}
               style={{ width: '300px' }}
               value={searchText}
@@ -282,6 +281,7 @@ const DocDecompte = () => {
             loading={loading}
             style={{ marginTop: '20px' }}
             bordered
+            pagination={{ pageSize: 10 }}
           />
         </Card>
 
@@ -291,34 +291,39 @@ const DocDecompte = () => {
           onCancel={resetEditing}
           onOk={() => form.submit()}
           width={600}
+          destroyOnClose
         >
           <Form form={form} layout="vertical" onFinish={handleSave}>
-            <Form.Item label="Marché associé">
-              <Input
-                value={editingDecompte?.marche_obj?.numOrdre || "N/A"}
-                disabled
+            <Form.Item label="Numéro de Décompte" name="numOrdre_D">
+              <Input disabled />
+            </Form.Item>
+
+            <Form.Item label="Numéro de Marché">
+              <Input 
+                value={editingDecompte?.marche?.numOrdre || "N/A"} 
+                disabled 
               />
             </Form.Item>
 
-            <Form.Item
-              label="Numéro d'ordre"
-              name="numOrdre_D"
-            >
-              <Input disabled />
+            <Form.Item label="Société">
+              <Input 
+                value={editingDecompte?.marche?.societe_obj?.raisonSociale || "N/A"} 
+                disabled 
+              />
             </Form.Item>
 
             <Form.Item
               label="Acompte"
               name="aCompte"
-              rules={[{ required: true, message: 'Ce champ est obligatoire' }]}
+              rules={[{ required: true, message: "Veuillez saisir l'acompte" }]}
             >
               <Input type="number" />
             </Form.Item>
 
             <Form.Item
-              label="Somme"
+              label="Somme Décompte"
               name="somme_D"
-              rules={[{ required: true, message: 'Ce champ est obligatoire' }]}
+              rules={[{ required: true, message: "Veuillez saisir la somme" }]}
             >
               <Input type="number" />
             </Form.Item>
