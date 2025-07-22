@@ -43,7 +43,7 @@ const Dashboard: React.FC = () => {
   }, []);
 
   if (loading) return <Sidebare><div>Chargement...</div></Sidebare>;
-  if (error) return <div>{error}</div>;
+  if (error) return <Sidebare><div>{error}</div></Sidebare>;
 
    
 const statusMapping: { [key: string]: string } = {

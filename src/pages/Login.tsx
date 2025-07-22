@@ -15,6 +15,7 @@ const Login = () => {
   const [showPassword, setShowPassword] = useState(false);
   const authContext = useContext(AuthContext);
   const navigate = useNavigate();
+  const [errorMessage, setErrorMessage] = useState("");
 
   const handleClickShowPassword = () => {
     setShowPassword(!showPassword);
@@ -41,7 +42,8 @@ const Login = () => {
       else if (role === "SECRETAIRE") navigate("/accueil-secretaire");
       else navigate("/unauthorized");
     } catch (error) {
-      alert("Email ou mot de passe invalide");
+      setErrorMessage("Email ou mot de passe invalide");
+
     }
   };
 
@@ -131,6 +133,11 @@ const Login = () => {
                 }}
               />
             </div>
+            {errorMessage && (
+              <div style={{ color: "red", textAlign: "center" }}>
+                {errorMessage}
+              </div>
+            )}
             <div className="btn">
               <button type="submit" className="btn btn-primary btn-lg">
                 Se connecter

@@ -3,10 +3,10 @@ import { Client } from '@stomp/stompjs';
 import {
   getUsers,
   createUser,
+  updateUser,
+  deleteUser,
   User
 } from '../../services/UserService';
-
-// Import du service WebSocket
 import { connectUserWs, disconnectUserWs } from '../../services/userWsService';
 
 import Sidebar from '../../components/Sidebar/Sidebar_CS';
@@ -98,9 +98,9 @@ const GestionComptes: React.FC = () => {
       formData.prenom.trim() !== '' &&
       formData.email.trim() !== '' &&
       formData.role.trim() !== '' &&
-      (!selectedUser || formData.password.trim() !== '')
+      (selectedUser || formData.password.trim() !== '') // Mot de passe requis seulement en création
     );
-  };
+  };  
 
   const handleOpenDialog = (user: User | null) => {
     setSelectedUser(user);
@@ -138,16 +138,25 @@ const GestionComptes: React.FC = () => {
     e.preventDefault();
     try {
       if (selectedUser) {
-        // À implémenter si updateUser existe
-        // await updateUser(selectedUser.id_user, formData);
+        await updateUser(selectedUser.id_user, formData);
       } else {
         await createUser(formData);
       }
-      await fetchUsers(); // Met à jour la liste complète après création/modification
-      handleCloseDialog();
+      await fetchUsers(); // recharge la liste des utilisateurs
+      handleCloseDialog(); // ferme la boîte de dialogue
     } catch (error) {
       console.error("Erreur lors de l'enregistrement :", error);
-      setError("Erreur lors de la création de l'utilisateur");
+      setError("Erreur lors de l'enregistrement de l'utilisateur");
+    }
+  };
+
+  const handleDelete = async (id: number) => {
+    try {
+      await deleteUser(id);
+      await fetchUsers();
+    } catch (error) {
+      console.error("Erreur lors de la suppression :", error);
+      setError("Erreur lors de la suppression de l'utilisateur");
     }
   };
 
@@ -235,7 +244,6 @@ const GestionComptes: React.FC = () => {
                           }}
                         />
                       </Box>
-                      <span>{user.nom}</span>
                     </Box>
                   </TableCell>
                   <TableCell>{user.nom}</TableCell>
@@ -246,7 +254,7 @@ const GestionComptes: React.FC = () => {
                     <Button variant="outlined" size="small" onClick={() => handleOpenDialog(user)}>
                       Modifier
                     </Button>{' '}
-                    <Button variant="outlined" color="error" size="small">
+                    <Button variant="outlined" color="error" size="small" onClick={() => handleDelete(user.id_user)}>
                       Supprimer
                     </Button>
                   </TableCell>

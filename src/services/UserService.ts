@@ -45,27 +45,22 @@ export const createUser = async (user: User): Promise<User> => {
   }
 };
 
-/*export const updateUser = async (id: number, user: User): Promise<User> => {
+export const updateUser = async (id: number, user: User): Promise<User> => {
   try {
-    const response = await api.put(`/user/updateuser/${id}`, user);
+    const response = await api.put(`/api/users/update/${id}`, user);
     return response.data;
   } catch (error: any) {
     console.error("Erreur lors de la mise à jour de l'utilisateur :", error);
-    if (error.response) {
-      console.error('Backend error response:', error.response.data);
-    }
     throw error;
   }
 };
 
 export const deleteUser = async (id: number): Promise<void> => {
   try {
-    await api.delete(`/user/delete/${id}`);
+    await api.delete(`/api/users/delete/${id}`);
   } catch (error: any) {
     console.error("Erreur lors de la suppression de l'utilisateur :", error);
-    if (error.response) {
-      console.error('Backend error response:', error.response.data);
-    }
     throw error;
   }
-};*/
+};
+
