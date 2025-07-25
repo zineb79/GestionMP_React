@@ -229,11 +229,19 @@ const List_PvReceptions = () => {
     <App>
       <Sidebar>
         <div className="list-container" style={{ padding: '20px' }}>
-          <Card
-            title="PV de Réception"
-            style={{ marginBottom: '20px' }}
-            headStyle={{ backgroundColor: '#edfabf', borderBottom: '1px solid #d9d9d9' }}
-          >
+        <Card
+          title="Pv de Réception"
+          style={{
+            marginBottom: '20px',
+            backgroundColor: 'var(--card-bg)',
+            color: 'var(--text-color)',
+          }}
+          headStyle={{
+            backgroundColor: 'var(--card-header-bg)',
+            color: 'var(--text-color)',
+            borderBottom: '1px solid var(--border-color)',
+          }}
+        >
             {/* Cartes de statistiques */}
             <Row gutter={16} style={{ marginBottom: '20px' }}>
               <Col span={8}>

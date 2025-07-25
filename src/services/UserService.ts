@@ -45,7 +45,9 @@ export const createUser = async (user: User): Promise<User> => {
   }
 };
 
-export const updateUser = async (id: number, user: User): Promise<User> => {
+export type UpdateUserDto = Omit<User, 'password'> & { password?: string };
+
+export const updateUser = async (id: number, user: UpdateUserDto): Promise<User> => {
   try {
     const response = await api.put(`/api/users/update/${id}`, user);
     return response.data;
@@ -54,6 +56,7 @@ export const updateUser = async (id: number, user: User): Promise<User> => {
     throw error;
   }
 };
+
 
 export const deleteUser = async (id: number): Promise<void> => {
   try {

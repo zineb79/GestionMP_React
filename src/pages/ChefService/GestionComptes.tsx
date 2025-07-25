@@ -4,6 +4,7 @@ import {
   getUsers,
   createUser,
   updateUser,
+  UpdateUserDto,
   deleteUser,
   User
 } from '../../services/UserService';
@@ -12,42 +13,29 @@ import { connectUserWs, disconnectUserWs } from '../../services/userWsService';
 import Sidebar from '../../components/Sidebar/Sidebar_CS';
 import {
   Table,
-  TableBody,
-  TableCell,
-  TableContainer,
-  TableHead,
-  TableRow,
-  Paper,
   Button,
-  Dialog,
-  DialogTitle,
-  DialogContent,
-  DialogActions,
-  TextField,
-  Box,
-  CircularProgress,
+  Modal,
+  Form,
+  Input,
+  Spin,
   Alert,
-} from '@mui/material';
+  message,
+  Select,
+} from 'antd';
+
+const { Column } = Table;
 
 const GestionComptes: React.FC = () => {
   const [users, setUsers] = useState<User[]>([]);
   const [utilisateursActifs, setUtilisateursActifs] = useState<User[]>([]);
   const stompClientRef = useRef<Client | null>(null);
-  const [openDialog, setOpenDialog] = useState(false);
+  const [openModal, setOpenModal] = useState(false);
   const [selectedUser, setSelectedUser] = useState<User | null>(null);
-  const [formData, setFormData] = useState<User>({
-    id_user: 0,
-    nom: '',
-    prenom: '',
-    email: '',
-    password: '',
-    role: '',
-  });
+  const [form] = Form.useForm();
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
 
-
-// changement de l etat de chaque profil connecté
+  // Chargement en temps réel des utilisateurs actifs
   useEffect(() => {
     connectUserWs(setUtilisateursActifs);
     return () => {
@@ -55,16 +43,14 @@ const GestionComptes: React.FC = () => {
     };
   }, []);
 
-
-  // Charge la liste complète des utilisateurs via REST
+  // Récupérer tous les utilisateurs
   const fetchUsers = async () => {
     try {
       const data = await getUsers();
       setUsers(data || []);
       setError(null);
-    } catch (error) {
-      //console.error("Erreur lors du chargement des utilisateurs :", error);
-      setError("Erreur lors du chargement des utilisateurs");
+    } catch {
+      setError('Erreur lors du chargement des utilisateurs');
       setUsers([]);
     }
   };
@@ -72,100 +58,67 @@ const GestionComptes: React.FC = () => {
   useEffect(() => {
     const loadData = async () => {
       setLoading(true);
-      try {
-        await fetchUsers();
-      } catch {
-        // gestion erreur déjà faite dans fetchUsers
-      } finally {
-        setLoading(false);
-      }
+      await fetchUsers();
+      setLoading(false);
     };
-
     loadData();
-
-    // Connexion WebSocket pour récupérer utilisateurs actifs en temps réel
-    connectUserWs(setUtilisateursActifs);
-
-    return () => {
-      // Déconnexion propre au démontage du composant
-      disconnectUserWs();
-    };
   }, []);
 
-  const isFormValid = () => {
-    return (
-      formData.nom.trim() !== '' &&
-      formData.prenom.trim() !== '' &&
-      formData.email.trim() !== '' &&
-      formData.role.trim() !== '' &&
-      (selectedUser || formData.password.trim() !== '') // Mot de passe requis seulement en création
-    );
-  };  
-
-  const handleOpenDialog = (user: User | null) => {
-    setSelectedUser(user);
+  // Ouvrir le modal pour ajouter ou modifier
+  const handleOpenModal = (user?: User) => {
     if (user) {
-      setFormData({
-        ...user,
-        password: '', // Ne jamais pré-remplir le mot de passe
-      });
+      setSelectedUser(user);
+      form.setFieldsValue(user);
     } else {
-      setFormData({
-        id_user: 0,
-        nom: '',
-        prenom: '',
-        email: '',
-        password: '',
-        role: '',
-      });
+      setSelectedUser(null);
+      form.resetFields();
     }
-    setOpenDialog(true);
+    setOpenModal(true);
   };
 
-  const handleCloseDialog = () => {
-    setOpenDialog(false);
+  // Fermer le modal
+  const handleCloseModal = () => {
+    setOpenModal(false);
   };
 
-  const handleInputChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-    const { name, value } = e.target;
-    setFormData((prev) => ({
-      ...prev,
-      [name]: value,
-    }));
-  };
-
-  const handleSubmit = async (e: React.FormEvent) => {
-    e.preventDefault();
+  // Soumission du formulaire (ajout ou modification)
+  const handleSubmit = async () => {
     try {
+      const values = await form.validateFields();
       if (selectedUser) {
-        await updateUser(selectedUser.id_user, formData);
+        // Mise à jour
+        const userToSend: UpdateUserDto = { ...values };
+        await updateUser(selectedUser.id_user, userToSend);
+        message.success('Utilisateur modifié avec succès');
       } else {
-        await createUser(formData);
+        // Création
+        await createUser(values);
+        message.success('Utilisateur créé avec succès');
       }
-      await fetchUsers(); // recharge la liste des utilisateurs
-      handleCloseDialog(); // ferme la boîte de dialogue
+      fetchUsers();
+      setOpenModal(false);
     } catch (error) {
-      console.error("Erreur lors de l'enregistrement :", error);
-      setError("Erreur lors de l'enregistrement de l'utilisateur");
+      message.error("Erreur lors de l'enregistrement de l'utilisateur");
     }
   };
 
+  // Supprimer un utilisateur
   const handleDelete = async (id: number) => {
     try {
       await deleteUser(id);
-      await fetchUsers();
+      message.success('Utilisateur supprimé avec succès');
+      fetchUsers();
     } catch (error) {
-      console.error("Erreur lors de la suppression :", error);
-      setError("Erreur lors de la suppression de l'utilisateur");
+      message.error("Erreur lors de la suppression de l'utilisateur");
     }
   };
 
   if (loading) {
     return (
       <Sidebar>
-        <Box sx={{ p: 3, display: 'flex', justifyContent: 'center' }}>
-          <CircularProgress />
-        </Box>
+        <div style={{ padding: '20px', textAlign: 'center' }}>
+          <Spin size="large" />
+        </div>
       </Sidebar>
     );
   }
@@ -173,167 +126,144 @@ const GestionComptes: React.FC = () => {
   if (error) {
     return (
       <Sidebar>
-        <Box sx={{ p: 3 }}>
-          <Alert severity="error">{error}</Alert>
-          <Button 
-            variant="contained" 
+        <div style={{ padding: '20px' }}>
+          <Alert message={error} type="error" showIcon />
+          <Button
+            type="primary"
+            style={{ marginTop: '10px' }}
             onClick={() => window.location.reload()}
-            sx={{ mt: 2 }}
           >
             Réessayer
           </Button>
-        </Box>
+        </div>
       </Sidebar>
     );
   }
 
   return (
     <Sidebar>
-      <Box sx={{ p: 3 }}>
-        <Box sx={{ display: 'flex', justifyContent: 'space-between', mb: 3 }}>
+      <div style={{ padding: '20px' }}>
+        <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: 16 }}>
           <h2>Gestion des Comptes</h2>
-          <Button variant="contained" color="primary" onClick={() => handleOpenDialog(null)}>
-            Ajouter un compte
-          </Button>
-        </Box>
+          <Button type="primary" onClick={() => handleOpenModal()}>Ajouter un compte</Button>
+        </div>
 
-        <TableContainer component={Paper}>
-          <Table>
-            <TableHead>
-              <TableRow>
-                <TableCell></TableCell>
-                <TableCell>Nom</TableCell>
-                <TableCell>Prénom</TableCell>
-                <TableCell>Email</TableCell>
-                <TableCell>Rôle</TableCell>
-                <TableCell>Actions</TableCell>
-              </TableRow>
-            </TableHead>
-            <TableBody>
-              {users.map((user) => (
-                <TableRow key={user.id_user}>
-                  <TableCell>
-                    <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
-                      <Box
-                        sx={{
-                          width: 36,
-                          height: 36,
-                          bgcolor: 'primary.main',
-                          color: 'white',
-                          borderRadius: '50%',
-                          display: 'flex',
-                          alignItems: 'center',
-                          justifyContent: 'center',
-                          fontWeight: 'bold',
-                          fontSize: 16,
-                          position: 'relative',
-                        }}
-                      >
-                        {user.prenom.charAt(0).toUpperCase()}
-                        <Box
-                          sx={{
-                            position: 'absolute',
-                            bottom: 0,
-                            right: 0,
-                            width: 10,
-                            height: 10,
-                            bgcolor: utilisateursActifs.some(activeUser => activeUser.id_user === user.id_user)
-                            ? 'green' : 'gray',
-                            borderRadius: '50%',
-                            border: '2px solid white',
-                          }}
-                        />
-                      </Box>
-                    </Box>
-                  </TableCell>
-                  <TableCell>{user.nom}</TableCell>
-                  <TableCell>{user.prenom}</TableCell>
-                  <TableCell>{user.email}</TableCell>
-                  <TableCell>{user.role}</TableCell>
-                  <TableCell>
-                    <Button variant="outlined" size="small" onClick={() => handleOpenDialog(user)}>
-                      Modifier
-                    </Button>{' '}
-                    <Button variant="outlined" color="error" size="small" onClick={() => handleDelete(user.id_user)}>
-                      Supprimer
-                    </Button>
-                  </TableCell>
-                </TableRow>
-              ))}
-            </TableBody>
-          </Table>
-        </TableContainer>
-
-        <Dialog open={openDialog} onClose={handleCloseDialog} maxWidth="sm" fullWidth>
-          <DialogTitle>
-            {selectedUser ? 'Modifier le compte' : 'Créer un nouveau compte'}
-          </DialogTitle>
-          <form onSubmit={handleSubmit}>
-            <DialogContent>
-              <TextField
-                margin="dense"
-                name="nom"
-                label="Nom"
-                fullWidth
-                value={formData.nom}
-                onChange={handleInputChange}
-                required
-              />
-              <TextField
-                margin="dense"
-                name="prenom"
-                label="Prénom"
-                fullWidth
-                value={formData.prenom}
-                onChange={handleInputChange}
-                required
-              />
-              <TextField
-                margin="dense"
-                name="email"
-                label="Email"
-                fullWidth
-                type="email"
-                value={formData.email}
-                onChange={handleInputChange}
-                required
-              />
-              {!selectedUser && (
-                <TextField
-                  margin="dense"
-                  name="password"
-                  label="Mot de passe"
-                  fullWidth
-                  type="password"
-                  value={formData.password}
-                  onChange={handleInputChange}
-                  required
-                />
-              )}
-              <TextField
-                margin="dense"
-                name="role"
-                label="Rôle"
-                fullWidth
-                value={formData.role}
-                onChange={handleInputChange}
-                required
-              />
-            </DialogContent>
-            <DialogActions>
-              <Button onClick={handleCloseDialog}>Annuler</Button>
-              <Button 
-                type="submit" 
-                variant="contained" 
-                color="primary"
-                disabled={!isFormValid()}
+        <Table dataSource={users} rowKey="id_user" pagination={{ pageSize: 5 }}>
+          <Column
+            title=""
+            key="avatar"
+            render={(user: User) => (
+              <div
+                style={{
+                  width: 36,
+                  height: 36,
+                  backgroundColor: '#1677ff',
+                  color: 'white',
+                  borderRadius: '50%',
+                  display: 'flex',
+                  alignItems: 'center',
+                  justifyContent: 'center',
+                  fontWeight: 'bold',
+                  fontSize: 16,
+                  position: 'relative',
+                }}
               >
-                {selectedUser ? 'Modifier' : 'Créer'}
-              </Button>
-            </DialogActions>
-          </form>
-        </Dialog>
-      </Box>
+                {user.prenom.charAt(0).toUpperCase()}
+                <div
+                  style={{
+                    position: 'absolute',
+                    bottom: 0,
+                    right: 0,
+                    width: 10,
+                    height: 10,
+                    backgroundColor: utilisateursActifs.some(activeUser => activeUser.id_user === user.id_user)
+                      ? 'green'
+                      : 'gray',
+                    borderRadius: '50%',
+                    border: '2px solid white',
+                  }}
+                />
+              </div>
+            )}
+          />
+          <Column title="Nom" dataIndex="nom" key="nom" />
+          <Column title="Prénom" dataIndex="prenom" key="prenom" />
+          <Column title="Email" dataIndex="email" key="email" />
+          <Column
+            title="Rôle"
+            dataIndex="role"
+            key="role"
+            render={(role: string) => {
+              const rolesMap: Record<string, string> = {
+                SECRETAIRE: 'Secrétaire',
+                CHEF_DE_SERVICE: 'Chef de service'
+              };
+              return rolesMap[role] || role;
+            }}
+          />
+          <Column
+            title="Actions"
+            key="actions"
+            render={(user: User) => (
+              <>
+                <Button type="link" onClick={() => handleOpenModal(user)}>Modifier</Button>
+                <Button type="link" danger onClick={() => handleDelete(user.id_user)}>Supprimer</Button>
+              </>
+            )}
+          />
+        </Table>
+
+        <Modal
+          title={selectedUser ? 'Modifier le compte' : 'Créer un nouveau compte'}
+          visible={openModal}
+          onCancel={handleCloseModal}
+          onOk={handleSubmit}
+          okText={selectedUser ? 'Modifier' : 'Créer'}
+        >
+          <Form form={form} layout="vertical">
+            <Form.Item
+              name="nom"
+              label="Nom"
+              rules={[{ required: true, message: 'Veuillez saisir le nom' }]}
+            >
+              <Input />
+            </Form.Item>
+            <Form.Item
+              name="prenom"
+              label="Prénom"
+              rules={[{ required: true, message: 'Veuillez saisir le prénom' }]}
+            >
+              <Input />
+            </Form.Item>
+            <Form.Item
+              name="email"
+              label="Email"
+              rules={[{ required: true, type: 'email', message: 'Veuillez saisir un email valide' }]}
+            >
+              <Input />
+            </Form.Item>
+            {!selectedUser && (
+              <Form.Item
+                name="password"
+                label="Mot de passe"
+                rules={[{ required: true, message: 'Veuillez saisir un mot de passe' }]}
+              >
+                <Input.Password />
+              </Form.Item>
+            )}
+            
+            <Form.Item 
+              name="role"
+              label="Rôle"
+              rules={[{ required: true, message: 'Veuillez saisir le rôle' }]}>
+              <Select>
+                <Select.Option value="SECRETAIRE">Secrétaire</Select.Option>
+                <Select.Option value="CHEF_DE_SERVICE">Chef de service</Select.Option>
+              </Select>
+            </Form.Item>
+          </Form>
+        </Modal>
+      </div>
     </Sidebar>
   );
 };

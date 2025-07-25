@@ -1,8 +1,13 @@
-.sidebar {
-    color: #ffffff;
-    height: auto;
+.theme-light .sidebar {
     background-color: #c6c6c6;
-}
+    color: #000000;
+  }
+  
+  .theme-dark .sidebar {
+    background-color: #676767;
+    color: #ffffff;
+  }
+  
 
 /* Largeur sidebar étendue */
 .ant-layout-sider {
@@ -112,5 +117,13 @@ Header{
     align-items: center; 
     justify-content: space-between;
     gap: 16px;
-    background-color: #c6c6c6 !important;
 }
+
+
+.theme-light header {
+    background-color: #c6c6c6 !important;
+  }
+  
+  .theme-dark header {
+    background-color: #676767 !important;
+  }

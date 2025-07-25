@@ -37,7 +37,8 @@ import AddNotification from "./pages/ChefService/Add/Add_Notification";
 import AddDecompte from "./pages/ChefService/Add/Add_Decompte";
 import AddPV from "./pages/ChefService/Add/Add_PvReception";
 import AddOS from "./pages/ChefService/Add/Add_OS";
-import AddSociete from "./pages/ChefService/Add/Add_Societe";
+import AddSociete from "./pages/ChefService/Add/AddSociete";
+import DocSociete from "./pages/ChefService/Doc/DocSociete";
 
 function AppContent() {
   const [isDarkMode, setIsDarkMode] = React.useState(false);
@@ -115,7 +116,7 @@ function AppContent() {
             <Route path="/AddPV" element={<AddPV />} />
             <Route path="/AddDecompte" element={<AddDecompte />} />
             <Route path="/AddSociete" element={<AddSociete />} />
-            
+            <Route path="/DocSociete" element={<DocSociete />} />
           </Route>
           <Route element={<RoleProtectedRoute allowedRoles={["SECRETAIRE"]} />}>
             <Route path="/accueil-secretaire" element={<Accueil_Sec />} />

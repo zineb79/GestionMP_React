@@ -7,7 +7,8 @@ import {
   BellOutlined,
   TeamOutlined,
   BankOutlined,
-  CodepenOutlined 
+  CodepenOutlined,
+  UserOutlined 
 } from "@ant-design/icons";
 import { useNavigate } from "react-router-dom";
 import { useEffect, useState } from "react";
@@ -34,6 +35,7 @@ const MenuList: React.FC<MenuListProps> = ({ darkTheme = false }) => {
     if (path.includes("Dashboard")) return "dashboard";
     if (path.includes("DocOS")) return "OS";
     if (path.includes("DocPV")) return "PV";
+    if (path.includes("Societe")) return "Societe";
     if (path.includes("DocDecompte")) return "Decompte";
     return "Home";
   });
@@ -72,6 +74,8 @@ const MenuList: React.FC<MenuListProps> = ({ darkTheme = false }) => {
     }
     else if (key === "AO") {
       navigate("/DocAO");
+    } else if (key === "Societe") {
+      navigate("/DocSociete");
     }
     else if (key === "NA") {
       navigate("/DocNotif");
@@ -110,6 +114,11 @@ const MenuList: React.FC<MenuListProps> = ({ darkTheme = false }) => {
       ],
     },
     {
+      key: "Societe",
+      icon: <TeamOutlined />,
+      label: "Sociétés"
+    },
+    {
       key: "notif",
       icon: (
         <div style={{ minWidth: 24 }}>
@@ -121,7 +130,7 @@ const MenuList: React.FC<MenuListProps> = ({ darkTheme = false }) => {
       label: "Notification",
     },
     /*{ key: "setting", icon: <SettingOutlined />, label: "Paramètres" },*/
-    { key: "membre", icon: <TeamOutlined />, label: "Comptes secrétaires" },
+    { key: "membre", icon: <UserOutlined />, label: "Comptes secrétaires" },
     { key: "deconnexion", icon: <LogoutOutlined />, label: "Se déconnecter" },
   ];
 
