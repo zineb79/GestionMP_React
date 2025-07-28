@@ -1,7 +1,7 @@
 import axios from "axios";
 import api from "../utils/axiosInstance";
 
-const API_URL = "http://10.16.45.90:8080/auth/login"; // Adjust this to match your backend URL
+const API_URL = "http://localhost:8080/auth/login"; // Adjust this to match your backend URL
 
 interface LoginResponse {
   accessToken: string;
